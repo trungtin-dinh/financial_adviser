@@ -109,3 +109,8 @@ L'interface calcule trois versions du même `Plan` : rendement d'investissement 
 ## 9. Extensions attendues
 
 États multi-actifs, taxes et contributions par pays, inflation différenciée, taux de change et covariance, soldes multi-comptes, immobilier, retraite, levier, risque de liquidité et calibration historique. Ces extensions ne doivent pas être assimilées aux fonctionnalités v0.1.
+
+
+## Extension v0.2 : événements et calcul inverse
+
+Voir [09_FACTEURS_DE_VIE_ET_UX.md](09_FACTEURS_DE_VIE_ET_UX.md) pour les conventions détaillées : modification additive des flux mensuels sur un intervalle, dépense ponctuelle au début, et trois solveurs inverses indépendants sous contraintes `V_T >= G` et `cash_m >= 0`. Ces événements sont des hypothèses et non une distribution de risque calibrée.

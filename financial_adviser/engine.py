@@ -6,7 +6,7 @@ No legal tax calculation is performed in v0.1.0.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from math import sqrt
 
 import numpy as np
@@ -56,6 +56,12 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
     events = np.zeros(n)
     for event in plan.one_offs:
         events[event.month - 1] += event.amount
+    for item in plan.life_events:
+        start = item.first_month - 1
+        stop = start + item.duration_months
+        spending[start:stop] += item.monthly_expense
+        income[start:stop] += item.monthly_income_change
+        events[start] -= item.upfront_cost
     outstanding, payments = _loan_schedule(plan)
     return income, spending, events, outstanding, payments
 
@@ -142,3 +148,83 @@ def monte_carlo(plan: Plan, n_paths: int = 1000, seed: int = 42) -> MonteCarloRe
         probability_negative_cash=float(np.mean(negative_cash)),
         sample_paths=n_paths, seed=seed,
     )
+
+
+@dataclass(frozen=True)
+class GoalSolution:
+    """A *conditional* way to meet a nominal goal with non-negative cash every month."""
+    lever: str
+    amount: float
+    feasible: bool
+    explanation: str
+    scenario: Plan | None = None
+
+
+def solve_goal(plan: Plan, target: float, horizon_years: int | None = None) -> tuple[GoalSolution, ...]:
+    """Solve three separate, not cumulative, inverse scenarios.
+
+    Linear sensitivity is exact for this engine: income, baseline spending and
+    initial cash enter the state recurrence additively. A scenario only qualifies
+    if terminal nominal net worth >= target AND cash is nonnegative at every month.
+    The alternatives are not investment advice and ignore all taxes and fees.
+    """
+    if not np.isfinite(target) or target < 0:
+        raise ValueError("Target must be finite and non-negative")
+    candidate = replace(plan, goal=float(target),
+                        years=plan.years if horizon_years is None else horizon_years)
+    candidate.validate()
+    base = project(candidate)
+    terminal = float(base.net_worth.iloc[-1])
+    cash = base.cash.to_numpy(dtype=float)
+    shortfall = max(0., target - terminal)
+
+    def required_unit(delta_terminal: float, delta_cash: np.ndarray) -> float | None:
+        if delta_terminal <= 0 and shortfall > 1e-8:
+            return None
+        req = shortfall / delta_terminal if shortfall > 1e-8 else 0.0
+        for c, d in zip(cash, delta_cash):
+            if c < -1e-8:
+                if d <= 0:
+                    return None
+                req = max(req, -float(c) / float(d))
+        return max(0.0, float(req))
+
+    unit = max(1., candidate.monthly_income * 0.05)
+    more_income = project(replace(candidate, monthly_income=candidate.monthly_income + unit))
+    amount = required_unit((more_income.net_worth.iloc[-1] - terminal) / unit,
+                           (more_income.cash.to_numpy() - cash) / unit)
+    solutions = []
+    if amount is None or not np.isfinite(amount):
+        solutions.append(GoalSolution("income", 0., False, "No feasible income adjustment found."))
+    else:
+        scenario = replace(candidate, monthly_income=candidate.monthly_income + amount * (1 + 1e-10))
+        solutions.append(GoalSolution("income", amount, True,
+            "Additional net income per starting month; it follows the chosen income growth assumption.", scenario))
+
+    if candidate.monthly_expenses > 0:
+        no_expenses = project(replace(candidate, monthly_expenses=0.0))
+        d_terminal = (float(no_expenses.net_worth.iloc[-1]) - terminal) / candidate.monthly_expenses
+        d_cash = (no_expenses.cash.to_numpy() - cash) / candidate.monthly_expenses
+        savings = required_unit(d_terminal, d_cash)
+        if savings is not None and savings <= candidate.monthly_expenses + 1e-6:
+            savings = min(candidate.monthly_expenses, savings)
+            scenario = replace(candidate, monthly_expenses=max(0., candidate.monthly_expenses - savings))
+            solutions.append(GoalSolution("expenses", savings, True,
+                "Monthly starting spending reduction; residual spending follows the configured growth rate.", scenario))
+        else:
+            solutions.append(GoalSolution("expenses", 0., False,
+                "Reducing ordinary spending to zero would still not satisfy the target and cash constraint."))
+    else:
+        solutions.append(GoalSolution("expenses", 0., False, "Starting spending is already zero."))
+
+    unit_cash = max(1., candidate.initial_cash * 0.05)
+    added_cash = project(replace(candidate, initial_cash=candidate.initial_cash + unit_cash))
+    topup = required_unit((float(added_cash.net_worth.iloc[-1]) - terminal) / unit_cash,
+                          (added_cash.cash.to_numpy() - cash) / unit_cash)
+    if topup is None or not np.isfinite(topup):
+        solutions.append(GoalSolution("capital", 0., False, "No finite initial top-up found."))
+    else:
+        scenario = replace(candidate, initial_cash=candidate.initial_cash + topup * (1 + 1e-10))
+        solutions.append(GoalSolution("capital", topup, True,
+            "External cash injection at month zero (not a loan or internal transfer).", scenario))
+    return tuple(solutions)

@@ -118,3 +118,85 @@ def test_invalid_plan_rejected():
         project(plan(one_offs=(OneOff(13, 10),)))
     with pytest.raises(ValueError):
         monte_carlo(plan(), n_paths=2)
+
+
+def test_life_event_recurring_cost_income_and_upfront():
+    from financial_adviser.models import LifeEvent
+    event = LifeEvent("Health / Care", "Temporary expense", 3, 2,
+                      monthly_expense=25, monthly_income_change=-10, upfront_cost=100)
+    baseline = project(plan(monthly_income=100))
+    alternative = project(plan(monthly_income=100, life_events=(event,)))
+    assert alternative.net_worth.iloc[2] == baseline.net_worth.iloc[2]
+    assert alternative.net_worth.iloc[3] == pytest.approx(baseline.net_worth.iloc[3] - 135)
+    assert alternative.net_worth.iloc[4] == pytest.approx(baseline.net_worth.iloc[4] - 170)
+    assert alternative.net_worth.iloc[12] == pytest.approx(baseline.net_worth.iloc[12] - 170)
+
+
+def test_life_event_validation_and_json_roundtrip():
+    from financial_adviser.models import LifeEvent
+    from financial_adviser.io import dump_plan, load_plan
+    event = LifeEvent("Child / Dependent", "Childcare", 2, 3, monthly_expense=200)
+    p = plan(life_events=(event,))
+    assert load_plan(dump_plan(p)) == p
+    with pytest.raises(ValueError):
+        project(plan(life_events=(replace(event, duration_months=12),)))
+    with pytest.raises(ValueError):
+        project(plan(life_events=(replace(event, upfront_cost=-100),)))
+    with pytest.raises(ValueError):
+        project(plan(life_events=(replace(event, first_month=0),)))
+
+
+def test_old_json_scenario_loads_without_life_events():
+    import json
+    from financial_adviser.io import load_plan
+    data = plan().to_dict()
+    del data["life_events"]
+    restored = load_plan(json.dumps({"schema_version": 1, "plan": data}))
+    assert restored.life_events == ()
+
+
+def test_inverse_goal_solutions_meet_target_and_cash():
+    from financial_adviser.engine import solve_goal
+    p = plan(monthly_income=250, monthly_expenses=200, initial_cash=100)
+    options = solve_goal(p, 1000)
+    assert {option.lever for option in options} == {"income", "expenses", "capital"}
+    for opt in options:
+        if opt.feasible:
+            d = project(opt.scenario)
+            assert d.net_worth.iloc[-1] >= 1000 - 1e-4
+            assert d.cash.min() >= -1e-4
+
+
+def test_goal_unreachable_by_spending_reduction():
+    from financial_adviser.engine import solve_goal
+    p = plan(monthly_income=0, monthly_expenses=0)
+    options = {x.lever: x for x in solve_goal(p, 1000)}
+    assert not options["expenses"].feasible
+    assert options["income"].feasible
+    assert options["capital"].feasible
+
+
+def test_inverse_repair_negative_cash_even_when_goal_reached():
+    from financial_adviser.engine import solve_goal
+    p = plan(initial_cash=0, initial_investments=10000, monthly_expenses=100)
+    baseline = project(p)
+    assert baseline.net_worth.iloc[-1] > 100
+    assert baseline.cash.min() < 0
+    options = solve_goal(p, 100)
+    for opt in options:
+        if opt.feasible:
+            assert project(opt.scenario).cash.min() >= -1e-4
+
+
+def test_inverse_goal_with_life_event():
+    from financial_adviser.engine import solve_goal
+    from financial_adviser.models import LifeEvent
+    p = plan(initial_cash=200, life_events=(LifeEvent("Large purchase", "New car", 6, 1,
+                            upfront_cost=5000),))
+    options = solve_goal(p, 1000)
+    assert any(opt.feasible for opt in options)
+    for opt in options:
+        if opt.feasible:
+            d = project(opt.scenario)
+            assert d.net_worth.iloc[-1] >= 1000 - 1e-4
+            assert d.cash.min() >= -1e-4

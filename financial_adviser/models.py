@@ -14,6 +14,24 @@ class OneOff:
 
 
 @dataclass(frozen=True)
+class LifeEvent:
+    """Explicit financial consequences of a life event; no inferred probabilities.
+
+    first_month: first projected month (1-based); duration_months includes first month.
+    monthly_expense: extra recurring expenses (>= 0, scenario currency).
+    monthly_income_change: signed difference in net monthly income.
+    upfront_cost: non-negative one-time outflow at the first month.
+    """
+    category: str
+    label: str
+    first_month: int
+    duration_months: int
+    monthly_expense: float = 0.0
+    monthly_income_change: float = 0.0
+    upfront_cost: float = 0.0
+
+
+@dataclass(frozen=True)
 class Plan:
     country: str = "FR"
     currency: str = "EUR"
@@ -35,6 +53,7 @@ class Plan:
     loan_years: int = 20  # remaining loan term
     goal: float = 100000.0
     one_offs: tuple[OneOff, ...] = field(default_factory=tuple)
+    life_events: tuple[LifeEvent, ...] = field(default_factory=tuple)
 
     def validate(self) -> None:
         if self.country not in {"FR", "VN"}:
@@ -59,6 +78,20 @@ class Plan:
                 raise ValueError(f"{key} must be in (-99, 200]%.")
         if not 0 <= self.loan_apr_pct <= 100 or not 1 <= self.loan_years <= 60:
             raise ValueError("Invalid loan APR or term.")
+        for item in self.life_events:
+            if not isinstance(item, LifeEvent):
+                raise ValueError("Invalid life event type")
+            if not item.category.strip() or not item.label.strip() or len(item.label) > 120:
+                raise ValueError("Life events need a category and a short label")
+            if (not isinstance(item.first_month, int) or not isinstance(item.duration_months, int)
+                    or item.first_month < 1 or item.duration_months < 1
+                    or item.first_month + item.duration_months - 1 > self.years * 12):
+                raise ValueError("Life event must fit within the projection horizon")
+            for value in (item.monthly_expense, item.monthly_income_change, item.upfront_cost):
+                if not math.isfinite(value):
+                    raise ValueError("Life event amounts must be finite")
+            if item.monthly_expense < 0 or item.upfront_cost < 0:
+                raise ValueError("Life event costs must be positive or zero")
         for event in self.one_offs:
             if not isinstance(event.month, int) or not 1 <= event.month <= self.years * 12:
                 raise ValueError("One-off month must be in projection horizon.")
@@ -74,6 +107,10 @@ class Plan:
         if not isinstance(raw, dict) or set(raw) - allowed:
             raise ValueError("Unexpected or invalid scenario field.")
         data = dict(raw)
+        if "life_events" in data:
+            if not isinstance(data["life_events"], (list, tuple)) or len(data["life_events"]) > 100:
+                raise ValueError("life_events must be a list of at most 100 items")
+            data["life_events"] = tuple(LifeEvent(**x) for x in data["life_events"])
         if "one_offs" in data:
             if not isinstance(data["one_offs"], (list, tuple)):
                 raise ValueError("one_offs must be a list.")

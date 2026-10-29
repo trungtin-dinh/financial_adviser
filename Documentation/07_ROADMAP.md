@@ -44,3 +44,13 @@ La progression doit être incrémentale ; chaque jalon se termine par code testa
 3. Comment figer un « jeu de règles » fiscal par simulation et migrer les anciens scénarios ?
 4. Quelle politique de confidentialité et quels modes d'hébergement pour un futur compte multi-utilisateur ?
 5. Quel protocole d'évaluation des modèles stochastiques est acceptable avant affichage de probabilités ?
+
+
+## Incrément v0.2.0 livré (29 octobre 2026)
+
+- Événements de vie, scénarios adverses explicites ; aucun modèle médical ou actuariel.
+- Goal seek inverse (trois leviers, non cumulables), contrainte de trésorerie et retour d'infaisabilité.
+- Saisie essentielle requise, paramètres secondaires modifiables, documentation/sources séparées en navigation.
+- Revue heuristique par profils simulés ; **aucune revue humaine effectuée**.
+
+**Prochain objectif :** revue UI desktop/mobile, vérification des versions de Streamlit et retours réels de testeurs volontaires ; puis modules de risques probabilistes traçables et fiscalité nationale validée.

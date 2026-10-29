@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** socle versionné du projet, au 29 octobre 2026. **Version applicative :** v0.1.0.
+**État :** socle versionné du projet, au 29 octobre 2026. **Version applicative :** v0.2.0.
 
 Cette documentation distingue systématiquement :
 
@@ -21,6 +21,7 @@ Cette documentation distingue systématiquement :
 | [06_QUALITE_ET_LIMITES.md](06_QUALITE_ET_LIMITES.md) | Tests, confidentialité, biais et non-fonctionnalités |
 | [07_ROADMAP.md](07_ROADMAP.md) | Plan de développement par incréments |
 | [08_JOURNAL.md](08_JOURNAL.md) | Journal des décisions et des éléments à revoir |
+| [09_FACTEURS_DE_VIE_ET_UX.md](09_FACTEURS_DE_VIE_ET_UX.md) | Événements de vie, calcul inverse, principes UX, revue heuristique de profils simulés |
 
 ## Règles de maintenance documentaire
 
