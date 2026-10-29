@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "checked_on": "2026-10-29",
+  "automatic_fiscal_calculation": false,
+  "entries": [
+    {
+      "country": "FR",
+      "id": "livret_a_2026_08",
+      "category": "regulated_savings",
+      "effective_from": "2026-08-01",
+      "observed_value": {"annual_nominal_rate_pct": 1.7},
+      "source_url": "https://www.economie.gouv.fr/particuliers/gerer-mon-argent/gerer-mon-budget-et-mon-epargne/livret-comment-ca-marche",
+      "status": "documented_not_automatically_applied",
+      "notes": "Livret A has specific fortnight interest rules; do not treat this observation as a general cash-return forecast."
+    },
+    {
+      "country": "VN",
+      "id": "pit_law_109_2025",
+      "category": "personal_income_tax",
+      "effective_from": "2026-07-01",
+      "source_url": "https://vanban.chinhphu.vn/?docid=216495&pageid=27160",
+      "status": "legal_source_identified_implementation_pending",
+      "notes": "Special application rules for tax year 2026 must be reviewed before implementing calculations."
+    }
+  ]
+}

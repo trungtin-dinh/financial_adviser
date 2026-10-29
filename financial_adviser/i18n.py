@@ -1,0 +1,58 @@
+"""Small translated UI vocabulary; fallback to French for missing strings."""
+STRINGS = {
+    "fr": {
+        "app": "Financial Adviser", "subtitle": "Simulez vos finances, comprenez vos hypothèses.",
+        "simple": "Simple", "advanced": "Avancé", "settings": "Préférences", "country": "Pays de référence",
+        "language": "Langue", "mode": "Mode", "horizon": "Horizon (années)",
+        "income": "Revenu mensuel net", "expenses": "Dépenses mensuelles", "cash": "Épargne disponible initiale",
+        "investments": "Investissements initiaux", "contribution": "Virement mensuel vers investissements",
+        "goal": "Objectif patrimonial", "run": "Lancer la projection", "projection": "Projection",
+        "overview": "Résultats", "scenario": "Scénarios", "sources": "Sources et actualisation",
+        "docs": "Méthode et limites", "inflation": "Inflation supposée (%/an)",
+        "return": "Rendement investissements supposé (%/an)", "cash_return": "Rendement de la trésorerie (%/an)",
+        "growth_income": "Croissance des revenus (%/an)", "growth_expenses": "Croissance des dépenses (%/an)",
+        "volatility": "Volatilité supposée (%/an)", "loan": "Dette restante (sans actif associé)",
+        "loan_rate": "Taux nominal de l'emprunt (%/an)", "loan_years": "Durée de remboursement restante (années)",
+        "events": "Événements ponctuels : mois, montant, description (une ligne par événement)",
+        "mc": "Activer Monte Carlo", "paths": "Nombre de simulations", "seed": "Graine aléatoire",
+        "import": "Importer un scénario JSON", "download": "Exporter le scénario JSON", "refresh": "Actualiser les données",
+    },
+    "en": {
+        "app": "Financial Adviser", "subtitle": "Simulate your finances and understand the assumptions.",
+        "simple": "Simple", "advanced": "Advanced", "settings": "Preferences", "country": "Reference country",
+        "language": "Language", "mode": "Mode", "horizon": "Horizon (years)",
+        "income": "Net monthly income", "expenses": "Monthly spending", "cash": "Initial cash",
+        "investments": "Initial investments", "contribution": "Monthly transfer to investments",
+        "goal": "Target net worth", "run": "Run projection", "projection": "Projection",
+        "overview": "Results", "scenario": "Scenarios", "sources": "Sources and updates",
+        "docs": "Method and limitations", "inflation": "Assumed inflation (%/year)",
+        "return": "Assumed investment return (%/year)", "cash_return": "Cash return (%/year)",
+        "growth_income": "Income growth (%/year)", "growth_expenses": "Spending growth (%/year)",
+        "volatility": "Assumed volatility (%/year)", "loan": "Outstanding debt (no asset inferred)",
+        "loan_rate": "Loan nominal rate (%/year)", "loan_years": "Remaining loan term (years)",
+        "events": "One-off events: month, amount, description (one per line)",
+        "mc": "Enable Monte Carlo", "paths": "Simulation paths", "seed": "Random seed",
+        "import": "Import JSON scenario", "download": "Export JSON scenario", "refresh": "Refresh observations",
+    },
+    "vi": {
+        "app": "Financial Adviser", "subtitle": "Mô phỏng tài chính và tìm hiểu các giả định.",
+        "simple": "Cơ bản", "advanced": "Nâng cao", "settings": "Tùy chọn", "country": "Quốc gia tham chiếu",
+        "language": "Ngôn ngữ", "mode": "Chế độ", "horizon": "Số năm dự phóng",
+        "income": "Thu nhập ròng mỗi tháng", "expenses": "Chi tiêu mỗi tháng", "cash": "Tiền mặt ban đầu",
+        "investments": "Vốn đầu tư ban đầu", "contribution": "Chuyển sang đầu tư mỗi tháng",
+        "goal": "Mục tiêu tài sản ròng", "run": "Chạy mô phỏng", "projection": "Dự phóng",
+        "overview": "Kết quả", "scenario": "Kịch bản", "sources": "Nguồn và cập nhật",
+        "docs": "Phương pháp và giới hạn", "inflation": "Giả định lạm phát (%/năm)",
+        "return": "Giả định lợi suất đầu tư (%/năm)", "cash_return": "Lợi suất tiền mặt (%/năm)",
+        "growth_income": "Tăng trưởng thu nhập (%/năm)", "growth_expenses": "Tăng trưởng chi tiêu (%/năm)",
+        "volatility": "Biến động giả định (%/năm)", "loan": "Dư nợ (không tự tính tài sản đối ứng)",
+        "loan_rate": "Lãi suất vay danh nghĩa (%/năm)", "loan_years": "Số năm vay còn lại",
+        "events": "Sự kiện một lần: tháng, số tiền, mô tả (mỗi dòng một sự kiện)",
+        "mc": "Bật mô phỏng Monte Carlo", "paths": "Số lần mô phỏng", "seed": "Hạt giống ngẫu nhiên",
+        "import": "Nhập kịch bản JSON", "download": "Xuất kịch bản JSON", "refresh": "Cập nhật quan sát",
+    },
+}
+
+
+def tr(lang: str, key: str) -> str:
+    return STRINGS.get(lang, STRINGS["fr"]).get(key, STRINGS["fr"].get(key, key))
