@@ -1,6 +1,6 @@
 """UI-independent deterministic and probabilistic monthly projection engines.
 
-Conventions are documented in Documentation/03_MODELES_MATHEMATIQUES.md.
+Conventions are documented in Documentation/02_MODELES_MATHEMATIQUES.md.
 No legal tax calculation is performed in v0.1.0.
 """
 
