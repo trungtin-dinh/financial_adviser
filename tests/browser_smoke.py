@@ -120,8 +120,19 @@ with sync_playwright() as pw:
             run_name = {"fr":"Lancer la projection","en":"Run projection","vi":"Chạy dự phóng"}[lang]
             page.get_by_role("button", name=re.compile(re.escape(example))).first.click(timeout=15000)
             page.get_by_role("button", name=confirm, exact=True).first.click(timeout=15000)
+            # Confirm triggers a full rerun. Do not click a stale Run button
+            # before the updated example inputs have reached the browser.
+            page.get_by_role(
+                "button", name=confirm, exact=True
+            ).first.wait_for(state="hidden", timeout=20000)
             page.get_by_role("button", name=re.compile(re.escape(run_name))).first.click(timeout=20000)
-            results_heading.wait_for(timeout=30000)
+            try:
+                results_heading.wait_for(state="visible", timeout=30000)
+            except Exception:
+                print("RESULT AFTER RUN DEBUG:", lang, device,
+                      page.locator("body").inner_text()[-4500:])
+                print("CLIENT ERRORS:", errors)
+                raise
             overview_title = {
                 "fr": "À retenir sur votre projection",
                 "vi": "Những điểm chính từ kết quả dự phóng",
