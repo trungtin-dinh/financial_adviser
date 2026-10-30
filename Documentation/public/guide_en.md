@@ -58,6 +58,12 @@ With a monthly transfer $T$ and monthly rates $r_C$ and $r_A$, the balances foll
 
 Baseline income and spending change according to the selected annual growth assumptions. Annual effective returns and inflation are converted into equivalent monthly rates. **The loan's nominal annual rate** is instead divided by twelve to calculate monthly interest. The loan follows scheduled fixed payments until repaid.
 
+### Property and illiquid assets
+
+You may enter the **value of property already owned** and other illiquid assets. You choose an assumed annual change in property value; other illiquid assets remain constant in nominal terms. These assets enter net worth, and outstanding debts are subtracted. **Entering a mortgage never automatically creates a property asset**: enter the home's value separately if you want it represented.
+
+A property valuation increase is not spendable income. The model does not simulate purchasing, selling, rent, property taxes, fees or an automatic sale to cover a cash deficit. A balance-sheet breakdown appears when you enter illiquid assets; their curves and assumptions can also be compared.
+
 ### Nominal wealth, purchasing power and targets
 
 **Nominal** net worth is expressed in currency units at the date shown. **Real** net worth expresses that amount in the purchasing power of the starting date. For illustration, €100,000 in ten years with hypothetical annual inflation of 2% would have a starting-date purchasing power of about €82,035. This is not an inflation forecast.
