@@ -19,6 +19,8 @@ def test_planner_renders_with_required_inputs_and_event_controls(lang):
     assert any(t(lang, "life_title") in str(item.value) for item in app.get("subheader"))
     assert any(t(lang, "advanced") in str(item.value) for item in app.get("subheader"))
     assert any(t(lang, "tab_results") in str(item.value) for item in app.get("subheader"))
+    assert app.number_input(key="field_years") is not None
+    assert app.selectbox(key="preset_selected") is not None
 
 @pytest.mark.parametrize("lang", ["fr", "en", "vi"])
 def test_documentation_and_sources_load(lang):

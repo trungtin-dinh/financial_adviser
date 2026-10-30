@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.5.0_ux_candidate-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.6.0_candidate-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
@@ -14,7 +14,14 @@
 
 > **Important:** This is a first usable **MVP**, not an investment adviser, tax calculator, account aggregator, or forecast of future asset returns. Default rates and income amounts are *illustrative assumptions*, not market estimates or personalized recommendations. Avoid entering confidential data in deployments you do not control.
 
-## Features in v0.5.0
+## Features in v0.6.0
+
+- **Six editable event templates:** income interruption, healthcare, emergency expense, childcare, family support and relocation. All proposed values are synthetic proportions of your own budget, never official medians or personalized probabilities. Events are added only on confirmation, then remain fully editable.
+- **Separate stress comparisons:** terminal nominal wealth change, minimum cash and negative-cash flag compared with the last calculated plan; these tests never alter the baseline.
+- **Explicit confirmation before destructive actions:** country change and example replacement do not silently reset a plan.
+- **Less surprising navigation:** simulation results render after a calculation without forced page restart; file actions on the main page; numeric fields instead of pointer-only sliders for key horizons and stress parameters.
+- **Expanded audit:** source-backed UX review, risk catalogue and mathematical unit tests. **This is a review candidate, not an independently peer-reviewed final release.**
+
 
 - **Straightforward workflow:** inputs, output, inverse goal and comparisons appear in reading order on one page; no calculation settings hidden behind tabs or an Advanced switch.
 - **Editable life events always visible:** explicit duration, up-front and monthly costs, income change, and their approximate cumulative net impact.
@@ -57,7 +64,7 @@ The public application is available at **https://financial-adviser.streamlit.app
 
 ## Run locally
 
-**Release status:** v0.5.0 is an ergonomics review candidate, not a certified final application. Independent human user tests, actuarial/fiscal peer reviews, and physical-device verification remain necessary. See [Review plan](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md). 
+**Release status:** v0.6.0 is an ergonomics and scenario-design candidate, not a certified final application. Independent human user tests, actuarial/fiscal peer reviews, and physical-device verification remain necessary. See [Review plan](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md). 
 
 
 ```bash
@@ -142,3 +149,7 @@ These text suggestions are documented here because repository About metadata mus
 - [Heuristic audit of the v0.5 UX candidate](Documentation/19_REVUE_HEURISTIQUE_MULTIPROFILS.md)
 
 The two GitHub Actions workflows are **manual** (`workflow_dispatch`) to avoid automatic run notifications. They can be launched from the Actions tab when validation is explicitly desired. Changing repository workflows does not directly alter your GitHub account's [email notification settings](https://github.com/settings/notifications).
+
+- [v0.6 design, risk templates and prioritized audit](Documentation/20_REDESIGN_V06.md)
+
+**Validation caveat:** the new scenario module has passed focused local unit tests, but the complete v0.6 Streamlit app has not been browser-tested against this commit. GitHub Actions remain manual to avoid automatic notification emails. No independent human or expert review is claimed.

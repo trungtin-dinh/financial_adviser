@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.5.0 (candidate UX).
+**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.6.0 (candidate ergonomie et scénarios).
 
 Cette documentation distingue systématiquement :
 
@@ -32,6 +32,7 @@ Cette documentation distingue systématiquement :
 | [17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md](17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md) | 87 facteurs économiques, sociaux, financiers et de risque, statut de chaque modèle |
 | [18_PROTOCOL_EVALUATIONS_HUMAINES.md](18_PROTOCOL_EVALUATIONS_HUMAINES.md) | Tâches de tests multi-profils et revues expertes : protocoles, non réalisés |
 | [19_REVUE_HEURISTIQUE_MULTIPROFILS.md](19_REVUE_HEURISTIQUE_MULTIPROFILS.md) | Audit des principaux comportements contre-intuitifs et corrections v0.5 |
+| [20_REDESIGN_V06.md](20_REDESIGN_V06.md) | Audit v0.6, six scénarios de risques, ergonomie, hypothèses et validations à réaliser |
 
 ## Règles de maintenance documentaire
 

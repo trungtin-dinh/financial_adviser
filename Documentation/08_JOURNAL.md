@@ -1,5 +1,16 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.6.0 : scénarios éditables et interactions prévisibles
+
+- Six modèles de risque déterministes paramétrés depuis le budget, sans faux taux de probabilité.
+- Comparaison de stress indépendante du scénario de référence, patrimoine final et trésorerie minimale.
+- Confirmation pour changer le pays ou remplacer le plan par l'exemple.
+- Résultats montrés après calcul sans `st.rerun()` inopiné; champs numériques accessibles au clavier au lieu de curseurs critiques.
+- Audit et limites dans `20_REDESIGN_V06.md`; tests du nouveau module ciblés localement. Tests complets navigateur et revue indépendante encore en attente.
+- Aucun workflow GitHub Actions réactivé automatiquement.
+
+
+
 ## 2026-10-30 — Refonte ergonomique et notifications
 
 - Suppression des déclencheurs GitHub Actions automatiques; exécution manuelle seulement. La préférence e-mail GitHub nécessite un réglage du compte.

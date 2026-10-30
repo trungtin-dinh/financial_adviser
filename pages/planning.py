@@ -14,6 +14,7 @@ from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.models import LifeEvent, OneOff, Plan
+from financial_adviser.scenarios import PRESET_IDS, proposed_event, stress_impact
 from financial_adviser.ui_i18n import category_label, canonical_category, t
 
 LANG = st.session_state.get("language_choice", "fr")
@@ -57,7 +58,7 @@ def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
 def reset_inputs() -> None:
     """Discard old widget values after loading another plan/country/goal solution."""
     for key in list(st.session_state):
-        if key.startswith("field_") or key.startswith("evt_") or key.startswith("mc_"):
+        if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_")):
             del st.session_state[key]
     st.session_state.pop("event_drafts", None)
     st.session_state.pop("goal_alternatives", None)
@@ -78,7 +79,7 @@ def init_events(plan: Plan) -> None:
         st.session_state.event_next_id = len(st.session_state.event_drafts) + 1
 
 
-def draw_events(start_year: int, years: int, currency: str) -> tuple[LifeEvent, ...]:
+def draw_events(start_year: int, years: int, currency: str, income: float, expenses: float) -> tuple[LifeEvent, ...]:
     """Editable stacked cards, stable widget keys even after deleting a card."""
     init_events(st.session_state.plan)
     with st.container(border=True):
@@ -93,7 +94,42 @@ def draw_events(start_year: int, years: int, currency: str) -> tuple[LifeEvent, 
                 st.session_state.event_drafts.append({"id": eid, "category": "other", "label": "",
                     "first_month": 1, "duration_months": 1, "monthly_expense": 0.0,
                     "monthly_income_change": 0.0, "upfront_cost": 0.0})
-                st.rerun()
+                # Render the new card immediately without resetting scroll.
+        st.subheader(T("preset_title"))
+        st.caption(T("preset_hint"))
+        selected_template = st.selectbox(T("preset_choose"),
+            ("none",) + PRESET_IDS, key="preset_selected",
+            format_func=lambda value: T("preset_none") if value == "none" else T("preset_" + value))
+        if selected_template != "none":
+            a, b = st.columns(2, wrap=True)
+            with a:
+                chosen_year = st.number_input(T("life_year"), min_value=start_year,
+                    max_value=start_year + years - 1, value=start_year, key="preset_year")
+            with b:
+                chosen_month = st.selectbox(T("life_month"), list(range(1, 13)), key="preset_month")
+            proposed_month = (int(chosen_year) - start_year) * 12 + int(chosen_month)
+            preview_plan = replace(st.session_state.plan, years=years, life_events=(),
+                one_offs=(), monthly_income=max(0.0, income), monthly_expenses=max(0.0, expenses))
+            suggestion = proposed_event(preview_plan, selected_template, proposed_month,
+                label=T("preset_" + selected_template))
+            net_cost = suggestion.upfront_cost + suggestion.duration_months * (
+                suggestion.monthly_expense - suggestion.monthly_income_change)
+            st.caption(T("preset_preview", duration=suggestion.duration_months,
+                cost=money(net_cost, currency)))
+            st.caption(T("preset_double_count"))
+            if st.button("＋ " + T("preset_add"), key="preset_confirm_add", width="stretch"):
+                if len(st.session_state.event_drafts) >= 100:
+                    st.warning(T("max_events"))
+                else:
+                    eid = st.session_state.event_next_id
+                    st.session_state.event_next_id += 1
+                    st.session_state.event_drafts.append({
+                    "id": eid, "category": suggestion.category, "label": suggestion.label,
+                    "first_month": suggestion.first_month, "duration_months": suggestion.duration_months,
+                    "monthly_expense": suggestion.monthly_expense,
+                    "monthly_income_change": suggestion.monthly_income_change,
+                    "upfront_cost": suggestion.upfront_cost})
+                    st.success(T("preset_added"))
         if not st.session_state.event_drafts:
             st.caption(T("life_empty"))
         for index, draft in enumerate(st.session_state.event_drafts, start=1):
@@ -170,6 +206,26 @@ with st.sidebar:
     country = st.session_state.plan.country
     advanced = True  # Every model input is always visible; no hidden advanced mode.
     st.divider()
+
+country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
+    format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
+if country != st.session_state.plan.country:
+    st.warning(T("country_confirm_text"))
+    a, b = st.columns(2, wrap=True)
+    if a.button(T("confirm_replace"), key="confirm_country", width="stretch"):
+        st.session_state.plan = demo(country)
+        st.session_state.confirmed_inputs = False
+        st.session_state.result = None
+        st.session_state.example_pending = False
+        reset_inputs()
+        st.rerun()
+    if b.button(T("cancel_replace"), key="cancel_country", width="stretch"):
+        st.session_state.country_choice = st.session_state.plan.country
+        st.rerun()
+p = st.session_state.plan
+st.title("Financial Adviser")
+st.caption(T("caption"))
+with st.expander("🗂️ " + T("scenario_files"), expanded=False):
     uploaded = st.file_uploader(T("import"), type=["json"], max_upload_size=1)
     if uploaded is not None and st.button(T("load"), width="stretch"):
         try:
@@ -183,28 +239,24 @@ with st.sidebar:
         except (ValueError, KeyError, TypeError, UnicodeError, json.JSONDecodeError):
             st.error(T("invalid_import"))
     if st.button("📋 " + T("example"), width="stretch"):
-        st.session_state.plan = demo(country)
-        st.session_state.confirmed_inputs = True
-        st.session_state.result = None
-        reset_inputs()
-        st.rerun()
+        st.session_state.example_pending = True
+    if st.session_state.get("example_pending"):
+        st.warning(T("example_confirm_text"))
+        a, b = st.columns(2, wrap=True)
+        if a.button(T("confirm_replace"), key="confirm_example", width="stretch"):
+            st.session_state.example_pending = False
+            st.session_state.plan = demo(st.session_state.plan.country)
+            st.session_state.confirmed_inputs = True
+            st.session_state.result = None
+            reset_inputs()
+            st.rerun()
+        if b.button(T("cancel_replace"), key="cancel_example", width="stretch"):
+            st.session_state.example_pending = False
+            st.rerun()
     st.download_button(T("export_saved"), data=dump_plan(st.session_state.plan),
                        file_name="financial_adviser_scenario.json", mime="application/json",
                        disabled=not st.session_state.confirmed_inputs, width="stretch")
 
-country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
-    format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
-if country != st.session_state.plan.country:
-    st.session_state.plan = demo(country)
-    st.session_state.confirmed_inputs = False
-    st.session_state.result = None
-    reset_inputs()
-    st.rerun()
-p = st.session_state.plan
-st.title("Financial Adviser")
-st.caption(T("caption"))
-if st.session_state.pop("show_run_success", False):
-    st.success(T("done"))
 with st.expander("ℹ️ " + T("disclaimer_title"), expanded=False):
     st.info(T("disclaimer"))
 
@@ -222,13 +274,13 @@ with plan_tab:
     a, b = st.columns(2, wrap=True)
     step = 100_000.0 if p.currency == "VND" else 100.0
     with a:
-        income = st.number_input(T("income") + " *", min_value=0.0,
+        income = st.number_input(T("income") + " (" + T("required") + ")", min_value=0.0,
             value=float(p.monthly_income) if st.session_state.confirmed_inputs else None,
             step=step, key="field_income", placeholder=T("required"))
-        expenses = st.number_input(T("expenses") + " *", min_value=0.0,
+        expenses = st.number_input(T("expenses") + " (" + T("required") + ")", min_value=0.0,
             value=float(p.monthly_expenses) if st.session_state.confirmed_inputs else None,
             step=step, key="field_expenses", placeholder=T("required"))
-        goal = st.number_input(T("goal") + " *", min_value=0.0,
+        goal = st.number_input(T("goal") + " (" + T("required") + ")", min_value=0.0,
             value=float(p.goal) if st.session_state.confirmed_inputs else None,
             step=step * 10, key="field_goal", placeholder=T("required"))
         contribution = st.number_input(T("contribution"), min_value=0.0,
@@ -241,10 +293,11 @@ with plan_tab:
         investments = st.number_input(T("investments"), min_value=0.0,
             value=float(p.initial_investments) if st.session_state.confirmed_inputs else 0.0,
             step=step * 10, key="field_investments")
-        years = st.slider(T("horizon"), 1, 60, value=p.years, key="field_years")
+        years = st.number_input(T("horizon"), min_value=1, max_value=60, value=p.years, step=1, key="field_years")
         start_year = st.number_input(T("start_year"), min_value=2020, max_value=2100,
                                      value=p.start_year, step=1, key="field_start_year")
-    events = draw_events(int(start_year), int(years), p.currency)
+    events = draw_events(int(start_year), int(years), p.currency,
+        float(income or 0.0), float(expenses or 0.0))
 
     if advanced:
         with st.container(border=True):
@@ -284,8 +337,8 @@ with plan_tab:
     if advanced:
         a, b = st.columns(2, wrap=True)
         with a:
-            n_paths = st.select_slider(T("paths"), options=[250, 500, 1000, 2000, 5000],
-                value=1000, key="mc_paths", disabled=not enable_mc)
+            n_paths = st.selectbox(T("paths"), options=[250, 500, 1000, 2000, 5000],
+                index=2, key="mc_paths", disabled=not enable_mc)
         with b:
             seed = st.number_input(T("seed"), min_value=0, max_value=2**31 - 1,
                 value=42, key="mc_seed", disabled=not enable_mc)
@@ -337,8 +390,8 @@ with plan_tab:
                 st.session_state.confirmed_inputs = True
                 st.session_state.result = {"df": result, "mc": mc, "plan": new_plan}
                 st.session_state.pop("goal_alternatives", None)
-                st.session_state.show_run_success = True
-                st.rerun()
+                dirty = False
+                st.success(T("done"))
         except (ValueError, OverflowError, ZeroDivisionError, TypeError):
             st.error(T("invalid"))
 
@@ -419,7 +472,7 @@ with goal_tab:
             last_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
                              + [e.month for e in reference.one_offs])
             min_years = max(1, (last_event + 11) // 12)
-            horizon = st.slider(T("goal_years"), min_years, 60, max(min_years, reference.years),
+            horizon = st.number_input(T("goal_years"), min_value=min_years, max_value=60, value=max(min_years, reference.years), step=1,
                                 key="goal_horizon_input")
         if st.button(T("goal_calculate"), type="primary", width="stretch"):
             try:
@@ -460,7 +513,7 @@ with compare_tab:
         st.subheader(T("tab_compare"))
         st.caption(T("compare_intro"))
         base = st.session_state.plan
-        shock = st.slider(T("return_shock"), min_value=0.5, max_value=10.0, value=3.0, step=0.5)
+        shock = st.number_input(T("return_shock"), min_value=0.5, max_value=10.0, value=3.0, step=0.5)
         comparison = go.Figure()
         rows = []
         scenarios = [(T("scenario_lower"), -shock, base), (T("scenario_base"), 0., base),
@@ -481,3 +534,22 @@ with compare_tab:
         st.plotly_chart(comparison, width="stretch")
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
         st.caption(T("compare_stale"))
+
+        st.subheader(T("stress_title"))
+        st.caption(T("stress_explanation"))
+        stress_keys = st.multiselect(T("stress_choose"), PRESET_IDS,
+            default=["job_gap", "unexpected_purchase"],
+            format_func=lambda key: T("preset_" + key),
+            key="stress_selection")
+        if stress_keys:
+            stress_rows = []
+            for key in stress_keys:
+                impact = stress_impact(base, key)
+                stress_rows.append({
+                    T("stress_scenario"): T("preset_" + key),
+                    T("stress_delta"): money(impact.terminal_delta, base.currency),
+                    T("stress_low_cash"): money(impact.lowest_cash, base.currency),
+                    T("stress_negative_cash"): T("yes") if impact.liquidity_breach else T("no"),
+                })
+            st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
+            st.caption(T("stress_disclaimer"))

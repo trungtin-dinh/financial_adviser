@@ -53,3 +53,7 @@ L'URL publique fournie est https://financial-adviser.streamlit.app/ . Le workflo
 Les phases passent par une porte qualité unique : recensement des facteurs [17](17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md), correction UX [19](19_REVUE_HEURISTIQUE_MULTIPROFILS.md), vérifications techniques, puis revue de participants et d'experts indépendants suivant [18](18_PROTOCOL_EVALUATIONS_HUMAINES.md). **Aucune revue humaine indépendante n'a eu lieu**. Ne pas marquer la phase « finale » terminée sans cette validation.
 
 Les deux workflows GitHub Actions sont désormais déclenchables manuellement seulement, pour éviter les notifications e-mail de runs automatiques. Cela implique que l'absence d'échec CI visible n'est **pas** une preuve de réussite des tests sur le dernier commit.
+
+## Candidate v0.6.0 — avancement sans certification finale
+
+Les corrections P0/P1 sur la perte silencieuse de saisie, le parcours de projection et l'exploration de risques ont été réalisées dans la branche `main`, avec la taxonomie [20_REDESIGN_V06.md](20_REDESIGN_V06.md). Six scénarios de stress sont *déterministes* et séparés des décisions personnelles; aucun modèle de probabilité démographique ou médical n'a été ajouté. Les tests locaux ciblés ne suffisent pas à valider le site public et les tests GitHub Actions restent **manuels** à la demande du propriétaire. Les revues par utilisateurs et experts externes sont toujours non réalisées.

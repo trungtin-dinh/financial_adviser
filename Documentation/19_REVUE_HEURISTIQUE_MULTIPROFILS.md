@@ -38,3 +38,7 @@ Les essais sur appareils réels, la revue accessibilité avec lecteur d'écran, 
 5. Documentation FR/EN/VI réellement intelligible et déclarations d'accessibilité fondées sur preuves.
 
 **Le statut « version finale » ne peut pas être revendiqué aujourd'hui.**
+
+## Mise à jour v0.6 — changements vérifiables dans le code
+
+La v0.6 ajoute une proposition d'événement en six modèles éditables et des comparaisons de stress sans écrasement du plan. Le changement de pays et l'exemple demandent confirmation ; la projection se recalcule sans déplacer l'utilisateur vers le haut. Les curseurs des horizons et du choc de rendement sont remplacés par des valeurs numériques saisissables au clavier. Voir [20_REDESIGN_V06.md](20_REDESIGN_V06.md). Les essais utilisateurs réels restent à réaliser ; aucune certification ergonomique n'est revendiquée.
