@@ -75,6 +75,17 @@ with sync_playwright() as p:
             app.get_by_text('Scénarios : charger, exemple et exporter', exact=False).first.click(timeout=20000)
             app.get_by_role('button', name=re.compile('Charger un exemple')).first.click(timeout=20000)
             app.get_by_role('button', name='Confirmer le remplacement').first.click(timeout=20000)
+            # Wait for *reactive state* after reinitializing all form widgets.
+            # Previously the script clicked Run before the demo values appeared.
+            income_field = app.get_by_role('spinbutton', name=re.compile('Revenu net mensuel')).first
+            income_field.wait_for(timeout=20000)
+            for _ in range(40):
+                if income_field.input_value(timeout=2000).strip():
+                    break
+                page.wait_for_timeout(500)
+            else:
+                raise AssertionError('Example confirmation did not populate net income')
+            capture(page, 'fr_desktop_example_loaded.png')
             app.get_by_role('button', name=re.compile('Lancer la projection')).first.click(timeout=20000)
             app.get_by_text('Patrimoine net nominal', exact=True).first.wait_for(timeout=45000)
             capture(page, 'fr_desktop_result.png')

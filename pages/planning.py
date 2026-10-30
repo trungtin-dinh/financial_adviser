@@ -58,7 +58,7 @@ def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
 
 
 def reset_inputs() -> None:
-    """Discard old widget values after loading another plan/country/goal solution."""
+    """Clear widgets and rehydrate them before a new plan is rendered."""
     for key in list(st.session_state):
         if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_", "child_", "adult_", "household_")):
             del st.session_state[key]
@@ -71,6 +71,37 @@ def reset_inputs() -> None:
     st.session_state.pop("goal_query", None)
     st.session_state.pop("goal_target_input", None)
     st.session_state.pop("goal_horizon_input", None)
+    # Clearing a widget after it has been instantiated may leave its old
+    # browser-side value until the next client update. Rehydrate on the next
+    # script run, before any input widget has been declared.
+    st.session_state["_restore_plan_widgets"] = bool(st.session_state.get("confirmed_inputs"))
+
+
+def hydrate_inputs(plan: Plan) -> None:
+    """Restore the complete saved plan into Streamlit widgets before rendering."""
+    values = {
+        "field_income": float(plan.monthly_income),
+        "field_expenses": float(plan.monthly_expenses),
+        "field_goal": float(plan.goal),
+        "field_contribution": float(plan.monthly_investment),
+        "field_cash": float(plan.initial_cash),
+        "field_investments": float(plan.initial_investments),
+        "field_years": int(plan.years),
+        "field_start_year": int(plan.start_year),
+        "field_income_growth": float(plan.income_growth_pct),
+        "field_expense_growth": float(plan.expense_growth_pct),
+        "field_cash_return": float(plan.cash_return_pct),
+        "field_investment_return": float(plan.investment_return_pct),
+        "field_inflation": float(plan.inflation_pct),
+        "field_volatility": float(plan.investment_volatility_pct),
+        "field_loan": float(plan.loan_balance),
+        "field_loan_rate": float(plan.loan_apr_pct),
+        "field_loan_years": int(plan.loan_years),
+        "field_oneoffs": "\n".join(
+            f"{item.month},{item.amount},{item.description}" for item in plan.one_offs),
+    }
+    for key, value in values.items():
+        st.session_state[key] = value
 
 
 def init_events(plan: Plan) -> None:
@@ -216,6 +247,8 @@ if "result" not in st.session_state:
     st.session_state.result = None
 if "confirmed_inputs" not in st.session_state:
     st.session_state.confirmed_inputs = False
+if st.session_state.pop("_restore_plan_widgets", False):
+    hydrate_inputs(st.session_state.plan)
 
 with st.sidebar:
     st.caption(f"v{__version__}")
@@ -250,7 +283,7 @@ with header_col:
     st.caption(T("caption") + f" · v{__version__}")
 if st.session_state.pop("session_migration_notice", False):
     st.info(T("session_migration_ok"))
-if st.button("📋 " + T("example"), width="stretch"):
+if st.button("📋 " + T("example"), key="load_demo", width="stretch"):
     st.session_state.example_pending = True
 if st.session_state.get("example_pending"):
     st.warning(T("example_confirm_text"))
@@ -432,6 +465,12 @@ with plan_tab:
                 st.session_state.pop("goal_alternatives", None)
                 dirty = False
                 st.success(T("done"))
+                # The Run button is at the end of a long editable scenario.
+                # Show the outcome here as well so the user needn't scroll
+                # back to the dashboard header to learn whether it worked.
+                st.metric(T("net_worth"), money(float(result.net_worth.iloc[-1]), new_plan.currency))
+                if (result.cash < 0).any():
+                    st.warning(T("negative_cash"))
         except (ValueError, OverflowError, ZeroDivisionError, TypeError):
             st.error(T("invalid"))
 
@@ -525,7 +564,7 @@ with goal_tab:
         st.warning(T("outdated_result"))
         st.info(T("needs_run"))
     elif not st.session_state.confirmed_inputs:
-        st.info(T("no_result"))
+        pass  # Don't repeat the empty-results notice below the main dashboard.
     else:
         st.subheader(T("tab_goal"))
         st.caption(T("goal_intro"))
@@ -575,7 +614,7 @@ with compare_tab:
         st.warning(T("outdated_result"))
         st.info(T("needs_run"))
     elif not st.session_state.confirmed_inputs:
-        st.info(T("no_result"))
+        pass  # Comparisons appear only after an actual scenario calculation.
     else:
         st.subheader(T("tab_compare"))
         st.caption(T("compare_intro"))

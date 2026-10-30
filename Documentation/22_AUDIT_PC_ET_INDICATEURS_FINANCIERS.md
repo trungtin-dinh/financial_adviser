@@ -48,3 +48,7 @@ La différence entre revenus, transferts internes, liquidité et patrimoine tota
 Les deux workflows GitHub Actions sont réactivés à chaque push depuis que l'utilisateur a désactivé les e-mails correspondants dans ses préférences GitHub. Le deuxième workflow démarre uniquement après succès de la CI locale. Un délai de mise à jour du site public est possible; une version périmée est signalée comme telle.
 
 **Limites de la validation :** les scripts ne remplacent ni une étude d'ergonomie avec de vrais participants, ni la revue d'un économiste/actuaire, ni la validation juridique française/vietnamienne. Le code peut passer les tests et le fournisseur d'hébergement encore rencontrer un problème indépendant.
+
+## Incident réel de déploiement et mesures correctrices (v0.8.2)
+
+Le navigateur public a bien trouvé la v0.8.1, mais le parcours « Charger un exemple » puis « Confirmer le remplacement » puis « Lancer la projection » a conduit à l'erreur « Le revenu, les dépenses et l'objectif doivent être renseignés ». Contrairement aux tests de compilation et de l'apparence seule, ce test a détecté une anomalie d'état utilisateur. La v0.8.2 programme une restauration des clés de saisie depuis le Plan enregistré **avant** que les widgets Streamlit soient construits. Le test navigateur attend que le champ revenu soit effectivement rempli avant de déclencher la projection. Cet incident ne concerne pas des probabilités ou hypothèses économiques, mais l'intégrité des saisies de simulation.

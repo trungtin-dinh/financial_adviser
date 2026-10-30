@@ -30,3 +30,20 @@ def test_documentation_and_sources_load(lang):
         app.session_state["language_choice"] = lang
         app.run()
         assert not app.exception, (lang, path, app.exception)
+
+def test_example_confirmation_restores_required_inputs_and_calculates():
+    """Regression for hosted-app failure: demo then Run must never say fields are missing."""
+    app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)
+    app.session_state["language_choice"] = "fr"
+    app.run()
+    assert not app.exception, app.exception
+    app.button(key="load_demo").click().run()
+    assert not app.exception, app.exception
+    app.button(key="confirm_example").click().run()
+    assert not app.exception, app.exception
+    assert app.number_input(key="field_income").value == pytest.approx(3000.0)
+    assert app.number_input(key="field_expenses").value == pytest.approx(2000.0)
+    assert app.number_input(key="field_goal").value == pytest.approx(100000.0)
+    app.button(key="run_projection").click().run()
+    assert not app.exception, app.exception
+    assert app.session_state["result"] is not None

@@ -1,5 +1,15 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.8.2 : correction à partir du navigateur public
+
+- Chromium sur financial-adviser.streamlit.app confirme que v0.8.1 est bien déployée et chargée.
+- Défaut reproductible observé : après confirmation de l'exemple, le bouton Run indique parfois que les champs obligatoires sont vides.
+- Réhydratation explicite des widgets financiers depuis le plan enregistré **avant** leur redéclaration sur le rerun Streamlit.
+- Test AppTest dédié au parcours exemple → confirmation → revenu/dépenses/objectifs restaurés → exécution, et Playwright public synchronisé sur la réapparition des champs.
+- Résumé de patrimoine net et alerte trésorerie placés sous le bouton Run afin d'éviter un aller-retour vers le tableau de bord.
+
+
+
 ## 2026-10-30 — v0.8.1 : correction tests de navigation + ergonomie
 
 - Les tests Python isolés de pages ne disposent pas de la navigation Streamlit multipage : les liens directs y déclenchaient six exceptions. Utilisation de boutons navigationnels explicites déclenchant un changement de page uniquement sur clic.
