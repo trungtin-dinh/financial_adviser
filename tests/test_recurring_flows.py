@@ -125,6 +125,20 @@ def test_entry_limit_and_parser_reject_fractional_months_and_missing_fields():
     assert parse_recurring_rows([]) == ()
 
 
+def test_default_planner_and_event_template_do_not_crash():
+    """Exercise the new editor and an existing event preset in the same page."""
+    from pathlib import Path
+    from streamlit.testing.v1 import AppTest
+
+    planner = Path(__file__).resolve().parents[1] / "pages" / "planning.py"
+    app = AppTest.from_file(str(planner), default_timeout=40)
+    app.session_state["language_choice"] = "fr"
+    app.run()
+    assert not app.exception, app.exception
+    app.selectbox(key="preset_selected").set_value("relocation").run()
+    assert not app.exception, app.exception
+
+
 def test_ui_schedule_translations_exist_for_every_language():
     keys = ("recurring_title", "recurring_intro", "recurring_conventions",
             "recurring_start", "recurring_end", "recurring_frequency",
