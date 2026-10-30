@@ -37,3 +37,10 @@ Ce protocole vérifie l'affichage en navigateur et les interactions de base ; il
 - Traduire l'intégralité des neuf documents techniques, après relecture terminologique ; pour l'instant le texte original français n'est pas affiché dans les pages anglaise ou vietnamienne.
 - Contrôler le formulaire sur des appareils réels avec VoiceOver/TalkBack, zoom d'accessibilité, clavier virtuel, connexion lente et orientation paysage.
 - Ajouter des simulations d'événements composites et de leurs distributions après validation du modèle, et non simplement augmenter le nombre de paramètres.
+## Retour de revue visuelle des captures (30 octobre 2026)
+
+Les captures issues du workflow Chromium ont été examinées en français (PC et petit mobile), en anglais (tablette) et en vietnamien (mobile). L'affichage conserve une colonne principale adaptée aux écrans étroits et les fiches d'événements s'ouvrent sans déborder horizontalement. Les premiers écrans de mobile nécessitent naturellement de défiler pour atteindre l'ensemble des champs ; cela ne certifie pas la facilité d'usage au clavier virtuel.
+
+**Limite de traduction confirmée :** le contrôle natif `st.file_uploader` affiche le bouton `Upload` et son indicateur de taille en anglais dans les captures, indépendamment de la langue choisie. Cela provient de Streamlit, qui ne permet pas actuellement de personnaliser simplement ces textes via son API standard : https://github.com/streamlit/streamlit/issues/13500 . Ne pas affirmer une localisation totale avant l'utilisation d'un composant accessible et contrôlable dans les trois langues. Les commandes métiers propres à l'app restent traduites. La barre de développement Streamlit peut également afficher `Deploy` en anglais.
+
+**Extension du test navigateur :** ajout d'une saisie de description dans une fiche d'événement et vérification que la valeur reste visible après validation/rendu ; cela complète le précédent simple contrôle de création de carte.

@@ -45,7 +45,14 @@ with sync_playwright() as pw:
         add = {"fr":"Ajouter un événement", "en":"Add an event", "vi":"Thêm sự kiện"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(add))).click(timeout=10000)
         event = {"fr":"Événement 1", "en":"Event 1", "vi":"Sự kiện 1"}[lang]
-        page.get_by_text(event, exact=True).first.wait_for(timeout=30000)
+        title = page.get_by_text(event, exact=True).first
+        title.wait_for(timeout=30000)
+        short_label = {"fr": "Description courte", "en": "Short description", "vi": "Mô tả ngắn"}[lang]
+        description_input = page.get_by_role("textbox", name=short_label, exact=True)
+        description_input.fill(f"UI check {lang}")
+        description_input.press("Tab")
+        assert page.get_by_role("textbox", name=short_label, exact=True).input_value() == f"UI check {lang}"
+        title.scroll_into_view_if_needed()
         page.screenshot(path=str(OUT / f"{lang}_{device}_event.png"), full_page=True)
         assert not errors, f"Client errors: {lang}/{device}: {errors}"
         overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
