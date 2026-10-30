@@ -635,6 +635,9 @@ if st.session_state.result is not None:
                         st.caption(T("purchase_result_explain"))
                         st.metric(T("purchase_paid"), money(purchase.down_payment + purchase.fees, q.currency))
                         st.metric(T("purchase_financing"), money(purchase.price - purchase.down_payment, q.currency))
+                        st.metric(T("purchase_monthly_payment"), money(
+                            loan_payment(purchase.price - purchase.down_payment,
+                                         purchase.loan_apr_pct, purchase.loan_years), q.currency))
                         st.metric(T("purchase_remaining"), money(float(df.new_mortgage_balance.iloc[-1]), q.currency))
                         st.caption(T("purchase_first_repayment"))
                 # Stock, monthly-flow and uncertainty plots share one chart area.
