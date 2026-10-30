@@ -254,8 +254,14 @@ with sync_playwright() as pw:
                 "tab", name=stress_tab_label, exact=True
             ).click(timeout=15000)
             page.get_by_role(
+                "spinbutton", name=risk_start_name, exact=True
+            ).first.wait_for(state="visible", timeout=20000)
+            page.get_by_role(
                 "tab", name=custom_tab, exact=True
             ).click(timeout=15000)
+            page.get_by_role(
+                "heading", name=custom_title, exact=True
+            ).first.wait_for(state="visible", timeout=20000)
             reopened_income = page.get_by_role(
                 "spinbutton", name=custom_income, exact=True).first
             reopened_income.wait_for(state="visible", timeout=15000)
