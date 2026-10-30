@@ -1,5 +1,9 @@
 # Financial Adviser
 
+**[🌐 Open the live Streamlit app](https://financial-adviser.streamlit.app/)** · [Source code](https://github.com/trungtin-dinh/financial_adviser) · [Documentation](Documentation/00_INDEX.md)
+
+[![Live Streamlit app](https://img.shields.io/badge/Live_app-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://financial-adviser.streamlit.app/)
+
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
 [![Status](https://img.shields.io/badge/status-v0.4.0_MVP-yellow)](Documentation/07_ROADMAP.md)
@@ -38,6 +42,10 @@
 - A sourced regulatory-reference catalogue that does **not** execute fiscal calculations.
 
 **Historical population statistics are not personal estimates. No median or per-capita average is silently copied into a financial plan.**
+
+## Online demonstration
+
+The public application is available at **https://financial-adviser.streamlit.app/**. Streamlit Community Cloud may put idle apps to sleep; follow its wake-up prompt if necessary. This hosted application executes on a remote server: use **synthetic data** when trying the demo, and do not enter sensitive personal finances or medical details. For public availability checks and their limits, see [Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
 
 ## Run locally
 
@@ -94,6 +102,9 @@ All design decisions, equations, official references, specification and future w
 - [Life events, inverse planning, usability and simulated-persona audit](Documentation/09_FACTEURS_DE_VIE_ET_UX.md)
 - [Responsive UI and localization audit](Documentation/10_ERGONOMIE_RESPONSIVE_ET_LANGUES.md)
 - [Statistical default profiles: research and implementation constraints](Documentation/11_PROFILS_STATISTIQUES.md)
+- [Human-centred software UX reference](Documentation/14_REFERENTIEL_ERGONOMIE.md)
+- [Prioritized usability audit](Documentation/15_AUDIT_ERGONOMIQUE_V04.md)
+- [Live application verification protocol](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md)
 
 Technical documentation remains primarily in French; interface controls, messages, charts and navigation are localized consistently in French, English or Vietnamese.
 
@@ -105,3 +116,10 @@ No project license has been selected yet. The source is visible on GitHub, but i
 
 - [Comprehensive execution plan](Documentation/12_PLAN_GLOBAL.md)
 - [Statistical data sources, compatibility and user consent](Documentation/13_REFERENCES_STATISTIQUES_V04.md)
+
+### Suggested GitHub About fields
+
+- **Description:** `Transparent financial planning simulator for France & Vietnam — Python/Streamlit, scenarios, life events and Monte Carlo.`
+- **Website:** https://financial-adviser.streamlit.app/
+
+These text suggestions are documented here because repository About metadata must be updated using GitHub repository settings, which are separate from Markdown files.

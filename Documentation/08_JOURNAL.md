@@ -1,5 +1,14 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — URL publique et démarche ergonomique
+
+- URL Streamlit communiquée par le propriétaire : https://financial-adviser.streamlit.app/ (lien ajouté au README).
+- Référentiel fondé sur NN/g, ISO 9241-210, GOV.UK et WCAG 2.2, avec audit UX priorisé.
+- Contrôle HTTPS automatique post-CI de la disponibilité publique; une réponse HTTP ne vaut pas validation complète des interactions.
+- La description et le lien « Website » dans les métadonnées GitHub nécessitent une modification du champ « About » séparément du README.
+
+
+
 ## 2026-10-30 — v0.4.0 : catalogue statistique et plan directeur
 
 - Plan d'ensemble et critères d'acceptation : `Documentation/12_PLAN_GLOBAL.md`.

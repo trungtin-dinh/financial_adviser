@@ -24,7 +24,7 @@
 | 5. Risques | Famille, enfants, aidants, incapacité, santé, perte d'emploi, événements corrélés, scénarios stochastiques | Éviter les probabilités de santé inventées ; calibrage et tests de sensibilité | Coûts déterministes disponibles, probabilités non implémentées |
 | 6. Optimisation | Objectifs multiples, leviers combinés, contraintes de trésorerie, fiscalité, allocation et compromis | Comparaison explicable, contraintes vérifiées, limites affichées | Goal seek à un levier disponible ; optimisation multi-leviers non implémentée |
 | 7. Données et maintenance | Registre versionné, import officiel, mise à jour avec contrôle, cache, différentiel entre versions, mode hors ligne | Aucune loi activée sans validation, sauvegarde de sources/version lors d'export, erreurs réseau résilientes | Observations ponctuelles World Bank + catalogue versionné ; législation dynamique non implémentée |
-| 8. Produit public | Documentation utilisateur complète FR/EN/VI, accessibilité lecteurs d'écran, vrais tests utilisateurs, confidentialité, licence, déploiement | Validation sur appareils physiques et profils variés, revue spécialiste fiscal/financier, hébergement opérationnel | GitHub CI ; déploiement Streamlit non confirmé |
+| 8. Produit public | Documentation utilisateur complète FR/EN/VI, accessibilité lecteurs d'écran, vrais tests utilisateurs, confidentialité, licence, déploiement | Validation sur appareils physiques et profils variés, revue spécialiste fiscal/financier, hébergement opérationnel | GitHub CI ; URL de déploiement https://financial-adviser.streamlit.app/ communiquée par le propriétaire. Contrôles de disponibilité/expérience réelle distincts |
 
 ## Conception des données
 
@@ -41,3 +41,9 @@ Entrée scénario > validation des hypothèses et unités > moteurs financiers P
 ## Critères de clôture généraux
 
 Un livrable n'est marqué comme terminé qu'après : liens/documentation et limites mises à jour, tests du moteur + UI verts, contrôles de cohérence des traductions, tests desktop/mobile, vérification d'absence d'écrasement involontaire, commit GitHub identifié. Les étapes dépendantes d'un compte Streamlit, d'une revue de juriste ou de participants humains demeurent signalées comme **non réalisées**.
+
+## Référentiel UX transverse (30 octobre 2026)
+
+Le [référentiel ergonomique](14_REFERENTIEL_ERGONOMIE.md) et son [audit priorisé](15_AUDIT_ERGONOMIQUE_V04.md) s'appliquent à **toutes les phases**, et non comme finition du produit. Les problèmes de fiabilité des résultats, de compréhension des hypothèses et d'absence de perte des saisies sont à corriger avant l'esthétique. Les tests sur appareils réels et avec participants restent explicitement non réalisés.
+
+L'URL publique fournie est https://financial-adviser.streamlit.app/ . Le workflow de [disponibilité HTTP](16_VERIFICATION_APPLICATION_PUBLIQUE.md) est distinct des tests fonctionnels locaux et ne certifie pas à lui seul le bon déploiement d'une version.

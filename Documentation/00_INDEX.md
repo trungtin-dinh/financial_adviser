@@ -26,6 +26,9 @@ Cette documentation distingue systématiquement :
 | [11_PROFILS_STATISTIQUES.md](11_PROFILS_STATISTIQUES.md) | Proposition de préremplissage statistique et règles de provenance |
 | [12_PLAN_GLOBAL.md](12_PLAN_GLOBAL.md) | Plan directeur : architecture, phases, dépendances et critères de validation |
 | [13_REFERENCES_STATISTIQUES_V04.md](13_REFERENCES_STATISTIQUES_V04.md) | Sources officielles FR/VN et préremplissage consentant de l'inflation |
+| [14_REFERENTIEL_ERGONOMIE.md](14_REFERENTIEL_ERGONOMIE.md) | Principes UX fondés sur ISO, NN/g, GOV.UK et WCAG, parcours et tests utilisateurs |
+| [15_AUDIT_ERGONOMIQUE_V04.md](15_AUDIT_ERGONOMIQUE_V04.md) | Risques ergonomiques priorisés, observations vs hypothèses, critères d'acceptation |
+| [16_VERIFICATION_APPLICATION_PUBLIQUE.md](16_VERIFICATION_APPLICATION_PUBLIQUE.md) | Contrôles de disponibilité du site Streamlit public après publication |
 
 ## Règles de maintenance documentaire
 
