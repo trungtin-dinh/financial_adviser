@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** socle versionné du projet, au 29 octobre 2026. **Version applicative :** v0.2.0.
+**État :** socle versionné du projet, au 29 octobre 2026. **Version applicative :** v0.3.0.
 
 Cette documentation distingue systématiquement :
 
@@ -22,6 +22,8 @@ Cette documentation distingue systématiquement :
 | [07_ROADMAP.md](07_ROADMAP.md) | Plan de développement par incréments |
 | [08_JOURNAL.md](08_JOURNAL.md) | Journal des décisions et des éléments à revoir |
 | [09_FACTEURS_DE_VIE_ET_UX.md](09_FACTEURS_DE_VIE_ET_UX.md) | Événements de vie, calcul inverse, principes UX, revue heuristique de profils simulés |
+| [10_ERGONOMIE_RESPONSIVE_ET_LANGUES.md](10_ERGONOMIE_RESPONSIVE_ET_LANGUES.md) | Tests PC/tablette/mobile et internationalisation de l'interface |
+| [11_PROFILS_STATISTIQUES.md](11_PROFILS_STATISTIQUES.md) | Proposition de préremplissage statistique et règles de provenance |
 
 ## Règles de maintenance documentaire
 

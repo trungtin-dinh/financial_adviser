@@ -1,4 +1,4 @@
-name: Python checks
+name: Python and UX checks
 on:
   push:
   pull_request:
@@ -14,5 +14,30 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Compile source
         run: python -m compileall -q app.py pages financial_adviser
-      - name: Unit tests
+      - name: Unit and UI smoke tests
         run: pytest -q
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install UI and browser dependencies
+        run: |
+          python -m pip install -e . playwright
+          python -m playwright install --with-deps chromium
+      - name: Desktop and mobile browser smoke tests
+        run: |
+          streamlit run app.py --server.headless true --server.port 8501 --server.address 127.0.0.1 > /tmp/financial_adviser_streamlit.log 2>&1 &
+          python tests/browser_smoke.py
+      - name: Upload visual review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-review-screenshots
+          path: artifacts/screenshots
+          if-no-files-found: ignore
+      - name: Report server log on failure
+        if: failure()
+        run: cat /tmp/financial_adviser_streamlit.log || true

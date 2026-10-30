@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.2.0_MVP-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.3.0_MVP-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
@@ -10,7 +10,12 @@
 
 > **Important:** This is a first usable **MVP**, not an investment adviser, tax calculator, account aggregator, or forecast of future asset returns. Default rates and income amounts are *illustrative assumptions*, not market estimates or personalized recommendations. Avoid entering confidential data in deployments you do not control.
 
-## Features in v0.2.0
+## Features in v0.3.0
+
+- **Unified display language:** interface strings, navigation and charts follow a single language (FR/EN/VI). Technical reference documents are explicitly identified as French originals.
+- **Responsive event cards:** individual life events replace the former seven-column editor; each card has date, duration, recurring costs, income change and upfront cost.
+- **Automated UX checks:** browser screenshots and overflow assertions for desktop, tablet and mobile viewports.
+
 
 - **Life events and personal disruptions:** optional dated changes to income and expenses and one-time costs, such as childcare, care obligations, unemployment or major purchases. The app does not estimate their likelihood.
 - **Goal-seeking / reverse simulation:** set target net worth and horizon, compute three separate conditional alternatives (additional net income, lower baseline spending or additional external capital) while enforcing non-negative projected cash.
@@ -37,7 +42,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Open the local address printed by Streamlit (usually `http://localhost:8501`). A modern browser is required. The app is intended primarily for desktop use; narrow screens are supported through responsive layout, but full mobile usability still requires device testing.
+Open the local address printed by Streamlit (usually `http://localhost:8501`). A modern browser is required. The app is intended primarily for desktop use; desktop/tablet/mobile viewports are covered by automated Chromium tests; physical-device evaluation remains a separate task.
 
 ### Tests
 
@@ -59,7 +64,7 @@ A public Streamlit server processes form data on the host server; local launchin
 
 ## Calculation boundaries
 
-- Taxation, social insurance, pensions, tax wrappers (PEA/PER/etc.), cross-border tax treaties and legal compliance are **not modeled** in v0.2.0. Enter income already **net** of salary-related deductions. Investment returns are modeled **before any specific investment tax or fee**.
+- Taxation, social insurance, pensions, tax wrappers (PEA/PER/etc.), cross-border tax treaties and legal compliance are **not modeled** in v0.3.0. Enter income already **net** of salary-related deductions. Investment returns are modeled **before any specific investment tax or fee**.
 - Debt represents **outstanding principal** and not a property acquisition. Enter a matching property asset only when a future real-estate module supports it; otherwise debt reduces model net worth.
 - Negative cash values indicate an **unfunded shortfall**, not an approved overdraft; overdraft costs are not calculated.
 - Life events are user-defined **deterministic scenario assumptions**, not risk probabilities; this version does not infer healthcare expenses, benefits, medical outcomes or family decisions.
@@ -80,8 +85,10 @@ All design decisions, equations, official references, specification and future w
 - [Roadmap](Documentation/07_ROADMAP.md)
 - [Decision journal](Documentation/08_JOURNAL.md)
 - [Life events, inverse planning, usability and simulated-persona audit](Documentation/09_FACTEURS_DE_VIE_ET_UX.md)
+- [Responsive UI and localization audit](Documentation/10_ERGONOMIE_RESPONSIVE_ET_LANGUES.md)
+- [Statistical default profiles: research and implementation constraints](Documentation/11_PROFILS_STATISTIQUES.md)
 
-Documentation is primarily in French; the app UI provides FR/EN/VI controls and core terminology.
+Technical documentation remains primarily in French; interface controls, messages, charts and navigation are localized consistently in French, English or Vietnamese.
 
 ## License
 

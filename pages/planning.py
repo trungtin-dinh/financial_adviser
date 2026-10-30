@@ -1,11 +1,10 @@
-"""Financial Adviser planning interface; methods and sources are separate pages."""
+"""Responsive, fully localized financial planner with simple life-event cards."""
 from __future__ import annotations
 
 import csv
 from dataclasses import replace
 from io import StringIO
 import json
-from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -13,11 +12,13 @@ import streamlit as st
 
 from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
-from financial_adviser.i18n import tr
 from financial_adviser.io import dump_plan, load_plan
-from financial_adviser.models import OneOff, LifeEvent, Plan
+from financial_adviser.models import LifeEvent, OneOff, Plan
+from financial_adviser.ui_i18n import category_label, canonical_category, t
 
-ROOT = Path(__file__).resolve().parent
+LANG = st.session_state.get("language_choice", "fr")
+T = lambda key, **args: t(LANG, key, **args)
+CATEGORIES = ("child", "health", "purchase", "unemployment", "education", "relocation", "other")
 
 
 def demo(country: str) -> Plan:
@@ -29,30 +30,125 @@ def demo(country: str) -> Plan:
     return Plan()
 
 
-def fmt(amount: float, currency: str) -> str:
-    decimals = 0 if currency == "VND" else 2
-    s = f"{amount:,.{decimals}f}".replace(",", " ")
-    return f"{s} {'₫' if currency == 'VND' else '€'}"
+def money(amount: float, currency: str) -> str:
+    digits = 0 if currency == "VND" else 2
+    return f"{amount:,.{digits}f}".replace(",", " ") + (" ₫" if currency == "VND" else " €")
 
 
-def parse_events(raw: str, years: int) -> tuple[OneOff, ...]:
+def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
     if not raw.strip():
         return ()
-    rows = list(csv.reader(StringIO(raw), skipinitialspace=True))
-    if len(rows) > 100:
-        raise ValueError("Maximum 100 events")
-    out = []
-    for i, row in enumerate(rows, start=1):
-        if not row or not any(part.strip() for part in row):
+    lines = list(csv.reader(StringIO(raw), skipinitialspace=True))
+    if len(lines) > 100:
+        raise ValueError("too many events")
+    parsed = []
+    for row in lines:
+        if not row or not any(s.strip() for s in row):
             continue
         if len(row) not in (2, 3):
-            raise ValueError(f"Line {i}: expected month,amount[,description]")
-        month = int(row[0].strip())
-        amount = float(row[1].strip())
-        event = OneOff(month=month, amount=amount,
-                       description=row[2].strip() if len(row) == 3 else "")
-        out.append(event)
-    return tuple(out)
+            raise ValueError("invalid event row")
+        parsed.append(OneOff(int(row[0].strip()), float(row[1].strip()),
+                             row[2].strip() if len(row) == 3 else ""))
+    if any(not 1 <= item.month <= years * 12 for item in parsed):
+        raise ValueError("invalid event month")
+    return tuple(parsed)
+
+
+def reset_inputs() -> None:
+    """Discard old widget values after loading another plan/country/goal solution."""
+    for key in list(st.session_state):
+        if key.startswith("field_") or key.startswith("evt_") or key.startswith("mc_"):
+            del st.session_state[key]
+    st.session_state.pop("event_drafts", None)
+    st.session_state.pop("goal_alternatives", None)
+    st.session_state.pop("goal_query", None)
+    st.session_state.pop("goal_target_input", None)
+    st.session_state.pop("goal_horizon_input", None)
+
+
+def init_events(plan: Plan) -> None:
+    if "event_drafts" not in st.session_state:
+        st.session_state.event_drafts = [
+            {"id": i + 1, "category": canonical_category(e.category), "label": e.label,
+             "first_month": e.first_month, "duration_months": e.duration_months,
+             "monthly_expense": e.monthly_expense, "monthly_income_change": e.monthly_income_change,
+             "upfront_cost": e.upfront_cost}
+            for i, e in enumerate(plan.life_events)
+        ]
+        st.session_state.event_next_id = len(st.session_state.event_drafts) + 1
+
+
+def draw_events(start_year: int, years: int, currency: str) -> tuple[LifeEvent, ...]:
+    """Editable stacked cards, stable widget keys even after deleting a card."""
+    init_events(st.session_state.plan)
+    with st.expander("👨‍👩‍👧‍👦 " + T("life_title"), expanded=bool(st.session_state.event_drafts)):
+        st.caption(T("life_help"))
+        if st.button("＋ " + T("life_add"), key="add_life_event", width="stretch"):
+            if len(st.session_state.event_drafts) >= 100:
+                st.warning(T("max_events"))
+            else:
+                eid = st.session_state.event_next_id
+                st.session_state.event_next_id += 1
+                st.session_state.event_drafts.append({"id": eid, "category": "other", "label": "",
+                    "first_month": 1, "duration_months": 1, "monthly_expense": 0.0,
+                    "monthly_income_change": 0.0, "upfront_cost": 0.0})
+                st.rerun()
+        if not st.session_state.event_drafts:
+            st.caption(T("life_empty"))
+        for index, draft in enumerate(st.session_state.event_drafts, start=1):
+            eid = draft["id"]
+            prefix = f"evt_{eid}_"
+            initial_month = max(1, int(draft["first_month"]))
+            initial_year = start_year + (initial_month - 1) // 12
+            initial_year = max(start_year, min(start_year + years - 1, initial_year))
+            initial_cal_month = (initial_month - 1) % 12 + 1
+            with st.container(border=True):
+                a, b = st.columns([3, 1], wrap=True)
+                a.markdown("**" + T("life_event", index=index) + "**")
+                if b.button("✕ " + T("life_remove"), key=prefix + "remove", width="stretch"):
+                    st.session_state.event_drafts = [x for x in st.session_state.event_drafts if x["id"] != eid]
+                    for key in list(st.session_state):
+                        if key.startswith(prefix):
+                            del st.session_state[key]
+                    st.rerun()
+                a, b = st.columns(2, wrap=True)
+                with a:
+                    category = st.selectbox(T("life_type"), CATEGORIES,
+                        index=CATEGORIES.index(draft["category"]), key=prefix + "category",
+                        format_func=lambda value: category_label(LANG, value))
+                with b:
+                    label = st.text_input(T("life_label"), value=draft["label"],
+                                          key=prefix + "label", placeholder=T("life_label_hint"))
+                y, m, d = st.columns(3, wrap=True)
+                with y:
+                    first_year = st.number_input(T("life_year"), min_value=start_year,
+                        max_value=start_year + years - 1, value=initial_year, step=1, key=prefix + "year")
+                with m:
+                    cal_month = st.selectbox(T("life_month"), list(range(1, 13)),
+                        index=initial_cal_month - 1, key=prefix + "month")
+                first_month = (int(first_year) - start_year) * 12 + int(cal_month)
+                with d:
+                    duration = st.number_input(T("life_duration"), min_value=1, max_value=720,
+                        value=max(1, int(draft["duration_months"])), step=1, key=prefix + "duration")
+                a, b, c = st.columns(3, wrap=True)
+                amount_step = 100_000.0 if currency == "VND" else 100.0
+                with a:
+                    extra = st.number_input(T("life_extra"), min_value=0.0,
+                        value=float(draft["monthly_expense"]), step=amount_step, key=prefix + "expense")
+                with b:
+                    income_change = st.number_input(T("life_income_change"),
+                        value=float(draft["monthly_income_change"]), step=amount_step, key=prefix + "income")
+                with c:
+                    upfront = st.number_input(T("life_upfront"), min_value=0.0,
+                        value=float(draft["upfront_cost"]), step=amount_step, key=prefix + "upfront")
+                draft.update(category=category, label=label, first_month=first_month,
+                             duration_months=int(duration), monthly_expense=extra,
+                             monthly_income_change=income_change, upfront_cost=upfront)
+        st.caption(T("life_summary"))
+    return tuple(LifeEvent(category=e["category"], label=e["label"].strip(),
+                    first_month=e["first_month"], duration_months=e["duration_months"],
+                    monthly_expense=e["monthly_expense"], monthly_income_change=e["monthly_income_change"],
+                    upfront_cost=e["upfront_cost"]) for e in st.session_state.event_drafts)
 
 
 if "plan" not in st.session_state:
@@ -61,331 +157,282 @@ if "result" not in st.session_state:
     st.session_state.result = None
 if "confirmed_inputs" not in st.session_state:
     st.session_state.confirmed_inputs = False
-if "pending_country" in st.session_state:
-    st.session_state.country_choice = st.session_state.pop("pending_country")
 
 with st.sidebar:
-    st.title("📈 Financial Adviser")
-    st.caption(f"v{__version__} · Educational simulator")
-    language = st.selectbox("Language / Langue / Ngôn ngữ", ["fr", "en", "vi"],
-                            key="language_choice", format_func=lambda x: {"fr": "Français", "en": "English", "vi": "Tiếng Việt"}[x])
+    st.caption(f"v{__version__}")
     if "country_choice" not in st.session_state:
         st.session_state.country_choice = st.session_state.plan.country
-    country = st.selectbox(tr(language, "country"), ["FR", "VN"],
-                           key="country_choice",
-                           format_func=lambda c: "France (EUR)" if c == "FR" else "Việt Nam (VND)")
+    if "pending_country" in st.session_state:
+        st.session_state.country_choice = st.session_state.pop("pending_country")
+    country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
+        format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
     if country != st.session_state.plan.country:
         st.session_state.plan = demo(country)
-        st.session_state.result = None
         st.session_state.confirmed_inputs = False
-        st.session_state.pop("life_events_editor", None)
-        st.session_state.pop("goal_alternatives", None)
-        st.info("Example reset for the selected currency. No automatic FX conversion.")
-    advanced = st.toggle(tr(language, "advanced"), value=False)
-    st.caption("No bank connection. Inputs are stored in the current Streamlit session; uploaded files are processed by the app server.")
+        st.session_state.result = None
+        reset_inputs()
+        st.info(T("country_note"))
+        st.rerun()
+    advanced = st.toggle(T("mode_advanced"), key="advanced_choice", value=False)
     st.divider()
-    uploaded = st.file_uploader(tr(language, "import"), type=["json"], max_upload_size=1)
-    if uploaded is not None and st.button("Load / Charger / Tải", width="stretch"):
+    uploaded = st.file_uploader(T("import"), type=["json"], max_upload_size=1)
+    if uploaded is not None and st.button(T("load"), width="stretch"):
         try:
             imported = load_plan(uploaded.getvalue())
             st.session_state.plan = imported
             st.session_state.pending_country = imported.country
-            st.session_state.result = None
             st.session_state.confirmed_inputs = True
-            st.session_state.pop("life_events_editor", None)
-            st.session_state.pop("goal_alternatives", None)
+            st.session_state.result = None
+            reset_inputs()
             st.rerun()
-        except (ValueError, KeyError, TypeError, UnicodeError, json.JSONDecodeError) as exc:
-            st.error(f"Invalid scenario: {exc}")
-    if st.button("📋 " + {"fr": "Charger un exemple", "en": "Load example", "vi": "Dùng số liệu mẫu"}.get(language, "Load example"), width="stretch"):
-        st.session_state.plan = demo(st.session_state.plan.country)
+        except (ValueError, KeyError, TypeError, UnicodeError, json.JSONDecodeError):
+            st.error(T("invalid_import"))
+    if st.button("📋 " + T("example"), width="stretch"):
+        st.session_state.plan = demo(country)
         st.session_state.confirmed_inputs = True
         st.session_state.result = None
-        st.session_state.pop("life_events_editor", None)
-        st.session_state.pop("goal_alternatives", None)
+        reset_inputs()
         st.rerun()
-    st.download_button(tr(language, "download"), data=dump_plan(st.session_state.plan),
+    st.download_button(T("export"), data=dump_plan(st.session_state.plan),
                        file_name="financial_adviser_scenario.json", mime="application/json", width="stretch")
 
-L = lambda key: tr(language, key)
 p = st.session_state.plan
 st.title("Financial Adviser")
-st.caption(L("subtitle"))
-st.info("**Simulation pédagogique / Educational simulation / Mô phỏng tham khảo.** "
-        "Les rendements et scénarios ne constituent pas des prévisions ou des conseils financiers. "
-        "No automatic tax calculations; input net income after tax. Currency amounts belong to a single currency.")
+st.caption(T("caption"))
+with st.expander("ℹ️ " + T("disclaimer_title"), expanded=False):
+    st.info(T("disclaimer"))
 
-tab_inputs, tab_results, tab_goal, tab_scenarios = st.tabs([
-    "⚙️ " + L("projection"), "📊 " + L("overview"),
-    "🎯 " + {"fr": "Objectif à atteindre", "en": "Goal seek", "vi": "Tìm cách đạt mục tiêu"}.get(language, "Goal seek"),
-    "🧭 " + L("scenario")])
+plan_tab, results_tab, goal_tab, compare_tab = st.tabs([
+    "⚙️ " + T("tab_plan"), "📊 " + T("tab_results"),
+    "🎯 " + T("tab_goal"), "🧭 " + T("tab_compare")])
 
-with tab_inputs:
-    st.subheader(L("projection"))
-    st.caption({"fr": "Saisissez les valeurs essentielles. Les autres hypothèses sont proposées et restent modifiables dans le mode avancé.",
-                "en": "Enter the essential values; optional assumptions are editable in Advanced mode.",
-                "vi": "Nhập các giá trị quan trọng; các giả định khác có thể chỉnh trong chế độ Nâng cao."}[language])
+with plan_tab:
+    st.subheader(T("basic"))
+    st.caption(T("plan_intro"))
     if not st.session_state.confirmed_inputs:
-        st.warning({"fr": "Les champs essentiels sont volontairement vides. Renseignez vos valeurs, ou chargez l'exemple via le menu latéral.",
-                    "en": "Required inputs start empty. Enter your figures, or load the sidebar example.",
-                    "vi": "Thông số bắt buộc được để trống. Hãy nhập số liệu hoặc tải ví dụ từ thanh bên."}[language])
-    with st.form("plan_form"):
-        a, b, c = st.columns(3, gap="medium")
+        st.warning(T("required_warning"))
+    a, b = st.columns(2, wrap=True)
+    step = 100_000.0 if p.currency == "VND" else 100.0
+    with a:
+        income = st.number_input(T("income") + " *", min_value=0.0,
+            value=float(p.monthly_income) if st.session_state.confirmed_inputs else None,
+            step=step, key="field_income", placeholder=T("required"))
+        expenses = st.number_input(T("expenses") + " *", min_value=0.0,
+            value=float(p.monthly_expenses) if st.session_state.confirmed_inputs else None,
+            step=step, key="field_expenses", placeholder=T("required"))
+        goal = st.number_input(T("goal") + " *", min_value=0.0,
+            value=float(p.goal) if st.session_state.confirmed_inputs else None,
+            step=step * 10, key="field_goal", placeholder=T("required"))
+        contribution = st.number_input(T("contribution"), min_value=0.0,
+            value=float(p.monthly_investment) if st.session_state.confirmed_inputs else 0.0,
+            step=step, key="field_contribution")
+    with b:
+        cash = st.number_input(T("cash"), min_value=0.0,
+            value=float(p.initial_cash) if st.session_state.confirmed_inputs else 0.0,
+            step=step * 10, key="field_cash")
+        investments = st.number_input(T("investments"), min_value=0.0,
+            value=float(p.initial_investments) if st.session_state.confirmed_inputs else 0.0,
+            step=step * 10, key="field_investments")
+        years = st.slider(T("horizon"), 1, 60, value=p.years, key="field_years")
+        start_year = st.number_input(T("start_year"), min_value=2020, max_value=2100,
+                                     value=p.start_year, step=1, key="field_start_year")
+    if income is not None and expenses is not None:
+        st.metric(T("free_cash"), money(income - expenses - loan_payment(p.loan_balance, p.loan_apr_pct, p.loan_years), p.currency))
+
+    events = draw_events(int(start_year), int(years), p.currency)
+
+    if advanced:
+        with st.expander("📐 " + T("advanced"), expanded=False):
+            a, b = st.columns(2, wrap=True)
+            with a:
+                income_growth = st.number_input(T("growth_income"), min_value=-90., max_value=200., value=float(p.income_growth_pct), step=0.5, key="field_income_growth")
+                spending_growth = st.number_input(T("growth_expenses"), min_value=-90., max_value=200., value=float(p.expense_growth_pct), step=0.5, key="field_expense_growth")
+                cash_return = st.number_input(T("cash_return"), min_value=-90., max_value=200., value=float(p.cash_return_pct), step=0.5, key="field_cash_return")
+            with b:
+                investment_return = st.number_input(T("investment_return"), min_value=-90., max_value=200., value=float(p.investment_return_pct), step=0.5, key="field_investment_return")
+                inflation = st.number_input(T("inflation"), min_value=-90., max_value=200., value=float(p.inflation_pct), step=0.5, key="field_inflation")
+                volatility = st.number_input(T("volatility"), min_value=0., max_value=100., value=float(p.investment_volatility_pct), step=1., key="field_volatility")
+        with st.expander("🏡 " + T("loan_title"), expanded=False):
+            a, b, c = st.columns(3, wrap=True)
+            with a:
+                loan = st.number_input(T("loan_balance"), min_value=0., value=float(p.loan_balance), step=step * 10, key="field_loan")
+            with b:
+                loan_rate = st.number_input(T("loan_apr"), min_value=0., max_value=100., value=float(p.loan_apr_pct), step=0.25, key="field_loan_rate")
+            with c:
+                loan_years = st.number_input(T("loan_years"), min_value=1, max_value=60, value=p.loan_years, key="field_loan_years")
+            st.caption(T("loan_hint"))
+        with st.expander("📅 " + T("extra_title"), expanded=False):
+            previous = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
+            oneoffs_text = st.text_area(T("extra_label"), value=previous,
+                help=T("extra_hint"), key="field_oneoffs")
+    else:
+        income_growth, spending_growth = p.income_growth_pct, p.expense_growth_pct
+        cash_return, investment_return = p.cash_return_pct, p.investment_return_pct
+        inflation, volatility = p.inflation_pct, p.investment_volatility_pct
+        loan, loan_rate, loan_years = p.loan_balance, p.loan_apr_pct, p.loan_years
+        oneoffs_text = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
+        st.caption(T("auto_assumptions", inflation=f"{inflation:g}", ret=f"{investment_return:g}", growth=f"{income_growth:g}"))
+    enable_mc = st.checkbox(T("simulate_mc"), value=False, disabled=not advanced, key="mc_enable")
+    if advanced and enable_mc:
+        a, b = st.columns(2, wrap=True)
         with a:
-            income = st.number_input(L("income"), min_value=0.0, value=float(p.monthly_income) if st.session_state.confirmed_inputs else None, step=100.0, placeholder="Required / Obligatoire")
-            expenses = st.number_input(L("expenses"), min_value=0.0, value=float(p.monthly_expenses) if st.session_state.confirmed_inputs else None, step=100.0, placeholder="Required / Obligatoire")
-            contribution = st.number_input(L("contribution"), min_value=0.0,
-                                           value=float(p.monthly_investment) if st.session_state.confirmed_inputs else 0.0, step=100.0)
+            n_paths = st.select_slider(T("paths"), options=[250, 500, 1000, 2000, 5000], value=1000, key="mc_paths")
         with b:
-            cash = st.number_input(L("cash"), min_value=0.0, value=float(p.initial_cash) if st.session_state.confirmed_inputs else 0.0, step=1000.0)
-            investments = st.number_input(L("investments"), min_value=0.0,
-                                          value=float(p.initial_investments) if st.session_state.confirmed_inputs else 0.0, step=1000.0)
-            goal = st.number_input(L("goal"), min_value=0.0, value=float(p.goal) if st.session_state.confirmed_inputs else None, step=1000.0, placeholder="Required / Obligatoire")
-        with c:
-            years = st.slider(L("horizon"), min_value=1, max_value=60, value=p.years)
-            year = st.number_input("Start year / Année de départ", min_value=2020, max_value=2100,
-                                   value=p.start_year, step=1)
-            st.metric("Estimated monthly free cash flow (before investment transfer)",
-                      fmt((income or 0) - (expenses or 0) - loan_payment(p.loan_balance, p.loan_apr_pct, p.loan_years), p.currency))
-        with st.expander("👨‍👩‍👧‍👦 " + {"fr": "Événements de vie et risques (facultatif)", "en": "Life events and risks (optional)", "vi": "Sự kiện cuộc sống và rủi ro (không bắt buộc)"}[language], expanded=False):
-            st.caption({"fr": "Enfant, maladie, perte d'emploi, déménagement, achat important… Chaque ligne est une hypothèse explicite, pas une probabilité médicale. Les dépenses supplémentaires sont POSITIVES ; la variation du revenu peut être négative.",
-                        "en": "Child, illness, unemployment, relocation, major purchase… Enter explicit hypothetical costs, not medical probabilities. Extra expenses are POSITIVE; income changes may be negative.",
-                        "vi": "Con cái, bệnh tật, thất nghiệp, chuyển nhà, mua sắm lớn… Điền chi phí giả định; không dự đoán xác suất bệnh. Chi thêm là số DƯƠNG; thay đổi thu nhập có thể âm."}[language])
-            event_cols = ["category", "label", "first_month", "duration_months", "monthly_expense", "monthly_income_change", "upfront_cost"]
-            event_rows = [vars(x) for x in p.life_events]
-            event_table = st.data_editor(pd.DataFrame(event_rows, columns=event_cols),
-                num_rows="dynamic", hide_index=True, width="stretch", key="life_events_editor",
-                column_config={
-                    "category": st.column_config.SelectboxColumn("Type", options=["Child / Dependent", "Health / Care", "Large purchase", "Unemployment", "Education", "Relocation", "Other"], required=True),
-                    "label": st.column_config.TextColumn("Description", required=True),
-                    "first_month": st.column_config.NumberColumn("Start month", min_value=1, max_value=720, step=1, required=True),
-                    "duration_months": st.column_config.NumberColumn("Duration (months)", min_value=1, max_value=720, step=1, required=True),
-                    "monthly_expense": st.column_config.NumberColumn("Extra monthly cost", min_value=0., step=100.),
-                    "monthly_income_change": st.column_config.NumberColumn("Monthly income change", step=100.),
-                    "upfront_cost": st.column_config.NumberColumn("Initial purchase / cost", min_value=0., step=100.)})
-            st.caption("A child or an illness is not modeled as a random forecast. Add one or more dated assumptions to compare their impact.")
-        if advanced:
-            with st.expander("📐 Hypothèses / Assumptions / Giả định", expanded=True):
-                aa, bb, cc = st.columns(3)
-                with aa:
-                    income_growth = st.number_input(L("growth_income"), min_value=-90.0, max_value=200.0,
-                                                    value=float(p.income_growth_pct), step=0.5)
-                    spending_growth = st.number_input(L("growth_expenses"), min_value=-90.0, max_value=200.0,
-                                                      value=float(p.expense_growth_pct), step=0.5)
-                with bb:
-                    cash_return = st.number_input(L("cash_return"), min_value=-90.0, max_value=200.0,
-                                                  value=float(p.cash_return_pct), step=0.5)
-                    investment_return = st.number_input(L("return"), min_value=-90.0, max_value=200.0,
-                                                        value=float(p.investment_return_pct), step=0.5)
-                with cc:
-                    inflation = st.number_input(L("inflation"), min_value=-90.0, max_value=200.0,
-                                                value=float(p.inflation_pct), step=0.5)
-                    volatility = st.number_input(L("volatility"), min_value=0.0, max_value=100.0,
-                                                 value=float(p.investment_volatility_pct), step=1.0)
-            with st.expander("🏡 Debt / Crédit / Vay", expanded=False):
-                loan = st.number_input(L("loan"), min_value=0.0, value=float(p.loan_balance), step=1000.0)
-                loan_rate = st.number_input(L("loan_rate"), min_value=0.0, max_value=100.0,
-                                            value=float(p.loan_apr_pct), step=0.25)
-                loan_years = st.number_input(L("loan_years"), min_value=1, max_value=60,
-                                             value=p.loan_years)
-                st.caption("Monthly loan payments are deducted from cash flow. Exclude these payments from ordinary expenses. Property value is not inferred.")
-            with st.expander("📅 Events / Événements / Sự kiện", expanded=False):
-                previous = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
-                events_text = st.text_area(L("events"), value=previous,
-                                           placeholder="12,-5000,car purchase\n24,2000,bonus", height=100)
-        else:
-            income_growth, spending_growth = p.income_growth_pct, p.expense_growth_pct
-            cash_return, investment_return = p.cash_return_pct, p.investment_return_pct
-            inflation, volatility = p.inflation_pct, p.investment_volatility_pct
-            loan, loan_rate, loan_years = p.loan_balance, p.loan_apr_pct, p.loan_years
-            events_text = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
-            st.caption(f"Default assumptions: inflation {inflation:g}%/year · investment return {investment_return:g}%/year · salary growth {income_growth:g}%/year. Switch to Advanced to edit them.")
-        enable_mc = st.checkbox(L("mc"), value=advanced, disabled=not advanced)
-        n_paths = st.select_slider(L("paths"), options=[250, 500, 1000, 2000, 5000], value=1000,
-                                   disabled=not (advanced and enable_mc))
-        seed = st.number_input(L("seed"), min_value=0, max_value=2**31 - 1, value=42,
-                               disabled=not (advanced and enable_mc))
-        run = st.form_submit_button("▶ " + L("run"), type="primary", width="stretch")
-    if run:
+            seed = st.number_input(T("seed"), min_value=0, max_value=2**31 - 1, value=42, key="mc_seed")
+    else:
+        n_paths, seed = 1000, 42
+    if st.button("▶ " + T("run"), type="primary", width="stretch", key="run_projection"):
         try:
             if income is None or expenses is None or goal is None:
-                raise ValueError("Please fill net income, monthly spending and target. / Renseignez les champs obligatoires.")
-            life_events = []
-            for row in event_table.to_dict("records"):
-                if not row.get("category") or not row.get("label"):
-                    raise ValueError("Each life event needs a category and description.")
-                def number(key, default=0.):
-                    v = row.get(key)
-                    return default if v is None or pd.isna(v) else float(v)
-                life_events.append(LifeEvent(category=str(row["category"]), label=str(row["label"]),
-                    first_month=int(number("first_month")), duration_months=int(number("duration_months")),
-                    monthly_expense=number("monthly_expense"),
-                    monthly_income_change=number("monthly_income_change"), upfront_cost=number("upfront_cost")))
-            if len(life_events) > 100:
-                raise ValueError("Maximum 100 life events")
-            new_plan = Plan(country=p.country, currency=p.currency, start_year=int(year), years=years,
-                            initial_cash=cash, initial_investments=investments,
-                            monthly_income=income, monthly_expenses=expenses, monthly_investment=contribution,
-                            income_growth_pct=income_growth, expense_growth_pct=spending_growth,
-                            cash_return_pct=cash_return, investment_return_pct=investment_return,
-                            investment_volatility_pct=volatility, inflation_pct=inflation,
-                            loan_balance=loan, loan_apr_pct=loan_rate, loan_years=int(loan_years),
-                            goal=goal, one_offs=parse_events(events_text, years),
-                            life_events=tuple(life_events))
-            new_plan.validate()
-            with st.spinner("Calculs en cours / Running simulations…"):
-                df = project(new_plan)
-                mc = monte_carlo(new_plan, n_paths=n_paths, seed=int(seed)) if enable_mc else None
-            st.session_state.plan = new_plan
-            st.session_state.confirmed_inputs = True
-            st.session_state.pop("goal_alternatives", None)
-            st.session_state.result = {"df": df, "mc": mc, "plan": new_plan}
-            st.success("✓ Projection terminée. Open the Results tab to inspect the charts and exports.")
-        except (ValueError, OverflowError, ZeroDivisionError) as exc:
-            st.error(f"Invalid inputs: {exc}")
+                st.error(T("required_error"))
+            elif any(not e.label or not 1 <= e.first_month or
+                     e.first_month + e.duration_months - 1 > years * 12 for e in events):
+                st.error(T("event_error"))
+            else:
+                new_plan = Plan(country=p.country, currency=p.currency, start_year=int(start_year), years=int(years),
+                    initial_cash=float(cash), initial_investments=float(investments),
+                    monthly_income=float(income), monthly_expenses=float(expenses), monthly_investment=float(contribution),
+                    income_growth_pct=income_growth, expense_growth_pct=spending_growth,
+                    cash_return_pct=cash_return, investment_return_pct=investment_return,
+                    investment_volatility_pct=volatility, inflation_pct=inflation,
+                    loan_balance=loan, loan_apr_pct=loan_rate, loan_years=int(loan_years),
+                    goal=float(goal), one_offs=parse_oneoffs(oneoffs_text, years), life_events=events)
+                new_plan.validate()
+                with st.spinner(T("running")):
+                    result = project(new_plan)
+                    mc = monte_carlo(new_plan, n_paths=int(n_paths), seed=int(seed)) if advanced and enable_mc else None
+                st.session_state.plan = new_plan
+                st.session_state.confirmed_inputs = True
+                st.session_state.result = {"df": result, "mc": mc, "plan": new_plan}
+                st.session_state.pop("goal_alternatives", None)
+                st.success(T("done"))
+        except (ValueError, OverflowError, ZeroDivisionError, TypeError):
+            st.error(T("invalid"))
 
-with tab_results:
+with results_tab:
     result = st.session_state.result
     if result is None:
-        st.info("Run a projection in the first tab to see results.")
+        st.info(T("no_result"))
     else:
-        q: Plan = result["plan"]
-        df: pd.DataFrame = result["df"]
+        q, df = result["plan"], result["df"]
         last = df.iloc[-1]
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("Net worth / Patrimoine net", fmt(float(last.net_worth), q.currency))
-        k2.metric("Purchasing-power adjusted", fmt(float(last.net_worth_real), q.currency))
-        k3.metric("Remaining loan", fmt(float(last.loan_balance), q.currency))
-        k4.metric("Goal reached (deterministic)", "Yes / Oui" if last.net_worth >= q.goal else "No / Non")
-        if (df["cash"] < 0).any():
-            st.warning("The cash balance becomes negative. This models an **unfunded cash shortfall**, not an authorized overdraft; borrowing costs are not included.")
+        a, b = st.columns(2, wrap=True)
+        c, d = st.columns(2, wrap=True)
+        a.metric(T("net_worth"), money(float(last.net_worth), q.currency))
+        b.metric(T("net_worth_real"), money(float(last.net_worth_real), q.currency))
+        c.metric(T("remaining_loan"), money(float(last.loan_balance), q.currency))
+        d.metric(T("goal_reached"), T("yes") if last.net_worth >= q.goal else T("no"))
+        if (df.cash < 0).any():
+            st.warning(T("negative_cash"))
         fig = go.Figure()
-        for name, color in [("net_worth", "#145DA0"), ("net_worth_real", "#d97706")]:
-            fig.add_trace(go.Scatter(x=df["year"], y=df[name], mode="lines",
-                                     name={"net_worth": "Nominal net worth", "net_worth_real": "Real net worth"}[name],
-                                     line=dict(color=color)))
-        fig.add_hline(y=q.goal, line_dash="dash", annotation_text="Target (nominal)")
-        fig.update_layout(title="Net worth projection (monthly calculation)", xaxis_title="Year",
-                          yaxis_title=q.currency, height=430, margin=dict(l=20, r=20, t=60, b=20),
-                          legend=dict(orientation="h", y=-0.25))
+        for field, label, color in [("net_worth", "net_worth", "#145DA0"),
+                                    ("net_worth_real", "net_worth_real", "#d97706")]:
+            fig.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label), line=dict(color=color)))
+        fig.add_hline(y=q.goal, line_dash="dash", annotation_text=T("target_name"))
+        fig.update_layout(title=T("chart_wealth"), xaxis_title=T("year"), yaxis_title=q.currency,
+                          height=410, margin=dict(l=10, r=10, t=60, b=20), legend=dict(orientation="h", y=-0.25))
         st.plotly_chart(fig, width="stretch")
-        components = go.Figure()
-        for key, label in [("cash", "Cash"), ("investments", "Investments"), ("loan_balance", "Outstanding loan")]:
-            components.add_trace(go.Scatter(x=df["year"], y=df[key], name=label, mode="lines"))
-        components.update_layout(title="Assets and liabilities", xaxis_title="Year", yaxis_title=q.currency,
-                                 height=350, margin=dict(l=20, r=20, t=60, b=20))
-        st.plotly_chart(components, width="stretch")
+        fig2 = go.Figure()
+        for field, label in [("cash", "cash_name"), ("investments", "investments_name"), ("loan_balance", "loan_name")]:
+            fig2.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label)))
+        fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
+                           height=350, margin=dict(l=10, r=10, t=60, b=20))
+        st.plotly_chart(fig2, width="stretch")
         if result["mc"] is not None:
             mc = result["mc"]
-            st.subheader("Monte Carlo — illustrative distribution")
-            st.caption(f"{mc.sample_paths:,} independent simulated paths; seed={mc.seed}. "
-                       "10th–90th percentile band. Normal IID investment returns; inflation and cash returns fixed. No taxes, fees, or asset correlations.")
-            mcf = go.Figure()
+            st.subheader(T("mc_title"))
+            st.caption(T("mc_hint", paths=mc.sample_paths, seed=mc.seed))
             xs = q.start_year + mc.months / 12
-            mcf.add_trace(go.Scatter(x=xs, y=mc.p90, mode="lines", line=dict(width=0),
-                                     showlegend=False, hoverinfo="skip"))
-            mcf.add_trace(go.Scatter(x=xs, y=mc.p10, mode="lines", fill="tonexty",
-                                     fillcolor="rgba(20,93,160,0.17)", line=dict(width=0),
-                                     name="P10–P90"))
-            mcf.add_trace(go.Scatter(x=xs, y=mc.p50, mode="lines", name="Median P50",
-                                     line=dict(color="#145DA0", width=3)))
-            mcf.update_layout(height=390, xaxis_title="Year", yaxis_title=q.currency)
-            st.plotly_chart(mcf, width="stretch")
-            mm1, mm2 = st.columns(2)
-            mm1.metric("P(final net worth ≥ target)", f"{mc.probability_goal:.1%}")
-            mm2.metric("P(cash shortfall at least once)", f"{mc.probability_negative_cash:.1%}")
-        yearly = df.iloc[::12].copy()
-        st.dataframe(yearly[["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
-                     .round(2), hide_index=True, width="stretch")
-        st.download_button("⬇ Export monthly CSV", data=df.to_csv(index=False).encode("utf-8"),
-                           file_name="financial_projection_monthly.csv", mime="text/csv")
-        st.caption("Tax, pension, asset-specific rules and real estate valuation are not yet calculated. Results are estimates only.")
+            fan = go.Figure()
+            fan.add_trace(go.Scatter(x=xs, y=mc.p90, line=dict(width=0), showlegend=False, hoverinfo="skip"))
+            fan.add_trace(go.Scatter(x=xs, y=mc.p10, fill="tonexty", line=dict(width=0), name="P10–P90",
+                                     fillcolor="rgba(20,93,160,0.17)"))
+            fan.add_trace(go.Scatter(x=xs, y=mc.p50, name=T("median"), line=dict(color="#145DA0", width=3)))
+            fan.update_layout(height=360, xaxis_title=T("year"), yaxis_title=q.currency)
+            st.plotly_chart(fan, width="stretch")
+            a, b = st.columns(2, wrap=True)
+            a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
+            b.metric(T("cash_risk"), f"{mc.probability_negative_cash:.1%}")
+        st.subheader(T("yearly"))
+        yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
+        st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),
+            "investments": T("investments_name"), "loan_balance": T("loan_name"),
+            "net_worth": T("net_worth"), "net_worth_real": T("net_worth_real")}).round(2),
+            hide_index=True, width="stretch")
+        st.download_button(T("export_csv"), df.to_csv(index=False).encode("utf-8"),
+                           "financial_projection_monthly.csv", mime="text/csv")
+        st.caption(T("result_limit"))
 
-with tab_scenarios:
+with goal_tab:
     if not st.session_state.confirmed_inputs:
-        st.info("Enter the essential fields in Plan first, or load the explicit example.")
+        st.info(T("no_result"))
     else:
-        st.subheader("What-if comparison / Comparaison des scénarios")
-        st.caption("Return shocks and life-event stress variants are hypothetical sensitivity tests, NOT probability bounds.")
-        base = st.session_state.plan
-        shock = st.slider("Return shock (+/− percentage points per year)", min_value=0.5,
-                          max_value=10.0, value=3.0, step=0.5)
-        rows = []
-        compare_fig = go.Figure()
-        for label, delta in [("Lower", -shock), ("Baseline", 0), ("Higher", shock)]:
-            altered = replace(base, investment_return_pct=max(-98.0, min(200.0, base.investment_return_pct + delta)))
-            sdf = project(altered)
-            rows.append({"Scenario": label, "Annual investment return (%)": altered.investment_return_pct,
-                         "Final net worth": float(sdf.net_worth.iloc[-1]), "Goal reached": bool(sdf.net_worth.iloc[-1] >= altered.goal)})
-            compare_fig.add_trace(go.Scatter(x=sdf.year, y=sdf.net_worth,
-                                             mode="lines", name=label))
-        compare_fig.update_layout(height=370, xaxis_title="Year", yaxis_title=base.currency)
-        if base.life_events:
-            for label, alternative in [
-                ("Without modeled life events", replace(base, life_events=())),
-                ("Life event costs +25%", replace(base, life_events=tuple(
-                    replace(e, monthly_expense=e.monthly_expense * 1.25,
-                            upfront_cost=e.upfront_cost * 1.25) for e in base.life_events)))]:
-                sdf = project(alternative)
-                rows.append({"Scenario": label, "Annual investment return (%)": alternative.investment_return_pct,
-                             "Final net worth": float(sdf.net_worth.iloc[-1]),
-                             "Goal reached": bool(sdf.net_worth.iloc[-1] >= alternative.goal)})
-                compare_fig.add_trace(go.Scatter(x=sdf.year, y=sdf.net_worth, mode="lines", name=label))
-        st.plotly_chart(compare_fig, width="stretch")
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-        st.caption("The scenario comparison recomputes from the last saved/loaded plan; changes to the form must be submitted first.")
-
-with tab_goal:
-    if not st.session_state.confirmed_inputs:
-        st.info("Complete your initial plan first, or explicitly load the example from the sidebar.")
-    else:
-        st.subheader({"fr": "Partir d'un résultat souhaité", "en": "Work backward from your goal", "vi": "Tính ngược từ mục tiêu"}[language])
-        st.caption({"fr": "Modifiez la sortie souhaitée : l'application propose plusieurs modifications INDÉPENDANTES des entrées. Les propositions doivent également éviter toute trésorerie négative.",
-                    "en": "Change the desired output: compare INDEPENDENT input changes, each constrained to avoid negative cash.",
-                    "vi": "Đặt kết quả mong muốn; ứng dụng tính các thay đổi đầu vào ĐỘC LẬP, đồng thời tránh thiếu hụt tiền mặt."}[language])
+        st.subheader(T("tab_goal"))
+        st.caption(T("goal_intro"))
         reference = st.session_state.plan
-        c1, c2 = st.columns(2)
-        with c1:
-            target = st.number_input({"fr": "Patrimoine net nominal ciblé", "en": "Nominal net worth target", "vi": "Mục tiêu tài sản ròng danh nghĩa"}[language], min_value=0., value=float(reference.goal), step=1000.)
-        with c2:
-            latest_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
-                               + [e.month for e in reference.one_offs])
-            min_years = max(1, (latest_event + 11) // 12)
-            hgoal = st.slider({"fr": "Horizon cible (années)", "en": "Target horizon (years)", "vi": "Số năm để đạt mục tiêu"}[language], min_years, 60, max(min_years, reference.years))
-        if st.button({"fr": "Calculer les moyens nécessaires", "en": "Find feasible alternatives", "vi": "Tính các phương án khả thi"}[language], type="primary", width="stretch"):
+        a, b = st.columns(2, wrap=True)
+        with a:
+            target = st.number_input(T("goal_target"), min_value=0.0, value=float(reference.goal),
+                                      step=1000.0, key="goal_target_input")
+        with b:
+            last_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
+                             + [e.month for e in reference.one_offs])
+            min_years = max(1, (last_event + 11) // 12)
+            horizon = st.slider(T("goal_years"), min_years, 60, max(min_years, reference.years),
+                                key="goal_horizon_input")
+        if st.button(T("goal_calculate"), type="primary", width="stretch"):
             try:
-                alternatives = solve_goal(reference, float(target), hgoal)
-                st.session_state.goal_alternatives = alternatives
-                st.session_state.goal_query = (reference, float(target), int(hgoal))
-            except (ValueError, OverflowError) as exc:
-                st.error(str(exc))
+                st.session_state.goal_alternatives = solve_goal(reference, float(target), int(horizon))
+                st.session_state.goal_query = (reference, float(target), int(horizon))
+            except (ValueError, OverflowError):
+                st.error(T("invalid"))
         if "goal_alternatives" in st.session_state:
-            if st.session_state.get("goal_query") != (reference, float(target), int(hgoal)):
-                st.info("Inputs have changed. Click 'Find feasible alternatives' to refresh these estimates.")
-            alternatives = st.session_state.goal_alternatives
-            titles = {
-                "income": {"fr": "Revenu net mensuel supplémentaire", "en": "Extra net monthly income", "vi": "Thu nhập ròng tăng mỗi tháng"},
-                "expenses": {"fr": "Réduction des dépenses mensuelles", "en": "Monthly spending reduction", "vi": "Giảm chi tiêu mỗi tháng"},
-                "capital": {"fr": "Apport initial externe", "en": "External initial capital", "vi": "Vốn bổ sung ban đầu"},
-            }
-            for i, option in enumerate(alternatives):
+            stale = st.session_state.get("goal_query") != (reference, float(target), int(horizon))
+            if stale:
+                st.warning(T("goal_stale"))
+            for idx, solution in enumerate(st.session_state.goal_alternatives):
                 with st.container(border=True):
-                    st.markdown("**" + titles[option.lever][language] + "**")
-                    if not option.feasible:
-                        st.warning({"fr": "Non réalisable avec ce seul levier", "en": "Not feasible with this lever alone", "vi": "Không khả thi chỉ với phương án này"}[language])
-                        st.caption(option.explanation)
+                    st.markdown("**" + T("goal_" + solution.lever) + "**")
+                    if not solution.feasible:
+                        st.warning(T("goal_unfeasible"))
                     else:
-                        st.metric("Required / Requis", fmt(option.amount, reference.currency))
-                        preview = project(option.scenario)
-                        st.caption(f"Result: {fmt(float(preview.net_worth.iloc[-1]), reference.currency)} · Minimum cash: {fmt(float(preview.cash.min()), reference.currency)}")
-                        if st.button({"fr": "Utiliser ce scénario", "en": "Use this scenario", "vi": "Sử dụng phương án"}[language], key=f"apply_solution_{i}",
-                                     disabled=st.session_state.get("goal_query") != (reference, float(target), int(hgoal))):
-                            st.session_state.plan = option.scenario
+                        st.metric(T("goal_required"), money(solution.amount, reference.currency))
+                        projection = project(solution.scenario)
+                        st.caption(f"{T('goal_result')}: {money(float(projection.net_worth.iloc[-1]), reference.currency)}"
+                                   f" · {T('goal_min_cash')}: {money(float(projection.cash.min()), reference.currency)}")
+                        if st.button(T("goal_apply"), key=f"solution_{idx}", disabled=stale, width="stretch"):
+                            st.session_state.plan = solution.scenario
                             st.session_state.confirmed_inputs = True
-                            st.session_state.result = {"df": preview, "mc": None, "plan": option.scenario}
-                            del st.session_state.goal_alternatives
-                            st.session_state.pop("life_events_editor", None)
+                            st.session_state.result = {"df": projection, "mc": None, "plan": solution.scenario}
+                            reset_inputs()
                             st.rerun()
-            st.caption({"fr": "Les trois options sont séparées, non cumulatives. Les rendements, la fiscalité et les probabilités d'événements ne sont pas optimisés.",
-                        "en": "Alternatives are separate, not additive. Market returns, taxes and event probabilities are not optimized.",
-                        "vi": "Các phương án độc lập, không cộng dồn. Không tối ưu lợi suất thị trường, thuế hay xác suất sự kiện."}[language])
+            st.caption(T("goal_disclaimer"))
+
+with compare_tab:
+    if not st.session_state.confirmed_inputs:
+        st.info(T("no_result"))
+    else:
+        st.subheader(T("tab_compare"))
+        st.caption(T("compare_intro"))
+        base = st.session_state.plan
+        shock = st.slider(T("return_shock"), min_value=0.5, max_value=10.0, value=3.0, step=0.5)
+        comparison = go.Figure()
+        rows = []
+        scenarios = [(T("scenario_lower"), -shock, base), (T("scenario_base"), 0., base),
+                     (T("scenario_higher"), shock, base)]
+        if base.life_events:
+            scenarios += [(T("scenario_no_events"), 0., replace(base, life_events=())),
+                          (T("scenario_events_more"), 0., replace(base, life_events=tuple(
+                              replace(e, monthly_expense=e.monthly_expense * 1.25,
+                                      upfront_cost=e.upfront_cost * 1.25) for e in base.life_events)))]
+        for name, delta, scenario in scenarios:
+            scenario = replace(scenario, investment_return_pct=max(-98., min(200., scenario.investment_return_pct + delta)))
+            calculated = project(scenario)
+            wealth = float(calculated.net_worth.iloc[-1])
+            rows.append({T("scenario_col"): name, T("return_col"): scenario.investment_return_pct,
+                         T("final_col"): wealth, T("reached_col"): T("yes") if wealth >= scenario.goal else T("no")})
+            comparison.add_trace(go.Scatter(x=calculated.year, y=calculated.net_worth, mode="lines", name=name))
+        comparison.update_layout(height=370, xaxis_title=T("year"), yaxis_title=base.currency)
+        st.plotly_chart(comparison, width="stretch")
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+        st.caption(T("compare_stale"))

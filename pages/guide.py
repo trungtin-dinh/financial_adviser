@@ -1,23 +1,32 @@
-"""Browsable documentation isolated from the financial input forms."""
+"""Reference documents: full French sources, with complete localized navigation."""
 from pathlib import Path
 import streamlit as st
-from financial_adviser.i18n import tr
+from financial_adviser.ui_i18n import t
 
 ROOT = Path(__file__).resolve().parent.parent
 lang = st.session_state.get("language_choice", "fr")
-st.title("📖 " + tr(lang, "docs"))
-st.caption("The complete and versioned technical documentation remains in the GitHub Documentation/ folder.")
-for name, label in [
-    ("01_CAHIER_DES_CHARGES.md", "Requirements / Cahier des charges"),
-    ("02_MODELES_MATHEMATIQUES.md", "Mathematical models / Équations"),
-    ("03_SOURCES_ET_REGLES.md", "Source provenance / Sources officielles"),
-    ("04_ARCHITECTURE.md", "Architecture"),
-    ("05_BENCHMARK.md", "Existing software / Étude comparative"),
-    ("06_QUALITE_ET_LIMITES.md", "Limitations & privacy / Limites"),
-    ("07_ROADMAP.md", "Roadmap / Feuille de route"),
-    ("08_JOURNAL.md", "Decisions / Journal"),
-    ("09_FACTEURS_DE_VIE_ET_UX.md", "Life events, goals & user review / Événements et UX"),
-]:
-    with st.expander(label, expanded=False):
-        st.markdown((ROOT / "Documentation" / name).read_text(encoding="utf-8"))
-st.link_button("Open full repository documentation", "https://github.com/trungtin-dinh/financial_adviser/tree/main/Documentation")
+st.title("📖 " + t(lang, "nav_guide"))
+st.caption(t(lang, "guide_caption") if lang == "fr" else t(lang, "guide_language_note"))
+
+DOCS = [
+    ("01_CAHIER_DES_CHARGES.md", "guide_requirements"),
+    ("02_MODELES_MATHEMATIQUES.md", "guide_math"),
+    ("03_SOURCES_ET_REGLES.md", "guide_provenance"),
+    ("04_ARCHITECTURE.md", "guide_arch"),
+    ("05_BENCHMARK.md", "guide_bench"),
+    ("06_QUALITE_ET_LIMITES.md", "guide_limits"),
+    ("07_ROADMAP.md", "guide_roadmap"),
+    ("08_JOURNAL.md", "guide_journal"),
+    ("09_FACTEURS_DE_VIE_ET_UX.md", "guide_life"),
+]
+if lang == "fr":
+    for filename, key in DOCS:
+        with st.expander(t(lang, key), expanded=False):
+            st.markdown((ROOT / "Documentation" / filename).read_text(encoding="utf-8"))
+else:
+    st.info(t(lang, "guide_summary"))
+    for filename, key in DOCS:
+        st.link_button(t(lang, key),
+                       f"https://github.com/trungtin-dinh/financial_adviser/blob/main/Documentation/{filename}",
+                       width="stretch")
+st.link_button(t(lang, "guide_link"), "https://github.com/trungtin-dinh/financial_adviser/tree/main/Documentation")
