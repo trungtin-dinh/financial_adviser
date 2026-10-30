@@ -2,7 +2,7 @@ name: Public Streamlit availability
 
 on:
   workflow_run:
-    workflows: ["Python checks"]
+    workflows: ["Python and UX checks"]
     types: [completed]
     branches: [main]
   workflow_dispatch:
