@@ -205,7 +205,7 @@ Economic dependencies and personal circumstances are only partially represented.
 
 **Sensitivity:** compare the central investment-return assumption with a lower and a higher one. A two-percentage-point change could mean testing 5% against 3% and 7% annually. These cases have no assigned likelihood.
 
-**Stress tests:** apply **one selected shock at a time** (temporary lost income, unexpected expense, help for a relative…) to the baseline. Examine both the change in final net worth **and** the lowest cash balance. These tests are not combined with each other or silently added to the current scenario.
+**Stress tests:** apply **one selected shock at a time** (temporary lost income, unexpected expense, help for a relative…) to the baseline. Examine both the change in final net worth **and** the lowest cash balance. These tests are not combined with each other or silently added to the current scenario. Set a start month and compare the baseline and stress cash trajectories, the first deficit month, the duration of negative cash and the scenario's greatest funding gap. Shock costs are illustrative amounts derived from the entered budget. An already-negative baseline is identified separately. **A simulated shortfall does not imply access to overdraft or credit.**
 
 **Monte Carlo:** monthly investment returns vary randomly around a selected average with an assumed volatility. **P10, P50 and P90** describe the **simulated nominal-net-worth distribution** at each date. For example, P10 is the amount below which 10% of simulated trajectories fall at that date. These are not guarantees or individual forecasts.
 

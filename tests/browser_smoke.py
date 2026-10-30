@@ -136,6 +136,20 @@ with sync_playwright() as pw:
             cash_curve.locator("xpath=ancestor::label[1]").click(timeout=15000)
             assert cash_curve.is_checked(), "Chart curve cannot be enabled"
             page.screenshot(path=str(OUT / f"{lang}_{device}_chart_controls.png"), full_page=True)
+            # Check the risk dashboard is usable after an actual projection.
+            page.keyboard.press("Escape")
+            risk_start_name = {
+                "fr": "Début du choc (mois de projection)",
+                "vi": "Bắt đầu cú sốc (tháng dự phóng)",
+            }[lang]
+            stress_start = page.get_by_role(
+                "spinbutton", name=risk_start_name, exact=True).first
+            stress_start.wait_for(state="visible", timeout=15000)
+            stress_start.fill("4", timeout=15000)
+            stress_start.press("Tab")
+            assert stress_start.input_value() == "4", (
+                f"Stress start month did not update: {lang}/{device}")
+            page.screenshot(path=str(OUT / f"{lang}_{device}_stress_controls.png"), full_page=True)
             bb, rb = basic_heading.bounding_box(), results_heading.bounding_box()
             assert bb and rb
             if width >= 1024:

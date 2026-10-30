@@ -13,14 +13,15 @@ from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
 from financial_adviser.charts import (
     DEFAULT_WEALTH_SERIES, WEALTH_SERIES, comparison_figure, event_markers,
-    household_figure, overlay_event_markers, uncertainty_figure, wealth_figure,
+    household_figure, overlay_event_markers, stress_liquidity_figure,
+    uncertainty_figure, wealth_figure,
 )
 from financial_adviser.comparisons import build_comparisons, minimum_comparison_years
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
 from financial_adviser.session_compat import normalize_plan
-from financial_adviser.scenarios import PRESET_IDS, proposed_event, stress_impact
+from financial_adviser.scenarios import PRESET_IDS, evaluate_stresses, proposed_event
 from financial_adviser.ui_i18n import category_label, canonical_category, t
 
 LANG = st.session_state.get("language_choice", "fr")
@@ -406,6 +407,7 @@ def render_comparison_tab(base: Plan) -> None:
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
     st.caption(T("compare_horizon_disclaimer"))
 
+    st.divider()
     st.subheader(T("stress_title"))
     st.caption(T("stress_explanation"))
     stress_keys = st.multiselect(
@@ -414,21 +416,94 @@ def render_comparison_tab(base: Plan) -> None:
         format_func=lambda key: T("preset_" + key),
         key="stress_selection",
     )
+    max_month = int(horizon) * 12
+    if st.session_state.get("stress_start_month", 1) > max_month:
+        st.session_state["stress_start_month"] = 1
+    start_month = st.number_input(
+        T("stress_start_month"), min_value=1, max_value=max_month,
+        value=1, step=1, key="stress_start_month",
+        help=T("stress_start_help"),
+    )
     if stress_keys:
-        # Same selected horizon, no cross-horizon stress results.
         selected_plan = replace(base, years=int(horizon))
-        stress_rows = []
-        for key in stress_keys:
-            impact = stress_impact(selected_plan, key)
-            stress_rows.append({
-                T("stress_scenario"): T("preset_" + key),
-                T("stress_delta"): money(impact.terminal_delta, base.currency),
-                T("stress_low_cash"): money(impact.lowest_cash, base.currency),
-                T("stress_negative_cash"): T("yes") if impact.liquidity_breach else T("no"),
-            })
-        st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
+        evaluations = evaluate_stresses(
+            selected_plan, tuple(stress_keys), int(start_month))
+        if st.session_state.get("stress_focus_selected") not in (None, *stress_keys):
+            st.session_state.pop("stress_focus_selected", None)
+        focus_key = st.selectbox(
+            T("stress_focus"), stress_keys,
+            format_func=lambda key: T("preset_" + key),
+            key="stress_focus_selected",
+        )
+        focused = next(e for e in evaluations if e.impact.key == focus_key)
+        impacted_event = focused.impact.event
+        start_year = selected_plan.start_year + (impacted_event.first_month - 1) // 12
+        start_calendar_month = (impacted_event.first_month - 1) % 12 + 1
+        st.caption(T("stress_event_window",
+                     start=f"{start_year}-{start_calendar_month:02d}",
+                     months=impacted_event.duration_months))
+        a, b = st.columns(2, wrap=True)
+        a.metric(T("stress_delta"),
+                 money(focused.impact.terminal_delta, selected_plan.currency))
+        b.metric(T("stress_peak_need"),
+                 money(focused.peak_funding_need, selected_plan.currency),
+                 help=T("stress_peak_need_help"))
+        if focused.first_deficit_month is None:
+            st.info(T("stress_no_deficit"))
+        else:
+            first = focused.first_deficit_month
+            first_year = selected_plan.start_year + (first - 1) // 12
+            first_calendar_month = (first - 1) % 12 + 1
+            st.warning(T(
+                "stress_deficit_detected",
+                date=f"{first_year}-{first_calendar_month:02d}",
+                count=focused.deficit_months))
+        if focused.baseline_funding_need > 0:
+            st.info(T("stress_reference_already_negative",
+                      amount=money(focused.baseline_funding_need,
+                                   selected_plan.currency)))
+        st.plotly_chart(
+            stress_liquidity_figure(
+                focused, selected_plan.start_year, selected_plan.currency, T),
+            width="stretch", key="stress_cash_trajectories",
+            config={"displaylogo": False, "scrollZoom": False},
+        )
+        st.caption(T("stress_chart_explanation"))
+        with st.expander(T("stress_assumptions_title"), expanded=False):
+            st.caption(T("stress_assumptions_note"))
+            st.write(T("stress_assumption_upfront",
+                       amount=money(impacted_event.upfront_cost,
+                                    selected_plan.currency)))
+            st.write(T("stress_assumption_expense",
+                       amount=money(impacted_event.monthly_expense,
+                                    selected_plan.currency)))
+            st.write(T("stress_assumption_income",
+                       amount=money(impacted_event.monthly_income_change,
+                                    selected_plan.currency)))
+            st.caption(T("stress_extra_event_warning"))
+        with st.expander(T("stress_details_title"), expanded=False):
+            stress_rows = []
+            for evaluation in evaluations:
+                first = evaluation.first_deficit_month
+                first_date = (f"{selected_plan.start_year + (first - 1) // 12}-"
+                              f"{(first - 1) % 12 + 1:02d}") if first else T("not_applicable")
+                stress_rows.append({
+                    T("stress_scenario"): T("preset_" + evaluation.impact.key),
+                    T("stress_delta"): money(evaluation.impact.terminal_delta,
+                                             selected_plan.currency),
+                    T("stress_low_cash"): money(evaluation.impact.lowest_cash,
+                                               selected_plan.currency),
+                    T("stress_peak_need"): money(evaluation.peak_funding_need,
+                                                selected_plan.currency),
+                    T("stress_first_deficit"): first_date,
+                    T("stress_deficit_months"): evaluation.deficit_months,
+                    T("stress_new_deficit_months"): evaluation.newly_negative_months,
+                })
+            st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
         st.caption(T("compare_stress_horizon", years=horizon))
         st.caption(T("stress_disclaimer"))
+    else:
+        st.info(T("stress_select_one"))
 
 
 if "plan" not in st.session_state:

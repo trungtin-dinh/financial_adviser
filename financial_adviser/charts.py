@@ -277,3 +277,41 @@ def comparison_figure(cases: Iterable[object], start_year: int, currency: str,
         y=goal, line=dict(color="#6B7280", dash="dot", width=1.1),
     )
     return fig
+
+
+
+def stress_liquidity_figure(evaluation: object, start_year: int,
+                            currency: str,
+                            translate: Callable[[str], str]) -> go.Figure:
+    """Compare baseline and stressed *cash* without implying likelihood.
+
+    Only the stressed scenario's additional life event is shaded in time;
+    the faint region below zero represents an unfunded shortfall, not debt
+    automatically available to the household.
+    """
+    base = evaluation.baseline
+    stressed = evaluation.stressed
+    if len(base) != len(stressed) or not base.month.equals(stressed.month):
+        raise ValueError("Stress and baseline must share the same months")
+    labels = _month_labels(base, start_year, translate)
+    fig = go.Figure()
+    _line(fig, base, base.cash, translate("scenario_base"),
+          "#0072B2", labels, currency, width=2.8)
+    _line(fig, stressed, stressed.cash,
+          translate("preset_" + evaluation.impact.key), "#D55E00",
+          labels, currency, dash="dash", width=2.8)
+    _axis(fig, base, start_year, currency, translate("year"))
+    fig.add_hline(y=0, line=dict(color="#6B7280", dash="dot", width=1.2))
+    lowest = min(float(base.cash.min()), float(stressed.cash.min()))
+    if lowest < 0:
+        fig.add_hrect(
+            y0=lowest * 1.04, y1=0,
+            fillcolor="#D55E00", opacity=0.07, line_width=0,
+        )
+    event = evaluation.impact.event
+    fig.add_vrect(
+        x0=event.first_month - 0.5,
+        x1=event.first_month + event.duration_months - 0.5,
+        fillcolor="#D55E00", opacity=0.06, line_width=0,
+    )
+    return fig

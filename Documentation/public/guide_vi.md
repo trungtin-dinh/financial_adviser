@@ -205,7 +205,7 @@ Các tương quan kinh tế và tình huống cá nhân mới được phản á
 
 **Phân tích độ nhạy:** so sánh lợi suất đầu tư giả định ở mức cơ sở với một mức thấp và một mức cao. Chênh lệch hai **điểm phần trăm** có thể là so sánh 5% với 3% và 7% mỗi năm. Không có xác suất riêng cho từng trường hợp.
 
-**Kiểm tra sức chịu đựng:** áp dụng **một biến cố bất lợi mỗi lần** (mất thu nhập tạm thời, chi phí lớn, hỗ trợ người thân...) lên kịch bản cơ sở. Xem cả thay đổi tài sản cuối kỳ **lẫn** tiền mặt thấp nhất. Những biến cố này không được cộng dồn với nhau hay tự thêm vào kịch bản hiện tại.
+**Kiểm tra sức chịu đựng:** áp dụng **một biến cố bất lợi mỗi lần** (mất thu nhập tạm thời, chi phí lớn, hỗ trợ người thân...) lên kịch bản cơ sở. Xem cả thay đổi tài sản cuối kỳ **lẫn** tiền mặt thấp nhất. Những biến cố này không được cộng dồn với nhau hay tự thêm vào kịch bản hiện tại. Người dùng có thể chọn tháng bắt đầu và so sánh dòng tiền mặt của kịch bản cơ sở với cú sốc, tháng đầu tiên tiền mặt âm, số tháng thiếu hụt và mức thiếu hụt lớn nhất. Chi phí cú sốc chỉ là ví dụ suy ra từ ngân sách đã nhập. Nếu kịch bản cơ sở đã thiếu hụt thì điều này được thông báo riêng. **Thiếu hụt trong mô phỏng không có nghĩa là có sẵn thấu chi hay tín dụng.**
 
 **Monte Carlo:** lợi suất đầu tư theo tháng thay đổi ngẫu nhiên quanh giá trị trung bình và độ biến động giả định. Các phân vị **P10, P50, P90** biểu diễn **phân bố mô phỏng của tài sản ròng danh nghĩa** tại từng thời điểm. Ví dụ, P10 là ngưỡng mà 10% số đường mô phỏng nằm dưới đó vào thời điểm đang xét. Đây không phải ngưỡng bảo đảm hay dự báo cho cá nhân.
 

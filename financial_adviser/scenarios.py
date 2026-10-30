@@ -8,6 +8,9 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from math import isfinite
 
+import numpy as np
+import pandas as pd
+
 from .models import LifeEvent, Plan
 
 PRESET_IDS = ("job_gap", "health_costs", "unexpected_purchase", "child_care", "family_support", "relocation")
@@ -66,24 +69,88 @@ def proposed_event(
     return event
 
 
-def stress_impact(plan: Plan, key: str, first_month: int = 1) -> StressImpact:
-    """Compare one optional shock against a baseline; never mutate the plan.
+@dataclass(frozen=True)
+class StressEvaluation:
+    """Observed consequences of one deterministic stress on a saved scenario.
 
-    Not probability-weighted; no stochastic risk estimation. User-defined
-    life events stay in the baseline. No hidden addition to the reference case.
+    These figures are *conditional scenario outputs*, never occurrence
+    probabilities. A negative simulated cash balance is an unfunded need.
+    """
+    impact: StressImpact
+    baseline: pd.DataFrame
+    stressed: pd.DataFrame
+    first_deficit_month: int | None
+    deficit_months: int
+    newly_negative_months: int
+    peak_funding_need: float
+    baseline_funding_need: float
+
+
+def evaluate_stresses(
+    plan: Plan,
+    keys: tuple[str, ...],
+    first_month: int = 1,
+) -> tuple[StressEvaluation, ...]:
+    """Compare independent shocks against the same deterministic reference.
+
+    All input shocks begin at first_month; their illustrative durations are
+    clipped to the remaining horizon. Base life events are preserved. A single
+    baseline is calculated per evaluation, avoiding one redundant reference
+    projection for every selected shock.
     """
     from .engine import project
 
-    event = proposed_event(plan, key, first_month)
+    plan.validate()
+    if not isinstance(first_month, int) or isinstance(first_month, bool):
+        raise ValueError("Stress start month must be an integer")
+    if not 1 <= first_month <= plan.years * 12:
+        raise ValueError("Stress start month outside projection")
+    if len(keys) != len(set(keys)):
+        raise ValueError("Duplicate stress templates are not allowed")
+    if any(key not in PRESET_IDS for key in keys):
+        raise ValueError("Unknown stress scenario")
+    if not keys:
+        return ()
+
     baseline = project(plan)
-    scenario = project(replace(plan, life_events=plan.life_events + (event,)))
-    terminal_delta = float(scenario.net_worth.iloc[-1] - baseline.net_worth.iloc[-1])
-    min_cash = float(scenario.cash.min())
-    if not all(isfinite(x) for x in (terminal_delta, min_cash)):
-        raise ValueError("Stress scenario produced non-finite values")
-    return StressImpact(
-        key=key, event=event, terminal_delta=terminal_delta,
-        lowest_cash=min_cash,
-        lowest_cash_delta=min_cash - float(baseline.cash.min()),
-        liquidity_breach=bool((scenario.cash < 0).any()),
-    )
+    baseline_cash = baseline.cash.to_numpy(dtype=float)
+    baseline_negative = baseline_cash[1:] < 0
+    baseline_gap = max(0.0, -float(baseline_cash.min()))
+    results: list[StressEvaluation] = []
+    for key in keys:
+        event = proposed_event(plan, key, first_month=first_month)
+        stress_plan = replace(plan, life_events=plan.life_events + (event,))
+        stressed = project(stress_plan)
+        stressed_cash = stressed.cash.to_numpy(dtype=float)
+        negative = stressed_cash[1:] < 0
+        negative_positions = np.flatnonzero(negative)
+        first_negative = int(negative_positions[0] + 1) if negative_positions.size else None
+        terminal_delta = float(stressed.net_worth.iloc[-1] - baseline.net_worth.iloc[-1])
+        lowest_cash = float(stressed_cash.min())
+        lowest_cash_delta = lowest_cash - float(baseline_cash.min())
+        if not all(isfinite(x) for x in (terminal_delta, lowest_cash, lowest_cash_delta)):
+            raise ValueError("Stress scenario produced non-finite values")
+        impact = StressImpact(
+            key=key,
+            event=event,
+            terminal_delta=terminal_delta,
+            lowest_cash=lowest_cash,
+            lowest_cash_delta=lowest_cash_delta,
+            liquidity_breach=bool(negative.any()),
+        )
+        results.append(StressEvaluation(
+            impact=impact,
+            baseline=baseline,
+            stressed=stressed,
+            first_deficit_month=first_negative,
+            deficit_months=int(negative.sum()),
+            newly_negative_months=int((negative & ~baseline_negative).sum()),
+            peak_funding_need=max(0.0, -lowest_cash),
+            baseline_funding_need=baseline_gap,
+        ))
+    return tuple(results)
+
+
+def stress_impact(plan: Plan, key: str, first_month: int = 1) -> StressImpact:
+    """Compatibility API: one deterministic shock versus the same baseline."""
+    return evaluate_stresses(plan, (key,), first_month=first_month)[0].impact
