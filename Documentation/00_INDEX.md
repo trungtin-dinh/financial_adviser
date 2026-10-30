@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** documentation vivante du projet, revue le 30 octobre 2026. **Version applicative courante du dépôt :** v0.21.0. Les documents historiques conservent les versions et hypothèses auxquelles ils se rapportent ; ils ne décrivent pas nécessairement toutes les fonctionnalités actuelles.
+**État :** documentation vivante du projet, revue le 30 octobre 2026. **Version applicative courante du dépôt :** v0.22.0. Les documents historiques conservent les versions et hypothèses auxquelles ils se rapportent ; ils ne décrivent pas nécessairement toutes les fonctionnalités actuelles.
 
 Cette documentation distingue systématiquement :
 
