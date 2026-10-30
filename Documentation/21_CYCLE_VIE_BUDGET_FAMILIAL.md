@@ -74,3 +74,7 @@ Les coûts sont intégrés dans les vecteurs mensuels `income`/`expenses` du mot
 Si des composantes de coût déjà incluses dans la dépense courante ont été attribuées explicitement aux membres du foyer, leur somme définit un **plancher de dépenses déjà engagées** dans le simulateur. L'option « réduction des dépenses » du calcul inverse ne peut plus réduire la dépense mensuelle initiale sous ce montant sans invalider la ventilation définie par l'utilisateur. Cette condition évite une solution mathématiquement séduisante mais incohérente avec le budget familial décrit. Elle **n'affirme pas** que toutes les dépenses familiales sont économiquement incompressibles : elle respecte simplement la convention d'affectation de dépenses courantes choisie dans ce scénario.
 
 Le moteur refuse également une ventilation « déjà incluse » dont la somme dépasse la dépense mensuelle totale saisie, plutôt que de produire des charges négatives artificielles. Les 24 tests locaux ciblés du modèle familial et des textes FR/EN/VI vérifient ce cas, les transitions d'âge et l'import/export des profils ; un résultat GitHub Actions ou un test de l'URL hébergée ne sont pas revendiqués pour la présente candidate.
+
+## 7. Attention à la durée de projection
+
+La durée de projection peut être **plus courte que la durée de soutien d'un enfant**. Dans ce cas, le modèle ne calcule que les coûts sur les mois couverts, et non le coût complet jusqu'à l'âge de fin de soutien. L'interface le signale et invite à allonger l'horizon ; aucun coût « à vie » n'est inféré au-delà de la période choisie.
