@@ -131,7 +131,8 @@ class Plan:
                     or not (1 <= flow.start_month <= flow.end_month <= self.years * 12)
                     or flow.interval_months not in (1, 3, 12)):
                 raise ValueError("Invalid recurring period or dates")
-            if not isinstance(flow.amount, (float, int)) or not math.isfinite(flow.amount):
+            if (isinstance(flow.amount, bool) or not isinstance(flow.amount, (float, int))
+                    or not math.isfinite(flow.amount)):
                 raise ValueError("Invalid recurring cash amount")
             if not isinstance(flow.description, str) or len(flow.description) > 120:
                 raise ValueError("Invalid recurring description")
