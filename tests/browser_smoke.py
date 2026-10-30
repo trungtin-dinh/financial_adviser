@@ -131,7 +131,9 @@ with sync_playwright() as pw:
             cash_curve = page.get_by_role("checkbox", name=cash_name, exact=True).first
             cash_curve.wait_for(state="visible", timeout=15000)
             assert not cash_curve.is_checked(), "Secondary chart line enabled by default"
-            cash_curve.check(timeout=15000)
+            # Streamlit renders a styled label over the native checkbox input.
+            # Click the visible label, as a real user would, rather than the input.
+            cash_curve.locator("xpath=ancestor::label[1]").click(timeout=15000)
             assert cash_curve.is_checked(), "Chart curve cannot be enabled"
             page.screenshot(path=str(OUT / f"{lang}_{device}_chart_controls.png"), full_page=True)
             bb, rb = basic_heading.bounding_box(), results_heading.bounding_box()
