@@ -44,6 +44,10 @@ L'affichage utilise **uniquement le dernier scénario enregistré et calculé**,
 - Les tests ajoutés vérifient conservation des transferts, identité `cash + investments - loan_balance = net_worth`, montant et date des événements, passage d'année, valeurs VND, taux de dette nul et schémas manquants.
 - La présence de ces tests dans le dépôt **n'est pas une preuve de succès CI** ; la validation doit confirmer `compileall`, `pytest` et le parcours navigateur desktop/mobile, notamment en FR, EN et VI.
 
+## Mise à jour v0.20.0 (30 octobre 2026)
+
+Les limites mentionnées pour le **premier incrément** ci-dessus décrivent la version précédente. La version v0.20.0 ajoute désormais la saisie d'échéances mensuelles, trimestrielles et annuelles ainsi qu'une colonne de flux périodiques dans le calendrier, selon les [conventions détaillées](28_ECHEANCES_RECURRENTES_V020.md). Les flux sont saisis explicitement, sans indexation automatique. Le texte précédent reste comme historique des décisions.
+
 ## Étapes suivantes
 
 1. Valider la refactorisation et ce calendrier par CI/navigateur.
