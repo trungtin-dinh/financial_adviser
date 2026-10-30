@@ -14,6 +14,7 @@ def simple_plan(**updates):
         years=1, initial_cash=1000, initial_investments=200,
         monthly_income=2000, monthly_expenses=1000,
         monthly_investment=300, cash_return_pct=0, investment_return_pct=0,
+        income_growth_pct=0, expense_growth_pct=0,
         inflation_pct=0, loan_balance=0, goal=0,
     )
     return replace(plan, **updates)
