@@ -35,6 +35,7 @@ if pkg.__version__ != disk_version:
         "financial_adviser.session_compat",
         "financial_adviser.household_ui",
         "financial_adviser.planning_recurring_ui",
+        "financial_adviser.planning_property_ui",
         "financial_adviser.planning_results_ui",
         "financial_adviser.planning_cashflow_ui",
         "financial_adviser.planning_custom_ui",
