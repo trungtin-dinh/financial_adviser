@@ -16,6 +16,22 @@ class OneOff:
 
 
 @dataclass(frozen=True)
+class RecurringFlow:
+    """Signed cash flow repeated at an exact number of calendar months.
+
+    start_month and end_month are inclusive, one-based projection month numbers.
+    Interval is 1 (monthly), 3 (quarterly), or 12 (yearly). An amount below
+    zero is a payment; a positive amount is income. There is no implicit
+    inflation adjustment and no transfer between investment accounts.
+    """
+    start_month: int
+    end_month: int
+    interval_months: int
+    amount: float
+    description: str = ""
+
+
+@dataclass(frozen=True)
 class LifeEvent:
     """Explicit financial consequences of a life event; no inferred probabilities.
 
@@ -55,6 +71,7 @@ class Plan:
     loan_years: int = 20  # remaining loan term
     goal: float = 100000.0
     one_offs: tuple[OneOff, ...] = field(default_factory=tuple)
+    recurring_flows: tuple[RecurringFlow, ...] = field(default_factory=tuple)
     life_events: tuple[LifeEvent, ...] = field(default_factory=tuple)
     children: tuple[ChildBudget, ...] = field(default_factory=tuple)
     adults: tuple[AdultBudget, ...] = field(default_factory=tuple)
@@ -104,6 +121,21 @@ class Plan:
             if not math.isfinite(event.amount):
                 raise ValueError("One-off amount must be finite.")
 
+        if not isinstance(self.recurring_flows, (list, tuple)) or len(self.recurring_flows) > 100:
+            raise ValueError("At most 100 recurring flows are allowed")
+        for flow in self.recurring_flows:
+            if not isinstance(flow, RecurringFlow):
+                raise ValueError("Invalid recurring cash flow")
+            if (any(isinstance(value, bool) or not isinstance(value, int)
+                    for value in (flow.start_month, flow.end_month, flow.interval_months))
+                    or not (1 <= flow.start_month <= flow.end_month <= self.years * 12)
+                    or flow.interval_months not in (1, 3, 12)):
+                raise ValueError("Invalid recurring period or dates")
+            if not isinstance(flow.amount, (float, int)) or not math.isfinite(flow.amount):
+                raise ValueError("Invalid recurring cash amount")
+            if not isinstance(flow.description, str) or len(flow.description) > 120:
+                raise ValueError("Invalid recurring description")
+
     def to_dict(self) -> dict:
         return asdict(self)
 
@@ -138,6 +170,12 @@ class Plan:
                     or any(not isinstance(x, dict) for x in data["dependents"])):
                 raise ValueError("Invalid dependents list")
             data["dependents"] = tuple(DependentBudget(**x) for x in data["dependents"])
+        if "recurring_flows" in data:
+            if (not isinstance(data["recurring_flows"], (list, tuple))
+                    or len(data["recurring_flows"]) > 100
+                    or any(not isinstance(x, dict) for x in data["recurring_flows"])):
+                raise ValueError("Invalid recurring flows list")
+            data["recurring_flows"] = tuple(RecurringFlow(**x) for x in data["recurring_flows"])
         if "one_offs" in data:
             if not isinstance(data["one_offs"], (list, tuple)):
                 raise ValueError("one_offs must be a list.")
