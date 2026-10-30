@@ -139,6 +139,19 @@ with sync_playwright() as pw:
             }[lang]
             overview = page.get_by_role("heading", name=overview_title, exact=True).first
             overview.wait_for(timeout=15000)
+            # The monthly calendar must be accessible using the saved plan
+            # without invoking an additional projection.
+            calendar_title = {
+                "fr": "Calendrier de trésorerie mensuel",
+                "vi": "Lịch dòng tiền hằng tháng",
+            }[lang]
+            calendar_year = {
+                "fr": "Année affichée",
+                "vi": "Năm hiển thị",
+            }[lang]
+            page.get_by_text(calendar_title, exact=True).first.click(timeout=15000)
+            page.get_by_text(calendar_year, exact=True).first.wait_for(timeout=15000)
+            page.screenshot(path=str(OUT / f"{lang}_{device}_cashflow.png"), full_page=True)
             # Cash resilience is discoverable after running the calculation;
             # its inputs are editable without replacing the saved scenario.
             resilience_label = {
