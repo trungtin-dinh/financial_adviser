@@ -30,10 +30,15 @@ st.caption(B("snapshot", date="2026-10-30"))
 for point in load_references(country):
     with st.container(border=True):
         st.markdown("**" + B(point.id) + "**")
-        numeral = f"{point.value:,.0f}".replace(",", " ")
+        full = f"{point.value:,.0f}".replace(",", " ")
+        if point.currency == "VND" and point.value >= 1_000_000:
+            numeral = f"{point.value / 1_000_000:.1f}".replace(".", "," if lang in ("fr", "vi") else ".") + " M ₫"
+        else:
+            numeral = full + " €"
         if point.precision.startswith("approximate"):
             numeral = "≈ " + numeral
-        st.metric(B("statistics"), f"{numeral} {point.currency} / {B('unit_month')}")
+        st.metric(B("statistics"), numeral)
+        st.caption(f"{full} {point.currency} · {B('unit_month')}")
         st.caption(f"{B(point.statistic)} · {B('period')}: {point.observed_year} · {B('publication')}: {point.published_on}")
         st.write(B(point.id + "_desc"))
         if point.precision.startswith("approximate"):
