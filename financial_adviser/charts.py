@@ -18,7 +18,7 @@ from .models import Plan
 
 WEALTH_SERIES = (
     "net_worth", "net_worth_real", "cash", "investments", "loan_balance",
-    "goal_nominal", "goal_real",
+    "goal_nominal", "goal_real", "property_value", "other_assets",
 )
 DEFAULT_WEALTH_SERIES = ("net_worth", "net_worth_real")
 
@@ -29,6 +29,8 @@ _COLORS = {
     "cash": "#009E73",
     "investments": "#CC79A7",
     "loan_balance": "#7A7A7A",
+    "property_value": "#56B4E9",
+    "other_assets": "#B27F3B",
     "goal_nominal": "#343A40",
     "goal_real": "#986800",
     "child_expenses": "#0072B2",
@@ -110,6 +112,8 @@ def wealth_figure(df: pd.DataFrame, goal: float, start_year: int,
         "cash": df["cash"],
         "investments": df["investments"],
         "loan_balance": df["loan_balance"],
+        "property_value": df["property_value"],
+        "other_assets": df["other_assets"],
         "goal_nominal": [goal] * len(df),
         "goal_real": goal / df["purchasing_power_factor"],
     }
@@ -119,6 +123,8 @@ def wealth_figure(df: pd.DataFrame, goal: float, start_year: int,
         "cash": "cash_name",
         "investments": "investments_name",
         "loan_balance": "loan_name",
+        "property_value": "patrimony_property",
+        "other_assets": "patrimony_other",
         "goal_nominal": "target_name",
         "goal_real": "chart_goal_real",
     }
