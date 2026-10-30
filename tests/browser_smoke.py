@@ -63,9 +63,9 @@ with sync_playwright() as pw:
         description_input.wait_for(state="visible", timeout=10000)
         description_input.fill(f"UI check {lang}")
         description_input.press("Tab")
-        page.get_by_role("button", name=re.compile(r"▾.*UI check")).first.click()
+        page.get_by_role("button", name=re.compile(r"▾.*📅")).first.click()
         assert description_input.count() == 0
-        page.get_by_role("button", name=re.compile(r"▸.*UI check")).first.click()
+        page.get_by_role("button", name=re.compile(r"▸.*📅")).first.click()
         description_input.wait_for(state="visible", timeout=10000)
         assert description_input.input_value() == f"UI check {lang}"
         page.screenshot(path=str(OUT / f"{lang}_{device}_event.png"), full_page=True)
