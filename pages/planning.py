@@ -10,6 +10,9 @@ import streamlit as st
 
 from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
+from financial_adviser.custom_comparison import (
+    CUSTOM_AMOUNT_FIELDS, CUSTOM_RATE_FIELDS, CUSTOM_INTEGER_FIELDS,
+)
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
