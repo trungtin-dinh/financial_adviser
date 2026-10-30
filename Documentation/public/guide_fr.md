@@ -60,6 +60,12 @@ Pour un virement mensuel $T$ et des rendements mensuels $r_C$ et $r_A$, les sold
 
 Les revenus et dépenses de base évoluent selon les taux annuels de croissance choisis. Le taux annuel de rendement et l'inflation sont convertis en équivalents mensuels ; **le taux nominal du prêt**, lui, est divisé par douze pour calculer les intérêts mensuels. Le prêt suit un échéancier à mensualités constantes tant qu'il reste dû.
 
+### Patrimoine immobilier et actifs non liquides
+
+Le simulateur permet de déclarer **la valeur de biens immobiliers déjà possédés**, ainsi que d'autres actifs non liquides. Vous choisissez une variation annuelle hypothétique de la valeur immobilière ; les autres actifs restent constants en valeur nominale. Ces composantes sont ajoutées au patrimoine net, puis les dettes en sont déduites. **Un crédit ne crée jamais automatiquement un bien immobilier** : renseignez séparément la valeur du logement si vous souhaitez l'inclure.
+
+Une hausse de la valeur d'un bien ne signifie pas un revenu disponible. Aucun achat, vente, loyer, impôt foncier, frais ou revente automatique en cas de manque de trésorerie n'est simulé. Le détail du bilan devient visible dans les résultats lorsqu'un actif non liquide est renseigné. Il est également possible d'afficher les courbes immobilières ou de comparer leurs hypothèses entre scénarios.
+
 ### Nominal, réel et objectif
 
 Le patrimoine **nominal** est un montant en monnaie courante. Le patrimoine **réel** le ramène au pouvoir d'achat de l'année de départ. Par exemple, avec 2 % d'inflation hypothétique par an, 100 000 € dans dix ans représentent environ 82 035 € de pouvoir d'achat initial : ce n'est pas une prévision d'inflation.
