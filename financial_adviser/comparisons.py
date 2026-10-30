@@ -37,6 +37,7 @@ def minimum_comparison_years(plan: Plan) -> int:
         [1]
         + [e.month for e in plan.one_offs]
         + [flow.end_month for flow in plan.recurring_flows]
+        + ([plan.property_purchase.month] if plan.property_purchase is not None else [])
         + [e.first_month + e.duration_months - 1 for e in plan.life_events]
         + [person.first_month + person.duration_months - 1
            for person in plan.dependents]
