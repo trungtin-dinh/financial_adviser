@@ -38,6 +38,7 @@ Cette documentation distingue systématiquement :
 | [23_PHASED_RESULTS_AND_COMPACT_CARDS.md](23_PHASED_RESULTS_AND_COMPACT_CARDS.md) | Interface avant/après projection, fiches compactes et contrôles d'alignement |
 | [24_AUDIT_UI_SIDEBAR_DEPENDANTS.md](24_AUDIT_UI_SIDEBAR_DEPENDANTS.md) | Navigation latérale, cartes compactes, proches à charge, licence et exigences de vérification |
 | [25_REVUE_SELECTIVE_FINANCE_ECONOMIE_UX.md](25_REVUE_SELECTIVE_FINANCE_ECONOMIE_UX.md) | 36 dépôts recensés, 14 études ciblées et recommandations sélectives en finance, économie et UX |
+| [26_CALENDRIER_TRESORERIE.md](26_CALENDRIER_TRESORERIE.md) | Conventions du nouveau calendrier des flux mensuels, limitations et vérifications à conduire |
 
 ## Règles de maintenance documentaire
 
