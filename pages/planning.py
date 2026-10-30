@@ -116,12 +116,6 @@ def hydrate_inputs(plan: Plan) -> None:
         "field_other_assets": float(plan.initial_other_assets),
         "field_property_growth": float(plan.property_growth_pct),
         "field_purchase_enabled": plan.property_purchase is not None,
-        "field_purchase_month": plan.property_purchase.month if plan.property_purchase else min(plan.years * 12, 13),
-        "field_purchase_price": float(plan.property_purchase.price) if plan.property_purchase else 0.0,
-        "field_purchase_down": float(plan.property_purchase.down_payment) if plan.property_purchase else 0.0,
-        "field_purchase_fees": float(plan.property_purchase.fees) if plan.property_purchase else 0.0,
-        "field_purchase_apr": float(plan.property_purchase.loan_apr_pct) if plan.property_purchase else 3.5,
-        "field_purchase_years": plan.property_purchase.loan_years if plan.property_purchase else 20,
         "field_years": int(plan.years),
         "field_start_year": int(plan.start_year),
         "field_income_growth": float(plan.income_growth_pct),
@@ -136,6 +130,16 @@ def hydrate_inputs(plan: Plan) -> None:
         "field_oneoffs": "\n".join(
             f"{item.month},{item.amount},{item.description}" for item in plan.one_offs),
     }
+    if plan.property_purchase is not None:
+        purchase = plan.property_purchase
+        values.update({
+            "field_purchase_month": purchase.month,
+            "field_purchase_price": float(purchase.price),
+            "field_purchase_down": float(purchase.down_payment),
+            "field_purchase_fees": float(purchase.fees),
+            "field_purchase_apr": float(purchase.loan_apr_pct),
+            "field_purchase_years": purchase.loan_years,
+        })
     for key, value in values.items():
         st.session_state[key] = value
 
