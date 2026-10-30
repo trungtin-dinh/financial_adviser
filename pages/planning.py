@@ -63,6 +63,7 @@ def reset_inputs() -> None:
         if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_", "child_", "adult_", "household_")):
             del st.session_state[key]
     st.session_state.pop("event_drafts", None)
+    st.session_state.pop("event_expanded_id", None)
     st.session_state.pop("household_children", None)
     st.session_state.pop("household_adults", None)
     st.session_state.pop("household_child_id", None)
@@ -131,7 +132,8 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                 st.session_state.event_drafts.append({"id": eid, "category": "other", "label": "",
                     "first_month": 1, "duration_months": 1, "monthly_expense": 0.0,
                     "monthly_income_change": 0.0, "upfront_cost": 0.0})
-                # Render the new card immediately without resetting scroll.
+                st.session_state.event_expanded_id = eid
+                st.rerun()
         st.subheader(T("preset_title"))
         st.caption(T("preset_hint"))
         selected_template = st.selectbox(T("preset_choose"),
@@ -166,7 +168,8 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                     "monthly_expense": suggestion.monthly_expense,
                     "monthly_income_change": suggestion.monthly_income_change,
                     "upfront_cost": suggestion.upfront_cost})
-                    st.success(T("preset_added"))
+                    st.session_state.event_expanded_id = eid
+                    st.rerun()
         if not st.session_state.event_drafts:
             st.caption(T("life_empty"))
         for index, draft in enumerate(st.session_state.event_drafts, start=1):
@@ -176,10 +179,15 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
             initial_year = start_year + (initial_month - 1) // 12
             initial_year = max(start_year, min(start_year + years - 1, initial_year))
             initial_cal_month = (initial_month - 1) % 12 + 1
-            with st.container(border=True):
-                a, b = st.columns([3, 1], wrap=True)
-                a.markdown("**" + T("life_event", index=index) + "**")
-                if b.button("✕ " + T("life_remove"), key=prefix + "remove", width="stretch"):
+            event_title = draft["label"].strip() or T("life_event", index=index)
+            event_date = f"{initial_year}-{initial_cal_month:02d}"
+            event_months = int(draft["duration_months"])
+            st.caption(f"{event_title} · {event_date} · {event_months} {T('months')}")
+            with st.expander(
+                f"📅 {T('life_event', index=index)} · {T('edit_details')}",
+                expanded=st.session_state.get("event_expanded_id") == eid,
+            ):
+                if st.button("✕ " + T("life_remove"), key=prefix + "remove"):
                     st.session_state.event_drafts = [x for x in st.session_state.event_drafts if x["id"] != eid]
                     for key in list(st.session_state):
                         if key.startswith(prefix):
@@ -204,17 +212,19 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                 with d:
                     duration = st.number_input(T("life_duration"), min_value=1, max_value=720,
                         value=max(1, int(draft["duration_months"])), step=1, key=prefix + "duration")
-                a, b, c = st.columns(3, wrap=True)
+                a, b = st.columns(2, wrap=True)
                 amount_step = 100_000.0 if currency == "VND" else 100.0
                 with a:
                     extra = st.number_input(T("life_extra"), min_value=0.0,
-                        value=float(draft["monthly_expense"]), step=amount_step, key=prefix + "expense")
+                        value=float(draft["monthly_expense"]), step=amount_step,
+                        help=T("life_extra_help"), key=prefix + "expense")
                 with b:
                     income_change = st.number_input(T("life_income_change"),
-                        value=float(draft["monthly_income_change"]), step=amount_step, key=prefix + "income")
-                with c:
-                    upfront = st.number_input(T("life_upfront"), min_value=0.0,
-                        value=float(draft["upfront_cost"]), step=amount_step, key=prefix + "upfront")
+                        value=float(draft["monthly_income_change"]), step=amount_step,
+                        help=T("life_income_change_help"), key=prefix + "income")
+                upfront = st.number_input(T("life_upfront"), min_value=0.0,
+                    value=float(draft["upfront_cost"]), step=amount_step,
+                    help=T("life_upfront_help"), key=prefix + "upfront")
                 draft.update(category=category, label=label, first_month=first_month,
                              duration_months=int(duration), monthly_expense=extra,
                              monthly_income_change=income_change, upfront_cost=upfront)
@@ -319,16 +329,20 @@ with st.expander("🗂️ " + T("scenario_files"), expanded=False):
 with st.expander("ℹ️ " + T("disclaimer_title"), expanded=False):
     st.info(T("disclaimer"))
 
-# Responsive two-pane workspace. Desktop users keep the financial dashboard
-# alongside the editor, while Streamlit stacks the columns on narrow screens.
-# The four containers render in source order but are positioned independently.
-editor_col, dashboard_col = st.columns([1.0, 1.35], gap="large", vertical_alignment="top")
-with editor_col:
+# The first visit is a clean, full-width input experience. After the user
+# explicitly calculates, desktop shows inputs and results side-by-side.
+# Responsive Streamlit columns stack vertically on narrow viewports.
+if st.session_state.result is None:
     plan_tab = st.container()
-with dashboard_col:
-    results_tab = st.container()
-    goal_tab = st.container()
-    compare_tab = st.container()
+else:
+    editor_col, dashboard_col = st.columns(
+        [1.0, 1.35], gap="large", vertical_alignment="top")
+    with editor_col:
+        plan_tab = st.container()
+    with dashboard_col:
+        results_tab = st.container()
+        goal_tab = st.container()
+        compare_tab = st.container()
 
 with plan_tab:
     st.subheader(T("basic"))
@@ -459,11 +473,16 @@ with plan_tab:
                 with st.spinner(T("running")):
                     result = project(new_plan)
                     mc = monte_carlo(new_plan, n_paths=int(n_paths), seed=int(seed)) if advanced and enable_mc else None
+                is_first_projection = st.session_state.result is None
                 st.session_state.plan = new_plan
                 st.session_state.confirmed_inputs = True
                 st.session_state.result = {"df": result, "mc": mc, "plan": new_plan}
                 st.session_state.pop("goal_alternatives", None)
                 dirty = False
+                if is_first_projection:
+                    # Create the dashboard columns on the next script run.
+                    st.session_state["first_projection_notice"] = True
+                    st.rerun()
                 st.success(T("done"))
                 # The Run button is at the end of a long editable scenario.
                 # Show the outcome here as well so the user needn't scroll
@@ -474,188 +493,191 @@ with plan_tab:
         except (ValueError, OverflowError, ZeroDivisionError, TypeError):
             st.error(T("invalid"))
 
-with results_tab:
-    st.divider()
-    st.subheader(T("tab_results"))
-    if dirty:
-        st.warning(T("outdated_result"))
-    result = st.session_state.result
-    if result is None:
-        st.info(T("no_result"))
-    else:
-        q, df = result["plan"], result["df"]
-        last = df.iloc[-1]
-        a, b = st.columns(2, wrap=True)
-        c, d = st.columns(2, wrap=True)
-        a.metric(T("net_worth"), money(float(last.net_worth), q.currency))
-        b.metric(T("net_worth_real"), money(float(last.net_worth_real), q.currency))
-        c.metric(T("remaining_loan"), money(float(last.loan_balance), q.currency))
-        d.metric(T("goal_reached"), T("yes") if last.net_worth >= q.goal else T("no"))
-        initial_loan_payment = loan_payment(q.loan_balance, q.loan_apr_pct, q.loan_years)
-        essential_monthly_outflow = q.monthly_expenses + initial_loan_payment
-        runway = (q.initial_cash / essential_monthly_outflow
-                  if essential_monthly_outflow > 0 else None)
-        a2, b2 = st.columns(2, wrap=True)
-        a2.metric(T("cash_buffer"), (f"{runway:.1f} " + T("months"))
-                  if runway is not None else T("not_applicable"),
-                  help=T("cash_buffer_help"))
-        b2.metric(T("debt_service"), (f"{100 * initial_loan_payment / q.monthly_income:.1f}%")
-                  if q.monthly_income > 0 else T("not_applicable"),
-                  help=T("debt_service_help"))
-        if (df.cash < 0).any():
-            st.warning(T("negative_cash"))
-        fig = go.Figure()
-        for field, label, color in [("net_worth", "net_worth", "#145DA0"),
-                                    ("net_worth_real", "net_worth_real", "#d97706")]:
-            fig.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label), line=dict(color=color)))
-        fig.add_hline(y=q.goal, line_dash="dash", annotation_text=T("target_name"))
-        fig.update_layout(title=T("chart_wealth"), xaxis_title=T("year"), yaxis_title=q.currency,
-                          height=335, margin=dict(l=10, r=10, t=55, b=25),
-                          legend=dict(orientation="h", y=-0.25))
-        st.plotly_chart(fig, width="stretch")
-        fig2 = go.Figure()
-        for field, label in [("cash", "cash_name"), ("investments", "investments_name"), ("loan_balance", "loan_name")]:
-            fig2.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label)))
-        fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
-                           height=300, margin=dict(l=10, r=10, t=55, b=25))
-        st.plotly_chart(fig2, width="stretch")
-        if q.children or q.adults:
-            st.subheader(T("household_graph"))
-            st.caption(T("household_graph_note"))
-            fig_household = go.Figure()
-            fig_household.add_trace(go.Scatter(x=df.year, y=df.child_expenses,
-                name=T("household_child_delta")))
-            fig_household.add_trace(go.Scatter(x=df.year, y=df.adult_expenses,
-                name=T("household_adult_delta")))
-            fig_household.add_trace(go.Scatter(x=df.year, y=df.retirement_income_change,
-                name=T("household_retirement_delta")))
-            fig_household.update_layout(height=290, xaxis_title=T("year"),
-                yaxis_title=q.currency, margin=dict(l=10, r=10, t=40, b=20))
-            st.plotly_chart(fig_household, width="stretch")
-            st.caption(T("household_total_child", value=money(float(df.child_expenses.sum()), q.currency)))
-        if result["mc"] is not None:
-            mc = result["mc"]
-            st.subheader(T("mc_title"))
-            st.caption(T("mc_hint", paths=mc.sample_paths, seed=mc.seed))
-            xs = q.start_year + mc.months / 12
-            fan = go.Figure()
-            fan.add_trace(go.Scatter(x=xs, y=mc.p90, line=dict(width=0), showlegend=False, hoverinfo="skip"))
-            fan.add_trace(go.Scatter(x=xs, y=mc.p10, fill="tonexty", line=dict(width=0), name="P10–P90",
-                                     fillcolor="rgba(20,93,160,0.17)"))
-            fan.add_trace(go.Scatter(x=xs, y=mc.p50, name=T("median"), line=dict(color="#145DA0", width=3)))
-            fan.update_layout(height=300, xaxis_title=T("year"), yaxis_title=q.currency)
-            st.plotly_chart(fan, width="stretch")
+if st.session_state.result is not None:
+    with results_tab:
+        st.divider()
+        st.subheader(T("tab_results"))
+        if st.session_state.pop("first_projection_notice", False):
+            st.success(T("done"))
+        if dirty:
+            st.warning(T("outdated_result"))
+        result = st.session_state.result
+        if result is None:
+            st.info(T("no_result"))
+        else:
+            q, df = result["plan"], result["df"]
+            last = df.iloc[-1]
             a, b = st.columns(2, wrap=True)
-            a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
-            b.metric(T("cash_risk"), f"{mc.probability_negative_cash:.1%}")
-        st.subheader(T("yearly"))
-        yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
-        st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),
-            "investments": T("investments_name"), "loan_balance": T("loan_name"),
-            "net_worth": T("net_worth"), "net_worth_real": T("net_worth_real")}).round(2),
-            hide_index=True, width="stretch")
-        st.download_button(T("export_csv"), df.to_csv(index=False).encode("utf-8"),
-                           "financial_projection_monthly.csv", mime="text/csv")
-        st.caption(T("result_limit"))
+            c, d = st.columns(2, wrap=True)
+            a.metric(T("net_worth"), money(float(last.net_worth), q.currency))
+            b.metric(T("net_worth_real"), money(float(last.net_worth_real), q.currency))
+            c.metric(T("remaining_loan"), money(float(last.loan_balance), q.currency))
+            d.metric(T("goal_reached"), T("yes") if last.net_worth >= q.goal else T("no"))
+            initial_loan_payment = loan_payment(q.loan_balance, q.loan_apr_pct, q.loan_years)
+            essential_monthly_outflow = q.monthly_expenses + initial_loan_payment
+            runway = (q.initial_cash / essential_monthly_outflow
+                      if essential_monthly_outflow > 0 else None)
+            a2, b2 = st.columns(2, wrap=True)
+            a2.metric(T("cash_buffer"), (f"{runway:.1f} " + T("months"))
+                      if runway is not None else T("not_applicable"),
+                      help=T("cash_buffer_help"))
+            b2.metric(T("debt_service"), (f"{100 * initial_loan_payment / q.monthly_income:.1f}%")
+                      if q.monthly_income > 0 else T("not_applicable"),
+                      help=T("debt_service_help"))
+            if (df.cash < 0).any():
+                st.warning(T("negative_cash"))
+            fig = go.Figure()
+            for field, label, color in [("net_worth", "net_worth", "#145DA0"),
+                                        ("net_worth_real", "net_worth_real", "#d97706")]:
+                fig.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label), line=dict(color=color)))
+            fig.add_hline(y=q.goal, line_dash="dash", annotation_text=T("target_name"))
+            fig.update_layout(title=T("chart_wealth"), xaxis_title=T("year"), yaxis_title=q.currency,
+                              height=335, margin=dict(l=10, r=10, t=55, b=25),
+                              legend=dict(orientation="h", y=-0.25))
+            st.plotly_chart(fig, width="stretch")
+            fig2 = go.Figure()
+            for field, label in [("cash", "cash_name"), ("investments", "investments_name"), ("loan_balance", "loan_name")]:
+                fig2.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label)))
+            fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
+                               height=300, margin=dict(l=10, r=10, t=55, b=25))
+            st.plotly_chart(fig2, width="stretch")
+            if q.children or q.adults:
+                st.subheader(T("household_graph"))
+                st.caption(T("household_graph_note"))
+                fig_household = go.Figure()
+                fig_household.add_trace(go.Scatter(x=df.year, y=df.child_expenses,
+                    name=T("household_child_delta")))
+                fig_household.add_trace(go.Scatter(x=df.year, y=df.adult_expenses,
+                    name=T("household_adult_delta")))
+                fig_household.add_trace(go.Scatter(x=df.year, y=df.retirement_income_change,
+                    name=T("household_retirement_delta")))
+                fig_household.update_layout(height=290, xaxis_title=T("year"),
+                    yaxis_title=q.currency, margin=dict(l=10, r=10, t=40, b=20))
+                st.plotly_chart(fig_household, width="stretch")
+                st.caption(T("household_total_child", value=money(float(df.child_expenses.sum()), q.currency)))
+            if result["mc"] is not None:
+                mc = result["mc"]
+                st.subheader(T("mc_title"))
+                st.caption(T("mc_hint", paths=mc.sample_paths, seed=mc.seed))
+                xs = q.start_year + mc.months / 12
+                fan = go.Figure()
+                fan.add_trace(go.Scatter(x=xs, y=mc.p90, line=dict(width=0), showlegend=False, hoverinfo="skip"))
+                fan.add_trace(go.Scatter(x=xs, y=mc.p10, fill="tonexty", line=dict(width=0), name="P10–P90",
+                                         fillcolor="rgba(20,93,160,0.17)"))
+                fan.add_trace(go.Scatter(x=xs, y=mc.p50, name=T("median"), line=dict(color="#145DA0", width=3)))
+                fan.update_layout(height=300, xaxis_title=T("year"), yaxis_title=q.currency)
+                st.plotly_chart(fan, width="stretch")
+                a, b = st.columns(2, wrap=True)
+                a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
+                b.metric(T("cash_risk"), f"{mc.probability_negative_cash:.1%}")
+            st.subheader(T("yearly"))
+            yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
+            st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),
+                "investments": T("investments_name"), "loan_balance": T("loan_name"),
+                "net_worth": T("net_worth"), "net_worth_real": T("net_worth_real")}).round(2),
+                hide_index=True, width="stretch")
+            st.download_button(T("export_csv"), df.to_csv(index=False).encode("utf-8"),
+                               "financial_projection_monthly.csv", mime="text/csv")
+            st.caption(T("result_limit"))
 
-with goal_tab:
-    st.divider()
-    if dirty:
-        st.warning(T("outdated_result"))
-        st.info(T("needs_run"))
-    elif not st.session_state.confirmed_inputs:
-        pass  # Don't repeat the empty-results notice below the main dashboard.
-    else:
-        st.subheader(T("tab_goal"))
-        st.caption(T("goal_intro"))
-        reference = st.session_state.plan
-        a, b = st.columns(2, wrap=True)
-        with a:
-            target = st.number_input(T("goal_target"), min_value=0.0, value=float(reference.goal),
-                                      step=1000.0, key="goal_target_input")
-        with b:
-            last_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
-                             + [e.month for e in reference.one_offs]
-                             + [c.arrival_month for c in reference.children])
-            min_years = max(1, (last_event + 11) // 12)
-            horizon = st.number_input(T("goal_years"), min_value=min_years, max_value=60, value=max(min_years, reference.years), step=1,
-                                key="goal_horizon_input")
-        if st.button(T("goal_calculate"), type="primary", width="stretch"):
-            try:
-                st.session_state.goal_alternatives = solve_goal(reference, float(target), int(horizon))
-                st.session_state.goal_query = (reference, float(target), int(horizon))
-            except (ValueError, OverflowError):
-                st.error(T("invalid"))
-        if "goal_alternatives" in st.session_state:
-            stale = st.session_state.get("goal_query") != (reference, float(target), int(horizon))
-            if stale:
-                st.warning(T("goal_stale"))
-            for idx, solution in enumerate(st.session_state.goal_alternatives):
-                with st.container(border=True):
-                    st.markdown("**" + T("goal_" + solution.lever) + "**")
-                    if not solution.feasible:
-                        st.warning(T("goal_unfeasible"))
-                    else:
-                        st.metric(T("goal_required"), money(solution.amount, reference.currency))
-                        projection = project(solution.scenario)
-                        st.caption(f"{T('goal_result')}: {money(float(projection.net_worth.iloc[-1]), reference.currency)}"
-                                   f" · {T('goal_min_cash')}: {money(float(projection.cash.min()), reference.currency)}")
-                        if st.button(T("goal_apply"), key=f"solution_{idx}", disabled=stale, width="stretch"):
-                            st.session_state.plan = solution.scenario
-                            st.session_state.confirmed_inputs = True
-                            st.session_state.result = {"df": projection, "mc": None, "plan": solution.scenario}
-                            reset_inputs()
-                            st.rerun()
-            st.caption(T("goal_disclaimer"))
+    with goal_tab:
+        st.divider()
+        if dirty:
+            st.warning(T("outdated_result"))
+            st.info(T("needs_run"))
+        elif not st.session_state.confirmed_inputs:
+            pass  # Don't repeat the empty-results notice below the main dashboard.
+        else:
+            st.subheader(T("tab_goal"))
+            st.caption(T("goal_intro"))
+            reference = st.session_state.plan
+            a, b = st.columns(2, wrap=True)
+            with a:
+                target = st.number_input(T("goal_target"), min_value=0.0, value=float(reference.goal),
+                                          step=1000.0, key="goal_target_input")
+            with b:
+                last_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
+                                 + [e.month for e in reference.one_offs]
+                                 + [c.arrival_month for c in reference.children])
+                min_years = max(1, (last_event + 11) // 12)
+                horizon = st.number_input(T("goal_years"), min_value=min_years, max_value=60, value=max(min_years, reference.years), step=1,
+                                    key="goal_horizon_input")
+            if st.button(T("goal_calculate"), type="primary", width="stretch"):
+                try:
+                    st.session_state.goal_alternatives = solve_goal(reference, float(target), int(horizon))
+                    st.session_state.goal_query = (reference, float(target), int(horizon))
+                except (ValueError, OverflowError):
+                    st.error(T("invalid"))
+            if "goal_alternatives" in st.session_state:
+                stale = st.session_state.get("goal_query") != (reference, float(target), int(horizon))
+                if stale:
+                    st.warning(T("goal_stale"))
+                for idx, solution in enumerate(st.session_state.goal_alternatives):
+                    with st.container(border=True):
+                        st.markdown("**" + T("goal_" + solution.lever) + "**")
+                        if not solution.feasible:
+                            st.warning(T("goal_unfeasible"))
+                        else:
+                            st.metric(T("goal_required"), money(solution.amount, reference.currency))
+                            projection = project(solution.scenario)
+                            st.caption(f"{T('goal_result')}: {money(float(projection.net_worth.iloc[-1]), reference.currency)}"
+                                       f" · {T('goal_min_cash')}: {money(float(projection.cash.min()), reference.currency)}")
+                            if st.button(T("goal_apply"), key=f"solution_{idx}", disabled=stale, width="stretch"):
+                                st.session_state.plan = solution.scenario
+                                st.session_state.confirmed_inputs = True
+                                st.session_state.result = {"df": projection, "mc": None, "plan": solution.scenario}
+                                reset_inputs()
+                                st.rerun()
+                st.caption(T("goal_disclaimer"))
 
-with compare_tab:
-    st.divider()
-    if dirty:
-        st.warning(T("outdated_result"))
-        st.info(T("needs_run"))
-    elif not st.session_state.confirmed_inputs:
-        pass  # Comparisons appear only after an actual scenario calculation.
-    else:
-        st.subheader(T("tab_compare"))
-        st.caption(T("compare_intro"))
-        base = st.session_state.plan
-        shock = st.number_input(T("return_shock"), min_value=0.5, max_value=10.0, value=3.0, step=0.5)
-        comparison = go.Figure()
-        rows = []
-        scenarios = [(T("scenario_lower"), -shock, base), (T("scenario_base"), 0., base),
-                     (T("scenario_higher"), shock, base)]
-        if base.life_events:
-            scenarios += [(T("scenario_no_events"), 0., replace(base, life_events=())),
-                          (T("scenario_events_more"), 0., replace(base, life_events=tuple(
-                              replace(e, monthly_expense=e.monthly_expense * 1.25,
-                                      upfront_cost=e.upfront_cost * 1.25) for e in base.life_events)))]
-        for name, delta, scenario in scenarios:
-            scenario = replace(scenario, investment_return_pct=max(-98., min(200., scenario.investment_return_pct + delta)))
-            calculated = project(scenario)
-            wealth = float(calculated.net_worth.iloc[-1])
-            rows.append({T("scenario_col"): name, T("return_col"): scenario.investment_return_pct,
-                         T("final_col"): wealth, T("reached_col"): T("yes") if wealth >= scenario.goal else T("no")})
-            comparison.add_trace(go.Scatter(x=calculated.year, y=calculated.net_worth, mode="lines", name=name))
-        comparison.update_layout(height=370, xaxis_title=T("year"), yaxis_title=base.currency)
-        st.plotly_chart(comparison, width="stretch")
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-        st.caption(T("compare_stale"))
+    with compare_tab:
+        st.divider()
+        if dirty:
+            st.warning(T("outdated_result"))
+            st.info(T("needs_run"))
+        elif not st.session_state.confirmed_inputs:
+            pass  # Comparisons appear only after an actual scenario calculation.
+        else:
+            st.subheader(T("tab_compare"))
+            st.caption(T("compare_intro"))
+            base = st.session_state.plan
+            shock = st.number_input(T("return_shock"), min_value=0.5, max_value=10.0, value=3.0, step=0.5)
+            comparison = go.Figure()
+            rows = []
+            scenarios = [(T("scenario_lower"), -shock, base), (T("scenario_base"), 0., base),
+                         (T("scenario_higher"), shock, base)]
+            if base.life_events:
+                scenarios += [(T("scenario_no_events"), 0., replace(base, life_events=())),
+                              (T("scenario_events_more"), 0., replace(base, life_events=tuple(
+                                  replace(e, monthly_expense=e.monthly_expense * 1.25,
+                                          upfront_cost=e.upfront_cost * 1.25) for e in base.life_events)))]
+            for name, delta, scenario in scenarios:
+                scenario = replace(scenario, investment_return_pct=max(-98., min(200., scenario.investment_return_pct + delta)))
+                calculated = project(scenario)
+                wealth = float(calculated.net_worth.iloc[-1])
+                rows.append({T("scenario_col"): name, T("return_col"): scenario.investment_return_pct,
+                             T("final_col"): wealth, T("reached_col"): T("yes") if wealth >= scenario.goal else T("no")})
+                comparison.add_trace(go.Scatter(x=calculated.year, y=calculated.net_worth, mode="lines", name=name))
+            comparison.update_layout(height=370, xaxis_title=T("year"), yaxis_title=base.currency)
+            st.plotly_chart(comparison, width="stretch")
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+            st.caption(T("compare_stale"))
 
-        st.subheader(T("stress_title"))
-        st.caption(T("stress_explanation"))
-        stress_keys = st.multiselect(T("stress_choose"), PRESET_IDS,
-            default=["job_gap", "unexpected_purchase"],
-            format_func=lambda key: T("preset_" + key),
-            key="stress_selection")
-        if stress_keys:
-            stress_rows = []
-            for key in stress_keys:
-                impact = stress_impact(base, key)
-                stress_rows.append({
-                    T("stress_scenario"): T("preset_" + key),
-                    T("stress_delta"): money(impact.terminal_delta, base.currency),
-                    T("stress_low_cash"): money(impact.lowest_cash, base.currency),
-                    T("stress_negative_cash"): T("yes") if impact.liquidity_breach else T("no"),
-                })
-            st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
-            st.caption(T("stress_disclaimer"))
+            st.subheader(T("stress_title"))
+            st.caption(T("stress_explanation"))
+            stress_keys = st.multiselect(T("stress_choose"), PRESET_IDS,
+                default=["job_gap", "unexpected_purchase"],
+                format_func=lambda key: T("preset_" + key),
+                key="stress_selection")
+            if stress_keys:
+                stress_rows = []
+                for key in stress_keys:
+                    impact = stress_impact(base, key)
+                    stress_rows.append({
+                        T("stress_scenario"): T("preset_" + key),
+                        T("stress_delta"): money(impact.terminal_delta, base.currency),
+                        T("stress_low_cash"): money(impact.lowest_cash, base.currency),
+                        T("stress_negative_cash"): T("yes") if impact.liquidity_breach else T("no"),
+                    })
+                st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
+                st.caption(T("stress_disclaimer"))

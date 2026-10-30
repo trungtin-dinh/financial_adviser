@@ -1,4 +1,5 @@
-**v0.8.2:** Desktop side-by-side editor and results, responsive mobile stacking, explicit cash runway and loan-service ratios, and automatic GitHub Actions checks of local UI and the deployed Streamlit site after each push. All financial ratios are educational approximations, not individualized recommendations. [UX/finance audit](Documentation/22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md).
+**v0.9.0 UX update:** Before the first projection, only editable inputs appear. After the user runs the simulation, results and analyses appear beside the inputs on desktop (or below on mobile). Children, adults and life events are collapsible cards with visible summaries; new cards open for editing. Age/date controls use aligned rows and concise labels with help tooltips. GitHub Actions test interactions locally and verify the deployed app after every push. [UX audit](Documentation/23_PHASED_RESULTS_AND_COMPACT_CARDS.md).
+
 
 [![Python and local UX](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml) [![Real Streamlit browser](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml)
 

@@ -18,7 +18,8 @@ def test_planner_renders_with_required_inputs_and_event_controls(lang):
     assert app.number_input(key="field_goal") is not None
     assert any(t(lang, "life_title") in str(item.value) for item in app.get("subheader"))
     assert any(t(lang, "advanced") in str(item.value) for item in app.get("subheader"))
-    assert any(t(lang, "tab_results") in str(item.value) for item in app.get("subheader"))
+    # No results placeholder before the user explicitly runs a projection.
+    assert not any(t(lang, "tab_results") == str(item.value) for item in app.get("subheader"))
     assert app.number_input(key="field_years") is not None
     assert app.selectbox(key="preset_selected") is not None
     assert any("Household" in str(x.value) or "foyer" in str(x.value).lower() or "gia đình" in str(x.value).lower() for x in app.get("subheader"))
@@ -47,3 +48,45 @@ def test_example_confirmation_restores_required_inputs_and_calculates():
     app.button(key="run_projection").click().run()
     assert not app.exception, app.exception
     assert app.session_state["result"] is not None
+
+@pytest.mark.parametrize("lang", ["fr", "en", "vi"])
+def test_child_and_adult_cards_are_collapsible(lang):
+    app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)
+    app.session_state["language_choice"] = lang
+    app.run()
+    app.button(key="household_add_child").click().run()
+    assert not app.exception, app.exception
+    child_expanders = [e for e in app.get("expander") if "👶" in str(e.label)]
+    assert len(child_expanders) == 1
+    # The date is shown in the separate compact summary, not in the stable toggle label.
+    app.button(key="household_add_adult").click().run()
+    assert not app.exception, app.exception
+    adult_expanders = [e for e in app.get("expander") if "🧑" in str(e.label)]
+    assert len(adult_expanders) == 1
+    assert app.number_input(key="child_1_age").value == 0
+    assert app.number_input(key="child_1_support").value == 25
+
+@pytest.mark.parametrize("lang", ["fr", "en", "vi"])
+def test_event_card_has_compact_summary(lang):
+    app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)
+    app.session_state["language_choice"] = lang
+    app.run()
+    app.button(key="add_life_event").click().run()
+    assert not app.exception, app.exception
+    events = [e for e in app.get("expander") if "📅" in str(e.label)]
+    assert len(events) == 1
+    # The date is shown in the separate compact summary, not in the stable toggle label.
+    assert app.text_input(key="evt_1_label") is not None
+
+def test_results_only_after_explicit_run():
+    app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)
+    app.session_state["language_choice"] = "fr"
+    app.run()
+    assert not any(str(x.value) == t("fr", "tab_results") for x in app.get("subheader"))
+    app.button(key="load_demo").click().run()
+    app.button(key="confirm_example").click().run()
+    # Loading demo alone must not reveal a previously computed result.
+    assert not any(str(x.value) == t("fr", "tab_results") for x in app.get("subheader"))
+    app.button(key="run_projection").click().run()
+    assert not app.exception, app.exception
+    assert any(str(x.value) == t("fr", "tab_results") for x in app.get("subheader"))

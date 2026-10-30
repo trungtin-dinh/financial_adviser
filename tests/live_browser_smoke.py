@@ -69,6 +69,8 @@ with sync_playwright() as p:
             app = find_visible_frame(page, 'Paramètres essentiels')
             ensure_version(app)
             app.get_by_text('Composition du foyer et dépenses selon l\'âge', exact=True).first.wait_for(timeout=20000)
+            assert app.get_by_role('heading', name='Résultats', exact=True).count() == 0, (
+                'Results should not appear before the first explicit calculation')
             capture(page, 'fr_desktop_before.png')
 
             # Open the collapsible file actions, load synthetic example and confirm.
@@ -87,6 +89,7 @@ with sync_playwright() as p:
                 raise AssertionError('Example confirmation did not populate net income')
             capture(page, 'fr_desktop_example_loaded.png')
             app.get_by_role('button', name=re.compile('Lancer la projection')).first.click(timeout=20000)
+            app.get_by_role('heading', name='Résultats', exact=True).first.wait_for(timeout=45000)
             app.get_by_text('Patrimoine net nominal', exact=True).first.wait_for(timeout=45000)
             capture(page, 'fr_desktop_result.png')
             print('PASS hosted French: matched version, household editor, example, projection, results')
@@ -103,6 +106,8 @@ with sync_playwright() as p:
             app = find_visible_frame(page, 'Thông số cần thiết')
             ensure_version(app)
             app.get_by_text('Thành viên gia đình và chi tiêu theo độ tuổi', exact=True).first.wait_for(timeout=20000)
+            assert app.get_by_role('heading', name='Kết quả', exact=True).count() == 0, (
+                'Vietnamese initial view unexpectedly includes results')
             overflow = app.evaluate('document.documentElement.scrollWidth - innerWidth')
             if overflow > 8:
                 raise AssertionError(f'Mobile horizontal overflow: {overflow} CSS px')

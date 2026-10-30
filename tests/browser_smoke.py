@@ -40,16 +40,8 @@ with sync_playwright() as pw:
         basic_heading.wait_for(timeout=45000)
         results_text = {"fr": "Résultats", "en": "Results", "vi": "Kết quả"}[lang]
         results_heading = page.get_by_role("heading", name=results_text, exact=True).first
-        results_heading.wait_for(timeout=15000)
-        # Regression for desktop UX: inputs and results must be side by side.
-        bb = basic_heading.bounding_box()
-        rb = results_heading.bounding_box()
-        assert bb and rb, f"Missing panel positions: {lang}/{device}"
-        if width >= 1024:
-            assert rb["x"] > bb["x"] + 150, f"Desktop results not in the right pane: {bb}, {rb}"
-            assert abs(rb["y"] - bb["y"]) < 160, f"Desktop dashboard starts too far below inputs: {bb}, {rb}"
-        else:
-            assert rb["y"] > bb["y"], f"Mobile panel order incorrect: {bb}, {rb}"
+        # Initial load: only input controls, no empty dashboard occupying space.
+        assert results_heading.count() == 0, f"Results visible before Run: {lang}/{device}"
         child_add = {"fr":"Ajouter un enfant", "en":"Add a child", "vi":"Thêm một người con"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(child_add))).first.wait_for(timeout=15000)
         page.screenshot(path=str(OUT / f"{lang}_{device}_overview.png"), full_page=True)
@@ -60,19 +52,59 @@ with sync_playwright() as pw:
         add = {"fr":"Ajouter un événement", "en":"Add an event", "vi":"Thêm sự kiện"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(add))).click(timeout=10000)
         event = {"fr":"Événement 1", "en":"Event 1", "vi":"Sự kiện 1"}[lang]
-        title = page.get_by_text(event, exact=True).first
+        title = page.get_by_text(re.compile(re.escape(event) + r".*(?:Modifier|Edit|Sửa)")).first
         title.wait_for(timeout=30000)
         short_label = {"fr": "Description courte", "en": "Short description", "vi": "Mô tả ngắn"}[lang]
         description_input = page.get_by_role("textbox", name=short_label, exact=True)
+        # Verify arrow opens and closes details without deleting their values.
+        title.click()
+        description_input.wait_for(state="hidden", timeout=10000)
+        title.click()
+        description_input.wait_for(state="visible", timeout=10000)
         description_input.fill(f"UI check {lang}")
         description_input.press("Tab")
-        assert page.get_by_role("textbox", name=short_label, exact=True).input_value() == f"UI check {lang}"
-        title.scroll_into_view_if_needed()
+        assert description_input.input_value() == f"UI check {lang}"
         page.screenshot(path=str(OUT / f"{lang}_{device}_event.png"), full_page=True)
+        # Child profiles have a compact, collapsible header; age fields align
+        # in the same horizontal row on the desktop layout.
+        page.get_by_role("button", name=re.compile(re.escape(child_add))).first.click(timeout=15000)
+        child_title = {"fr": "Enfant 1", "en": "Child 1", "vi": "Con 1"}[lang]
+        child_header = page.get_by_text(re.compile(re.escape(child_title) + r".*(?:Modifier|Edit|Sửa)")).first
+        child_header.wait_for(timeout=15000)
+        age_label = {"fr":"Âge au début","en":"Age at start","vi":"Tuổi lúc bắt đầu"}[lang]
+        end_label = {"fr":"Âge de fin","en":"Support ends at age","vi":"Tuổi ngừng chu cấp"}[lang]
+        age_input = page.get_by_role("spinbutton", name=age_label, exact=True)
+        end_input = page.get_by_role("spinbutton", name=end_label, exact=True)
+        age_input.wait_for(state="visible", timeout=15000)
+        if width >= 1024:
+            a_box, b_box = age_input.bounding_box(), end_input.bounding_box()
+            assert a_box and b_box and abs(a_box["y"]-b_box["y"]) <= 12, (
+                f"Child age fields misaligned on desktop: {a_box}, {b_box}")
+        child_header.click()
+        age_input.wait_for(state="hidden", timeout=10000)
+        child_header.click()
+        age_input.wait_for(state="visible", timeout=10000)
+        page.screenshot(path=str(OUT / f"{lang}_{device}_child.png"), full_page=True)
         assert not errors, f"Client errors: {lang}/{device}: {errors}"
         overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
         assert overflow <= 8, f"Event form overflow: {lang}/{device}, {overflow}px"
-        print(f"OK {lang} {device} {width}x{height}: no page overflow, event card usable")
+        print(f"OK {lang} {device} {width}x{height}: compact cards and no overflow")
+        if device in ("desktop", "mobile"):
+            example = {"fr":"Charger un exemple","en":"Load example","vi":"Tải ví dụ"}[lang]
+            confirm = {"fr":"Confirmer le remplacement","en":"Confirm replacement","vi":"Xác nhận thay thế"}[lang]
+            run_name = {"fr":"Lancer la projection","en":"Run projection","vi":"Chạy dự phóng"}[lang]
+            page.get_by_role("button", name=re.compile(re.escape(example))).first.click(timeout=15000)
+            page.get_by_role("button", name=confirm, exact=True).first.click(timeout=15000)
+            page.get_by_role("button", name=re.compile(re.escape(run_name))).first.click(timeout=20000)
+            results_heading.wait_for(timeout=30000)
+            bb, rb = basic_heading.bounding_box(), results_heading.bounding_box()
+            assert bb and rb
+            if width >= 1024:
+                assert rb["x"] > bb["x"] + 150 and abs(rb["y"] - bb["y"]) < 160, (
+                    f"Desktop post-run layout is not side-by-side: {bb}, {rb}")
+            else:
+                assert rb["y"] > bb["y"], f"Mobile post-run vertical order broken: {bb}, {rb}"
+            page.screenshot(path=str(OUT / f"{lang}_{device}_results.png"), full_page=True)
         page.close()
 
     # Statistical reference page on different viewports and languages.

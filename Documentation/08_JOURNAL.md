@@ -1,5 +1,15 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.9.0 candidate : saisie d'abord, cartes compactes et alignement
+
+- Aucun résultat affiché avant le premier calcul ; sur PC basculement à deux colonnes après Run, sur mobile ordre vertical.
+- Enfants, adultes et événements sous expander avec flèche et résumé toujours visible ; nouveaux éléments ouverts, existants repliés par défaut.
+- Champs d'âge et de date alignés par paires ; textes courts et explications complètes via info-bulles.
+- En-têtes d'expander stables, car Streamlit 1.54 ne permet pas de clé d'état : évite de replier les fiches quand les valeurs changent.
+- Tests AppTest et navigateurs local/public enrichis pour la transition d'interface, les cartes repliables et l'alignement.
+
+
+
 ## 2026-10-30 — Confirmation production v0.8.2
 
 - CI Python et Chromium local réussies. Chromium externe confirme le site Streamlit en v0.8.2, parcours FR exemple → projection → résultats et rendu VI mobile réussis (GitHub Actions 41033538584).
