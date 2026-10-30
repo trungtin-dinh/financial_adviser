@@ -90,7 +90,7 @@ Keep a future return, pension or wage-growth figure clearly labelled as a **scen
 
 The user journey is straightforward: **enter a plan**, **adjust assumptions**, **run the calculation** and **review the results**.
 
-Charts show net worth, cash, investments and remaining debt. Indicators flag potential cash deficits and whether the stated financial goal is reached. Optional comparisons vary assumptions without silently replacing the reference scenario.
+Charts show net worth, cash, investments and remaining debt. Indicators flag potential cash deficits and whether the stated financial goal is reached. Optional comparisons use a **shared, user-selected horizon** without silently replacing the reference scenario. Life-event dates can be shown or hidden on the main chart to provide temporal context.
 
 Plans may be imported or exported as JSON at the user's request. No bank transactions are fetched automatically.
 

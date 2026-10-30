@@ -92,7 +92,7 @@ Une hypothèse de rendement, de pension ou de croissance des salaires doit reste
 
 Le parcours repose sur quatre étapes lisibles : **saisir un scénario**, **ajuster ses hypothèses**, **lancer une projection**, puis **analyser les résultats**.
 
-Les graphiques permettent de suivre le patrimoine net, la trésorerie, les investissements et la dette. Des indicateurs signalent notamment un déficit de trésorerie ou l'atteinte d'un objectif. Plusieurs hypothèses peuvent être comparées sans modifier automatiquement le scénario de référence.
+Les graphiques permettent de suivre le patrimoine net, la trésorerie, les investissements et la dette. Des indicateurs signalent notamment un déficit de trésorerie ou l'atteinte d'un objectif. Plusieurs hypothèses peuvent être comparées **sur un horizon commun choisi**, sans modifier automatiquement le scénario de référence. Les repères chronologiques des événements de vie peuvent être affichés ou masqués sur le graphique pour faciliter son interprétation.
 
 Les données d'un scénario peuvent être importées ou exportées volontairement au format JSON. La comparaison porte sur les résultats financiers, et non sur des transactions bancaires récupérées à votre insu.
 

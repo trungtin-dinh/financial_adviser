@@ -7,15 +7,15 @@ from io import StringIO
 import json
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
 from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
 from financial_adviser.charts import (
-    DEFAULT_WEALTH_SERIES, WEALTH_SERIES, household_figure,
-    uncertainty_figure, wealth_figure,
+    DEFAULT_WEALTH_SERIES, WEALTH_SERIES, comparison_figure, event_markers,
+    household_figure, overlay_event_markers, uncertainty_figure, wealth_figure,
 )
+from financial_adviser.comparisons import build_comparisons, minimum_comparison_years
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
@@ -78,6 +78,8 @@ def reset_inputs() -> None:
     st.session_state.pop("goal_query", None)
     st.session_state.pop("goal_target_input", None)
     st.session_state.pop("goal_horizon_input", None)
+    for key in ("comparison_horizon", "_comparison_source", "chart_show_events"):
+        st.session_state.pop(key, None)
     # Clearing a widget after it has been instantiated may leave its old
     # browser-side value until the next client update. Rehydrate on the next
     # script run, before any input widget has been declared.
@@ -293,10 +295,45 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None) -> None:
                 T("chart_reset"), on_click=reset_wealth_curves,
                 key="chart_reset_curves", width="stretch",
             )
+        markers = event_markers(q)
+        show_events = (
+            st.checkbox(
+                T("chart_events_toggle"), key="chart_show_events",
+                value=False, help=T("chart_events_help"),
+            )
+            if markers else False
+        )
         if selected:
             fig = wealth_figure(df, q.goal, q.start_year, q.currency, selected, T)
+            if show_events:
+                drawn, total = overlay_event_markers(fig, markers)
             st.plotly_chart(fig, width="stretch", key="financial_wealth_chart",
                             config={"displaylogo": False, "scrollZoom": False})
+            if show_events:
+                st.caption(T("chart_event_lines"))
+                if total > drawn:
+                    st.caption(T("chart_event_marker_limit", count=total - drawn))
+                with st.expander(T("chart_event_list"), expanded=False):
+                    kinds = {
+                        "event_start": "chart_event_start",
+                        "event_end": "chart_event_end",
+                        "oneoff": "chart_event_oneoff",
+                        "child_arrival": "chart_event_child_arrival",
+                        "child_support_end": "chart_event_child_support_end",
+                        "dependent_start": "chart_event_dependent_start",
+                        "dependent_end": "chart_event_dependent_end",
+                        "retirement": "chart_event_retirement",
+                    }
+                    event_rows = []
+                    for mark in markers:
+                        year = q.start_year + (mark.month - 1) // 12
+                        month = (mark.month - 1) % 12 + 1
+                        event_rows.append({
+                            T("chart_event_date"): f"{year}-{month:02d}",
+                            T("chart_event_type"): T(kinds[mark.kind]),
+                            T("chart_event_label"): mark.label or T(kinds[mark.kind]),
+                        })
+                    st.dataframe(pd.DataFrame(event_rows), hide_index=True, width="stretch")
         else:
             st.info(T("chart_select_one"))
         st.caption(T("chart_goal_comparison"))
@@ -322,6 +359,76 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None) -> None:
         a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
         b.metric(T("chart_min_cash"), money(float(df.cash.min()), q.currency))
         st.caption(T("chart_mc_cash_note"))
+
+
+
+@st.fragment
+def render_comparison_tab(base: Plan) -> None:
+    """Run aligned what-if simulations only when comparison settings change."""
+    st.subheader(T("tab_compare"))
+    st.caption(T("compare_intro"))
+    minimum_years = minimum_comparison_years(base)
+    if st.session_state.get("_comparison_source") != base:
+        st.session_state.pop("comparison_horizon", None)
+        st.session_state["_comparison_source"] = base
+    left, right = st.columns(2, wrap=True)
+    with left:
+        shock = st.number_input(
+            T("return_shock"), min_value=0.5, max_value=10.0,
+            value=3.0, step=0.5, key="compare_return_shock",
+        )
+    with right:
+        horizon = st.number_input(
+            T("compare_horizon"), min_value=minimum_years,
+            max_value=60, value=base.years, step=1,
+            help=T("compare_horizon_help"),
+            key="comparison_horizon",
+        )
+    if minimum_years > 1:
+        st.caption(T("compare_minimum_horizon", years=minimum_years))
+    st.caption(T("compare_same_horizon", years=horizon,
+                 final_year=base.start_year + horizon))
+    comparisons = build_comparisons(base, int(horizon), float(shock))
+    chart = comparison_figure(comparisons, base.start_year, base.currency,
+                              T, base.goal)
+    st.plotly_chart(chart, width="stretch", key="aligned_scenario_comparison",
+                    config={"displaylogo": False, "scrollZoom": False})
+    with st.expander(T("compare_detailed_results"), expanded=False):
+        rows = [{
+            T("scenario_col"): T(case.key),
+            T("return_col"): case.return_pct,
+            T("final_col"): money(case.terminal_nominal, base.currency),
+            T("compare_real_final"): money(case.terminal_real, base.currency),
+            T("compare_delta"): money(case.terminal_delta, base.currency),
+            T("chart_min_cash"): money(case.minimum_cash, base.currency),
+            T("reached_col"): T("yes") if case.goal_reached else T("no"),
+        } for case in comparisons]
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+    st.caption(T("compare_horizon_disclaimer"))
+
+    st.subheader(T("stress_title"))
+    st.caption(T("stress_explanation"))
+    stress_keys = st.multiselect(
+        T("stress_choose"), PRESET_IDS,
+        default=["job_gap", "unexpected_purchase"],
+        format_func=lambda key: T("preset_" + key),
+        key="stress_selection",
+    )
+    if stress_keys:
+        # Same selected horizon, no cross-horizon stress results.
+        selected_plan = replace(base, years=int(horizon))
+        stress_rows = []
+        for key in stress_keys:
+            impact = stress_impact(selected_plan, key)
+            stress_rows.append({
+                T("stress_scenario"): T("preset_" + key),
+                T("stress_delta"): money(impact.terminal_delta, base.currency),
+                T("stress_low_cash"): money(impact.lowest_cash, base.currency),
+                T("stress_negative_cash"): T("yes") if impact.liquidity_breach else T("no"),
+            })
+        st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
+        st.caption(T("compare_stress_horizon", years=horizon))
+        st.caption(T("stress_disclaimer"))
 
 
 if "plan" not in st.session_state:
@@ -422,7 +529,7 @@ if st.session_state.result is None:
     plan_tab = st.container()
 else:
     editor_col, dashboard_col = st.columns(
-        [1.0, 1.35], gap="large", vertical_alignment="top")
+        [1.0, 1.6], gap="large", vertical_alignment="top")
     with editor_col:
         plan_tab = st.container()
     with dashboard_col:
@@ -685,49 +792,5 @@ if st.session_state.result is not None:
         if dirty:
             st.warning(T("outdated_result"))
             st.info(T("needs_run"))
-        elif not st.session_state.confirmed_inputs:
-            pass  # Comparisons appear only after an actual scenario calculation.
-        else:
-            st.subheader(T("tab_compare"))
-            st.caption(T("compare_intro"))
-            base = st.session_state.plan
-            shock = st.number_input(T("return_shock"), min_value=0.5, max_value=10.0, value=3.0, step=0.5)
-            comparison = go.Figure()
-            rows = []
-            scenarios = [(T("scenario_lower"), -shock, base), (T("scenario_base"), 0., base),
-                         (T("scenario_higher"), shock, base)]
-            if base.life_events:
-                scenarios += [(T("scenario_no_events"), 0., replace(base, life_events=())),
-                              (T("scenario_events_more"), 0., replace(base, life_events=tuple(
-                                  replace(e, monthly_expense=e.monthly_expense * 1.25,
-                                          upfront_cost=e.upfront_cost * 1.25) for e in base.life_events)))]
-            for name, delta, scenario in scenarios:
-                scenario = replace(scenario, investment_return_pct=max(-98., min(200., scenario.investment_return_pct + delta)))
-                calculated = project(scenario)
-                wealth = float(calculated.net_worth.iloc[-1])
-                rows.append({T("scenario_col"): name, T("return_col"): scenario.investment_return_pct,
-                             T("final_col"): wealth, T("reached_col"): T("yes") if wealth >= scenario.goal else T("no")})
-                comparison.add_trace(go.Scatter(x=calculated.year, y=calculated.net_worth, mode="lines", name=name))
-            comparison.update_layout(height=370, xaxis_title=T("year"), yaxis_title=base.currency)
-            st.plotly_chart(comparison, width="stretch")
-            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-            st.caption(T("compare_stale"))
-
-            st.subheader(T("stress_title"))
-            st.caption(T("stress_explanation"))
-            stress_keys = st.multiselect(T("stress_choose"), PRESET_IDS,
-                default=["job_gap", "unexpected_purchase"],
-                format_func=lambda key: T("preset_" + key),
-                key="stress_selection")
-            if stress_keys:
-                stress_rows = []
-                for key in stress_keys:
-                    impact = stress_impact(base, key)
-                    stress_rows.append({
-                        T("stress_scenario"): T("preset_" + key),
-                        T("stress_delta"): money(impact.terminal_delta, base.currency),
-                        T("stress_low_cash"): money(impact.lowest_cash, base.currency),
-                        T("stress_negative_cash"): T("yes") if impact.liquidity_breach else T("no"),
-                    })
-                st.dataframe(pd.DataFrame(stress_rows), hide_index=True, width="stretch")
-                st.caption(T("stress_disclaimer"))
+        elif st.session_state.confirmed_inputs:
+            render_comparison_tab(st.session_state.plan)

@@ -7,10 +7,13 @@ Carlo intervals remain a separate view.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from dataclasses import dataclass
 from math import ceil
 
 import pandas as pd
 import plotly.graph_objects as go
+
+from .models import Plan
 
 
 WEALTH_SERIES = (
@@ -179,4 +182,98 @@ def uncertainty_figure(df: pd.DataFrame, mc: object, start_year: int,
                       + "<extra>%{fullData.name}</extra>",
     ))
     _axis(fig, df, start_year, currency, translate("year"))
+    return fig
+
+
+@dataclass(frozen=True)
+class EventMarker:
+    month: int
+    label: str
+    kind: str
+
+
+MAX_EVENT_LINES = 12
+
+
+def event_markers(plan: Plan) -> tuple[EventMarker, ...]:
+    """Build chronological, user-readable milestones from a saved scenario.
+
+    An end marker marks the first month AFTER a temporary item stops
+    affecting flows, rather than the last month still affected by it.
+    """
+    n = plan.years * 12
+    marks: list[EventMarker] = []
+
+    def add(month: int, label: str, kind: str) -> None:
+        if 1 <= month <= n:
+            marks.append(EventMarker(month, label, kind))
+
+    for event in plan.life_events:
+        add(event.first_month, event.label, "event_start")
+        add(event.first_month + event.duration_months, event.label, "event_end")
+    for item in plan.one_offs:
+        add(item.month, item.description, "oneoff")
+    for child in plan.children:
+        add(child.arrival_month, child.label, "child_arrival")
+        add(child.arrival_month +
+            12 * (child.support_until_age - child.age_years),
+            child.label, "child_support_end")
+    for dependent in plan.dependents:
+        add(dependent.first_month, dependent.label, "dependent_start")
+        add(dependent.first_month + dependent.duration_months,
+            dependent.label, "dependent_end")
+    for adult in plan.adults:
+        if adult.age_years < adult.retirement_age:
+            add(1 + 12 * (adult.retirement_age - adult.age_years),
+                adult.label, "retirement")
+    # Multiple events can occur in the same month. Keep every item in the
+    # accessible list while drawing just one vertical line per month.
+    return tuple(sorted(marks, key=lambda m: (m.month, m.kind, m.label)))
+
+
+def overlay_event_markers(fig: go.Figure,
+                          markers: Iterable[EventMarker]) -> tuple[int, int]:
+    """Draw up to 12 unobtrusive date markers, never changing chart values.
+
+    Returns (drawn_unique_months, total_unique_months); the UI can explain
+    whether a long list is intentionally abbreviated on the graphic.
+    """
+    distinct = sorted({event.month for event in markers})
+    for month in distinct[:MAX_EVENT_LINES]:
+        fig.add_vline(
+            x=month, line_width=1.25, line_dash="dot",
+            line_color="#6B7280", opacity=0.65,
+        )
+    return min(len(distinct), MAX_EVENT_LINES), len(distinct)
+
+
+def comparison_figure(cases: Iterable[object], start_year: int, currency: str,
+                      translate: Callable[[str], str], goal: float) -> go.Figure:
+    """Compare only nominal wealth at the *same* selected horizon."""
+    variants = tuple(cases)
+    if not variants:
+        raise ValueError("At least one comparison is required")
+    reference = variants[0].projection
+    dates = _month_labels(reference, start_year, translate)
+    fig = go.Figure()
+    palette = {
+        "scenario_lower": "#D55E00",
+        "scenario_base": "#0072B2",
+        "scenario_higher": "#009E73",
+        "scenario_no_events": "#7A7A7A",
+        "scenario_events_more": "#CC79A7",
+    }
+    for case in variants:
+        df = case.projection
+        if len(df) != len(reference):
+            raise ValueError("Scenario horizons must agree")
+        key = case.key
+        _line(fig, df, df["net_worth"], translate(key),
+              palette[key], dates, currency,
+              dash="solid" if key == "scenario_base" else "dash",
+              width=3.2 if key == "scenario_base" else 2.0)
+    _axis(fig, reference, start_year, currency, translate("year"))
+    fig.add_hline(
+        y=goal, line=dict(color="#6B7280", dash="dot", width=1.1),
+    )
     return fig
