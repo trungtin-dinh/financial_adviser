@@ -104,12 +104,11 @@ def test_changing_comparison_controls_does_not_mutate_saved_projection(language)
 
 def test_hidden_tabs_skip_heavy_scenario_work(monkeypatch):
     """The important optimization is skipping whole analyses, not only plots."""
-    import financial_adviser.comparisons as comparators
-    import financial_adviser.scenarios as scenarios
+    import financial_adviser.planning_analysis_ui as analysis_ui
 
     counts = {"preset": 0, "stress": 0}
-    original_presets = comparators.build_comparisons
-    original_stresses = scenarios.evaluate_stresses
+    original_presets = analysis_ui.build_comparisons
+    original_stresses = analysis_ui.evaluate_stresses
 
     def counted_presets(*args, **kwargs):
         counts["preset"] += 1
@@ -119,8 +118,8 @@ def test_hidden_tabs_skip_heavy_scenario_work(monkeypatch):
         counts["stress"] += 1
         return original_stresses(*args, **kwargs)
 
-    monkeypatch.setattr(comparators, "build_comparisons", counted_presets)
-    monkeypatch.setattr(scenarios, "evaluate_stresses", counted_stresses)
+    monkeypatch.setattr(analysis_ui, "build_comparisons", counted_presets)
+    monkeypatch.setattr(analysis_ui, "evaluate_stresses", counted_stresses)
 
     app, _, _ = fixture_app("en")
     assert counts == {"preset": 0, "stress": 0}
