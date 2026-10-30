@@ -51,6 +51,8 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None, T, money)
                         "cash": "cash_name",
                         "investments": "investments_name",
                         "loan_balance": "loan_name",
+                        "property_value": "patrimony_property",
+                        "other_assets": "patrimony_other",
                         "goal_nominal": "target_name",
                         "goal_real": "chart_goal_real",
                     }[field]),
