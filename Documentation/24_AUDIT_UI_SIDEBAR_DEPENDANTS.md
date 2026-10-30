@@ -43,3 +43,7 @@ La présence d'un membre de la famille ne permet **pas** d'inférer un handicap,
 8. GitHub README français et lien DeepWiki sans ressource graphique cassée ; licence visible et lisible.
 
 Les tests automatisés ne remplacent ni audit juridique de la licence, ni entretiens UX, ni vérification des hypothèses par un économiste ou un spécialiste des politiques sociales.
+
+## Correction issue de l'inspection des captures
+
+La première capture mobile montrait le bouton ✕ **sur une deuxième ligne**, à cause de l'empilement automatique de `st.columns`. La version récente de Streamlit (>= 1.62) fournit `wrap=False`, qui permet de conserver la flèche/résumé et la suppression sur la même ligne avec défilement local si nécessaire. Une répartition [8,2] laisse une largeur minimale utile pour la croix sur PC et mobile. Le test navigateur compare les positions verticales du bouton et du titre de carte, et vérifie la largeur du bouton pour éviter les icônes tronquées.

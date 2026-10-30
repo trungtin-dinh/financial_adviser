@@ -92,7 +92,14 @@ with sync_playwright() as pw:
         # An additional dependent must also appear collapsed.
         dependent_title = {"fr": "Proche 1", "en": "Dependent 1",
                            "vi": "Người phụ thuộc 1"}[lang]
-        page.get_by_role("button", name=re.compile(r"▸.*" + re.escape(dependent_title))).first.wait_for(timeout=15000)
+        dep_header = page.get_by_role("button", name=re.compile(r"▸.*" + re.escape(dependent_title))).first
+        dep_header.wait_for(timeout=15000)
+        # Close controls stay on the header line, also on narrow mobile.
+        x = page.get_by_role("button", name="✕", exact=True).first
+        hx, dx = child_header.bounding_box(), x.bounding_box()
+        assert hx and dx and abs(hx["y"] - dx["y"]) < 18, (
+            f"Close button wrapped below its card header: {hx}, {dx}")
+        assert dx["width"] >= 40, f"Close button clipped: {dx}"
         page.screenshot(path=str(OUT / f"{lang}_{device}_household.png"), full_page=True)
         if width >= 1024:
             house_title = {"fr":"Composition du foyer et dépenses selon l'âge",

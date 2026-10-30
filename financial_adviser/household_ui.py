@@ -101,13 +101,13 @@ def render_household(plan, years: int, start_year: int, monthly_expenses: float,
             open_key = key + "open"
             with st.container(border=True):
                 is_open = st.session_state.get(open_key, False)
-                head, delete = st.columns([9, 1], vertical_alignment="center", gap="small")
+                head, delete = st.columns([8, 2], vertical_alignment="center", gap="small", wrap=False)
                 if head.button(f"{'▾' if is_open else '▸'} 👶 {child_name} · {child_summary}",
                                key=key + "toggle", width="stretch", type="tertiary"):
                     st.session_state[open_key] = not is_open
                     st.rerun()
                 if delete.button("✕", key=key + "remove",
-                                 help=_h(language, "card_remove_help")):
+                                 help=_h(language, "card_remove_help"), width="stretch"):
                     st.session_state.household_children = [
                         x for x in st.session_state.household_children if x["id"] != cid]
                     for old_key in list(st.session_state):
@@ -188,13 +188,13 @@ def render_household(plan, years: int, start_year: int, monthly_expenses: float,
             open_key = key + "open"
             with st.container(border=True):
                 is_open = st.session_state.get(open_key, False)
-                head, delete = st.columns([9, 1], vertical_alignment="center", gap="small")
+                head, delete = st.columns([8, 2], vertical_alignment="center", gap="small", wrap=False)
                 if head.button(f"{'▾' if is_open else '▸'} 🤝 {name} · {summary}",
                                key=key + "toggle", type="tertiary", width="stretch"):
                     st.session_state[open_key] = not is_open
                     st.rerun()
                 if delete.button("✕", key=key + "remove",
-                                 help=_h(language, "card_remove_help")):
+                                 help=_h(language, "card_remove_help"), width="stretch"):
                     st.session_state.household_dependents = [
                         x for x in st.session_state.household_dependents if x["id"] != did]
                     for old_key in list(st.session_state):
@@ -260,13 +260,13 @@ def render_household(plan, years: int, start_year: int, monthly_expenses: float,
             open_key = key + "open"
             with st.container(border=True):
                 is_open = st.session_state.get(open_key, False)
-                head, delete = st.columns([9, 1], vertical_alignment="center", gap="small")
+                head, delete = st.columns([8, 2], vertical_alignment="center", gap="small", wrap=False)
                 if head.button(f"{'▾' if is_open else '▸'} 🧑 {adult_name} · {adult_summary}",
                                key=key + "toggle", width="stretch", type="tertiary"):
                     st.session_state[open_key] = not is_open
                     st.rerun()
                 if delete.button("✕", key=key + "remove",
-                                 help=_h(language, "card_remove_help")):
+                                 help=_h(language, "card_remove_help"), width="stretch"):
                     st.session_state.household_adults = [
                         x for x in st.session_state.household_adults if x["id"] != aid]
                     for old_key in list(st.session_state):

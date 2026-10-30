@@ -185,14 +185,14 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
             open_key = prefix + "open"
             with st.container(border=True):
                 is_open = st.session_state.get(open_key, False)
-                head, delete = st.columns([9, 1], vertical_alignment="center", gap="small")
+                head, delete = st.columns([8, 2], vertical_alignment="center", gap="small", wrap=False)
                 if head.button(
                     f"{'▾' if is_open else '▸'} 📅 {event_title} · {event_date} · {event_months} {T('months')}",
                     key=prefix + "toggle", type="tertiary", width="stretch"):
                     st.session_state[open_key] = not is_open
                     st.rerun()
                 if delete.button("✕", key=prefix + "remove",
-                                 help=T("remove_card_help")):
+                                 help=T("remove_card_help"), width="stretch"):
                     st.session_state.event_drafts = [
                         x for x in st.session_state.event_drafts if x["id"] != eid]
                     for old_key in list(st.session_state):
