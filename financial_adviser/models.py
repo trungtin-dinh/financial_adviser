@@ -32,6 +32,21 @@ class RecurringFlow:
 
 
 @dataclass(frozen=True)
+class PropertyPurchase:
+    """One future property closing, priced in the scenario currency.
+
+    The mortgage directly finances the seller: only down payment and fees
+    leave cash. The new loan begins at closing and amortizes next month.
+    """
+    month: int
+    price: float
+    down_payment: float
+    fees: float
+    loan_apr_pct: float
+    loan_years: int
+
+
+@dataclass(frozen=True)
 class LifeEvent:
     """Explicit financial consequences of a life event; no inferred probabilities.
 
@@ -60,6 +75,7 @@ class Plan:
     initial_property_value: float = 0.0  # existing real estate explicitly entered; not bought by the simulation
     initial_other_assets: float = 0.0  # existing non-liquid assets; fixed nominal value
     property_growth_pct: float = 0.0  # assumed annual change in property value, not income
+    property_purchase: PropertyPurchase | None = None  # one future purchase, not a currently owned asset
     monthly_income: float = 3000.0  # already net of salary tax and contributions
     monthly_expenses: float = 2000.0  # excludes loan repayment and transfers to investments
     monthly_investment: float = 400.0  # transfer from cash; not additional income
@@ -118,6 +134,25 @@ class Plan:
                     raise ValueError("Life event amounts must be finite")
             if item.monthly_expense < 0 or item.upfront_cost < 0:
                 raise ValueError("Life event costs must be positive or zero")
+        if self.property_purchase is not None:
+            purchase = self.property_purchase
+            if not isinstance(purchase, PropertyPurchase):
+                raise ValueError("Invalid future property purchase")
+            if (isinstance(purchase.month, bool) or not isinstance(purchase.month, int)
+                    or not 1 <= purchase.month <= self.years * 12):
+                raise ValueError("Property purchase month outside projection")
+            if (isinstance(purchase.loan_years, bool) or not isinstance(purchase.loan_years, int)
+                    or not 1 <= purchase.loan_years <= 60):
+                raise ValueError("Invalid future property loan term")
+            for value in (purchase.price, purchase.down_payment, purchase.fees,
+                          purchase.loan_apr_pct):
+                if (isinstance(value, bool) or not isinstance(value, (float, int))
+                        or not math.isfinite(value)):
+                    raise ValueError("Future property amounts must be finite numbers")
+            if (purchase.price <= 0 or purchase.fees < 0
+                    or not 0 <= purchase.down_payment <= purchase.price
+                    or not 0 <= purchase.loan_apr_pct <= 100):
+                raise ValueError("Invalid future property purchase financing")
         validate_household(self)
         for event in self.one_offs:
             if not isinstance(event.month, int) or not 1 <= event.month <= self.years * 12:
@@ -150,6 +185,10 @@ class Plan:
         if not isinstance(raw, dict) or set(raw) - allowed:
             raise ValueError("Unexpected or invalid scenario field.")
         data = dict(raw)
+        if "property_purchase" in data and data["property_purchase"] is not None:
+            if not isinstance(data["property_purchase"], dict):
+                raise ValueError("Property purchase must be an object")
+            data["property_purchase"] = PropertyPurchase(**data["property_purchase"])
         if "life_events" in data:
             if not isinstance(data["life_events"], (list, tuple)) or len(data["life_events"]) > 100:
                 raise ValueError("life_events must be a list of at most 100 items")
