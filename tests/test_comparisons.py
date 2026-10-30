@@ -36,6 +36,26 @@ def plan_with_obligations() -> Plan:
     )
 
 
+def test_goal_ui_uses_shared_horizon_for_dependent_support():
+    """A shorter goal horizon must not discard a dependent's dated support."""
+    from financial_adviser.engine import solve_goal
+
+    plan = Plan(
+        years=6,
+        dependents=(DependentBudget(
+            label="Relative", first_month=25, duration_months=36,
+            monthly_support=100,
+        ),),
+    )
+    assert minimum_comparison_years(plan) == 5
+    with pytest.raises(ValueError, match="Dependent support must fit"):
+        solve_goal(plan, plan.goal, horizon_years=4)
+
+    # The UI must constrain the input before calling the solver.
+    source = (ROOT / "pages" / "planning.py").read_text(encoding="utf-8")
+    assert "min_years = minimum_comparison_years(reference)" in source
+
+
 def test_comparison_minimum_horizon_retains_dated_obligations():
     p = plan_with_obligations()
     assert minimum_comparison_years(p) == 5
