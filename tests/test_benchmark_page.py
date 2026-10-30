@@ -15,4 +15,4 @@ def test_reference_page_renders_with_official_observations(lang):
     assert not app.exception, (lang, app.exception)
     assert any(b(lang, "title") in str(item.value) for item in app.title)
     assert len(app.metric) >= 2
-    assert all("EUR" in str(m.value) for m in app.metric if lang and app.session_state.plan.country == "FR")
+    assert all("€" in str(m.value) for m in app.metric if app.session_state.plan.country == "FR")
