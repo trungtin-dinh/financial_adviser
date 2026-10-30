@@ -193,6 +193,10 @@ Everyday settings are shown first; more technical assumptions remain available s
 
 ### One-off versus recurring events
 
+You can now enter **periodic payments or income** in a separate table: start and end months, monthly / quarterly / yearly frequency, signed amount and description. **Month 1 means January in the starting year.** Expenses are negative; incoming payments are positive. For example, a €600 annual insurance bill paid in February appears in months 2, 14 and 26 if the schedule extends that far. The cost is not artificially averaged across all months.
+
+These amounts are **added to other cash flows without automatic inflation adjustment**. Do not enter a bill that is already included in ordinary spending. The result calendar distinguishes recurring amounts from one-off events. Negative cash remains an unfunded deficit.
+
 A one-off cash flow is applied only in its selected month, such as a €2,000 purchase in month 12. A **life-event entry** can combine an upfront cost, extra monthly spending and a monthly income change over a defined interval.
 
 **Fictional example:** a move begins in month 7, lasts two months, costs €1,500 upfront and adds €200 a month in expenses. Its direct effect is €1,900 before returns and inflation. If the new rent is already included in baseline expenses, do not enter that €200 again.
