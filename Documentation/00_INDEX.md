@@ -45,3 +45,5 @@ Cette documentation distingue systématiquement :
 6. Pour conserver les résultats antérieurs, enregistrer à terme la version des règles et les hypothèses dans chaque export de simulation.
 
 Le dossier `rules/` contient le **catalogue de références**, non un moteur fiscal actif. Aucun texte réglementaire n'est prétendu exhaustif à la date de ce document.
+
+| [22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md](22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md) | Audit bureau/mobile, économie des ménages, nouveaux ratios financiers et protocole de vérification |

@@ -1,5 +1,14 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.8 : dashboard desktop et contrôle automatisé après push
+
+- Deux colonnes desktop réactives : éditeur à gauche, résultats/objectifs/comparaison à droite ; ordre vertical mobile conservé.
+- Affichage de ratios éducatifs de couverture de dépenses par le cash et du service de crédit/revenu, sans seuil de solvabilité arbitraire.
+- Réactivation des workflows GitHub Actions automatiques depuis la désactivation des e-mails Actions par le propriétaire. Contrôle Chromium local, puis Chromium sur le vrai site Streamlit après CI réussie.
+- Protocole scientifique et ergonomique et limites documentés dans 22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md. Les revues indépendantes restent à faire.
+
+
+
 ### 2026-10-30 — Production verification incident
 
 Post-deployment issue reported with v0.7. Version-aware hot-reload compatibility and preservation of previous session values introduced in v0.7.1. Old browser smoke replaced with a frame-aware check for real Cloud production and current UI. Local tests passed; live validation remains unconfirmed. Automated GitHub workflow runs remain disabled to respect email preference.

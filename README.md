@@ -1,3 +1,5 @@
+**v0.8.0:** Desktop side-by-side editor and results, responsive mobile stacking, explicit cash runway and loan-service ratios, and automatic GitHub Actions checks of local UI and the deployed Streamlit site after each push. All financial ratios are educational approximations, not individualized recommendations. [UX/finance audit](Documentation/22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md).
+
 # Financial Adviser
 
 **[🌐 Open the live Streamlit app](https://financial-adviser.streamlit.app/)** · [Source code](https://github.com/trungtin-dinh/financial_adviser) · [Documentation](Documentation/00_INDEX.md)
@@ -6,7 +8,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.7.1_hotdeploy_candidate-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.8.0_desktop_review-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 

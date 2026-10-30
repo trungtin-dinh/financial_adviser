@@ -282,8 +282,16 @@ with st.expander("🗂️ " + T("scenario_files"), expanded=False):
 with st.expander("ℹ️ " + T("disclaimer_title"), expanded=False):
     st.info(T("disclaimer"))
 
-# Single, top-to-bottom workflow. No hidden results in tabs and no back-and-forth.
-plan_tab, results_tab, goal_tab, compare_tab = (st.container() for _ in range(4))
+# Responsive two-pane workspace. Desktop users keep the financial dashboard
+# alongside the editor, while Streamlit stacks the columns on narrow screens.
+# The four containers render in source order but are positioned independently.
+editor_col, dashboard_col = st.columns([1.0, 1.35], gap="large", vertical_alignment="top")
+with editor_col:
+    plan_tab = st.container()
+with dashboard_col:
+    results_tab = st.container()
+    goal_tab = st.container()
+    compare_tab = st.container()
 
 with plan_tab:
     st.subheader(T("basic"))
@@ -369,10 +377,11 @@ with plan_tab:
     else:
         n_paths, seed = 1000, 42
     if income is not None and expenses is not None:
-        st.metric(T("free_cash"), money(
-            float(income) - float(expenses) - loan_payment(float(loan), float(loan_rate), int(loan_years)),
-            p.currency,
-        ))
+        operating_surplus = (float(income) - float(expenses) -
+            loan_payment(float(loan), float(loan_rate), int(loan_years)))
+        st.metric(T("free_cash"), money(operating_surplus, p.currency))
+        if float(contribution) > max(0.0, operating_surplus):
+            st.warning(T("contribution_over_surplus"))
     # Explicitly warn that result tables and inverse scenarios still use last saved inputs.
     dirty = st.session_state.result is not None and (
         income != p.monthly_income or expenses != p.monthly_expenses
@@ -438,6 +447,17 @@ with results_tab:
         b.metric(T("net_worth_real"), money(float(last.net_worth_real), q.currency))
         c.metric(T("remaining_loan"), money(float(last.loan_balance), q.currency))
         d.metric(T("goal_reached"), T("yes") if last.net_worth >= q.goal else T("no"))
+        initial_loan_payment = loan_payment(q.loan_balance, q.loan_apr_pct, q.loan_years)
+        essential_monthly_outflow = q.monthly_expenses + initial_loan_payment
+        runway = (q.initial_cash / essential_monthly_outflow
+                  if essential_monthly_outflow > 0 else None)
+        a2, b2 = st.columns(2, wrap=True)
+        a2.metric(T("cash_buffer"), (f"{runway:.1f} " + T("months"))
+                  if runway is not None else T("not_applicable"),
+                  help=T("cash_buffer_help"))
+        b2.metric(T("debt_service"), (f"{100 * initial_loan_payment / q.monthly_income:.1f}%")
+                  if q.monthly_income > 0 else T("not_applicable"),
+                  help=T("debt_service_help"))
         if (df.cash < 0).any():
             st.warning(T("negative_cash"))
         fig = go.Figure()
@@ -446,13 +466,14 @@ with results_tab:
             fig.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label), line=dict(color=color)))
         fig.add_hline(y=q.goal, line_dash="dash", annotation_text=T("target_name"))
         fig.update_layout(title=T("chart_wealth"), xaxis_title=T("year"), yaxis_title=q.currency,
-                          height=410, margin=dict(l=10, r=10, t=60, b=20), legend=dict(orientation="h", y=-0.25))
+                          height=335, margin=dict(l=10, r=10, t=55, b=25),
+                          legend=dict(orientation="h", y=-0.25))
         st.plotly_chart(fig, width="stretch")
         fig2 = go.Figure()
         for field, label in [("cash", "cash_name"), ("investments", "investments_name"), ("loan_balance", "loan_name")]:
             fig2.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label)))
         fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
-                           height=350, margin=dict(l=10, r=10, t=60, b=20))
+                           height=300, margin=dict(l=10, r=10, t=55, b=25))
         st.plotly_chart(fig2, width="stretch")
         if q.children or q.adults:
             st.subheader(T("household_graph"))
@@ -464,7 +485,7 @@ with results_tab:
                 name=T("household_adult_delta")))
             fig_household.add_trace(go.Scatter(x=df.year, y=df.retirement_income_change,
                 name=T("household_retirement_delta")))
-            fig_household.update_layout(height=350, xaxis_title=T("year"),
+            fig_household.update_layout(height=290, xaxis_title=T("year"),
                 yaxis_title=q.currency, margin=dict(l=10, r=10, t=40, b=20))
             st.plotly_chart(fig_household, width="stretch")
             st.caption(T("household_total_child", value=money(float(df.child_expenses.sum()), q.currency)))
@@ -478,7 +499,7 @@ with results_tab:
             fan.add_trace(go.Scatter(x=xs, y=mc.p10, fill="tonexty", line=dict(width=0), name="P10–P90",
                                      fillcolor="rgba(20,93,160,0.17)"))
             fan.add_trace(go.Scatter(x=xs, y=mc.p50, name=T("median"), line=dict(color="#145DA0", width=3)))
-            fan.update_layout(height=360, xaxis_title=T("year"), yaxis_title=q.currency)
+            fan.update_layout(height=300, xaxis_title=T("year"), yaxis_title=q.currency)
             st.plotly_chart(fan, width="stretch")
             a, b = st.columns(2, wrap=True)
             a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")

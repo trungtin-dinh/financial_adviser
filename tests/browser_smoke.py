@@ -36,14 +36,27 @@ with sync_playwright() as pw:
         errors = []
         page.on("pageerror", lambda err: errors.append(str(err)))
         page.goto(f"{BASE}/?lang={lang}", wait_until="domcontentloaded", timeout=60000)
-        page.get_by_text(basic, exact=True).first.wait_for(timeout=45000)
+        basic_heading = page.get_by_role("heading", name=basic, exact=True).first
+        basic_heading.wait_for(timeout=45000)
+        results_text = {"fr": "Résultats", "en": "Results", "vi": "Kết quả"}[lang]
+        results_heading = page.get_by_role("heading", name=results_text, exact=True).first
+        results_heading.wait_for(timeout=15000)
+        # Regression for desktop UX: inputs and results must be side by side.
+        bb = basic_heading.bounding_box()
+        rb = results_heading.bounding_box()
+        assert bb and rb, f"Missing panel positions: {lang}/{device}"
+        if width >= 1024:
+            assert rb["x"] > bb["x"] + 150, f"Desktop results not in the right pane: {bb}, {rb}"
+            assert abs(rb["y"] - bb["y"]) < 160, f"Desktop dashboard starts too far below inputs: {bb}, {rb}"
+        else:
+            assert rb["y"] > bb["y"], f"Mobile panel order incorrect: {bb}, {rb}"
         child_add = {"fr":"Ajouter un enfant", "en":"Add a child", "vi":"Thêm một người con"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(child_add))).first.wait_for(timeout=15000)
         page.screenshot(path=str(OUT / f"{lang}_{device}_overview.png"), full_page=True)
         overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
         assert overflow <= 8, f"Unexpected page-level horizontal scroll: {lang}/{device}, {overflow}px"
-        # Expand event form; verify Add is accessible and rendered after a rerun.
-        page.get_by_text(life, exact=False).first.click(timeout=10000)
+        # Life events are directly accessible; no hidden expander click is needed.
+        page.get_by_text(life, exact=False).first.wait_for(timeout=10000)
         add = {"fr":"Ajouter un événement", "en":"Add an event", "vi":"Thêm sự kiện"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(add))).click(timeout=10000)
         event = {"fr":"Événement 1", "en":"Event 1", "vi":"Sự kiện 1"}[lang]
