@@ -78,9 +78,10 @@ def test_inflation_changes_real_not_nominal_wealth_or_cash():
 
 def test_extra_investment_transfer_is_not_new_money():
     plan = Plan(
-        years=3, initial_cash=20_000, monthly_income=2_000,
+        years=3, initial_cash=20_000, monthly_income=1_200,
         monthly_expenses=1_200, monthly_investment=200,
         cash_return_pct=0.0, investment_return_pct=0.0,
+        income_growth_pct=0.0, expense_growth_pct=0.0,
     )
     impact = next(i for i in analyze_assumptions(plan, 3).impacts
                   if i.field == "monthly_investment")
@@ -145,7 +146,7 @@ def test_invalid_perturbations_rejected(amount, rate):
 def test_bar_chart_values_are_signed_and_have_valid_currency(metric):
     report = analyze_assumptions(Plan(years=2), 2)
     fig = assumption_sensitivity_figure(
-        report, metric, "EUR", lambda key: t("fr", key))
+        report, metric, "EUR", lambda key, **kwargs: t("fr", key, **kwargs))
     assert len(fig.data) == 1
     values = [getattr(row, metric) for row in report.impacts]
     np.testing.assert_allclose(fig.data[0].x, values)

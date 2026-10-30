@@ -11,7 +11,7 @@ For a rate at its allowed upper bound, the rate is reduced by 1 pp instead.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from math import ceil, isfinite
+from math import isfinite
 
 import pandas as pd
 
