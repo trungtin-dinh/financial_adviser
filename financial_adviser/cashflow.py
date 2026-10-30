@@ -20,7 +20,8 @@ def monthly_cashflow_calendar(plan: Plan, projection: pd.DataFrame) -> pd.DataFr
     *after* its monthly cash return and may differ from these pre-return flows.
     """
     required = (
-        "month", "income", "expenses", "loan_payment", "one_off", "recurring_flow", "cash",
+        "month", "income", "expenses", "loan_payment", "one_off", "recurring_flow",
+        "property_purchase_cashflow", "cash",
     )
     if not set(required).issubset(projection.columns):
         raise ValueError("Missing cash-flow projection fields")
@@ -41,8 +42,9 @@ def monthly_cashflow_calendar(plan: Plan, projection: pd.DataFrame) -> pd.DataFr
     loan = source["loan_payment"].to_numpy(dtype=float)
     events = source["one_off"].to_numpy(dtype=float)
     recurring = source["recurring_flow"].to_numpy(dtype=float)
+    purchase_outflow = source["property_purchase_cashflow"].to_numpy(dtype=float)
     transfers = np.full(len(month), -plan.monthly_investment)
-    before_returns = income - expenses - loan + events + recurring + transfers
+    before_returns = income - expenses - loan + events + recurring + purchase_outflow + transfers
 
     return pd.DataFrame({
         "month": month,
@@ -53,6 +55,7 @@ def monthly_cashflow_calendar(plan: Plan, projection: pd.DataFrame) -> pd.DataFr
         "loan_payment": loan,
         "one_off": events,
         "recurring_flow": recurring,
+        "property_purchase_cashflow": purchase_outflow,
         "investment_transfer": transfers,
         "net_cashflow_before_returns": before_returns,
         "cash": source["cash"].to_numpy(dtype=float),
