@@ -51,6 +51,6 @@ Les limites mentionnées pour le **premier incrément** ci-dessus décrivent la 
 ## Étapes suivantes
 
 1. Valider la refactorisation et ce calendrier par CI/navigateur.
-2. Ajouter des échéances **saisies explicitement** avec périodicités et horizon, en conservant le format des anciens scénarios JSON.
+2. Vérifier sur le site public la **saisie** des échéances périodiques introduite en v0.20.0, ainsi que la lisibilité du tableau sur mobile et la conservation des scénarios JSON anciens.
 3. Tester l'absence de double comptage et la conservation des capitaux avant d'introduire des objectifs multiples.
 4. Étudier séparément la décumulation/retraite puis les scénarios macroéconomiques stochastiques, avec conventions et données traçables.
