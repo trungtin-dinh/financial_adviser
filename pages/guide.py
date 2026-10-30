@@ -36,7 +36,7 @@ st.title("📖 " + t(LANG, "nav_guide"))
 st.caption(t(LANG, "guide_caption"))
 
 for key, body in zip(SECTION_KEYS, load_public_sections(LANG)):
-    with st.expander(t(LANG, key), expanded=False):
+    with st.expander(t(LANG, key), expanded=(key == SECTION_KEYS[0])):
         st.markdown(body)
 
 st.link_button(
