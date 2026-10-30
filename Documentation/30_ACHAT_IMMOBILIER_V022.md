@@ -36,15 +36,15 @@ Il n'y a pas de frais bancaires récurrents, assurance emprunteur, taux variable
 
 Le bien acheté a une valeur **nulle avant le mois p**, puis V le mois p. Pour chaque mois m supérieur ou égal à p, sa valeur nominale supposée est :
 
-\[
+$$
 H_{\mathrm{achat},m}=V(1+g_H/100)^{(m-p)/12}.
-\]
+$$
 
 Ce gain théorique ne se transforme **pas** en revenu disponible. Les biens déjà possédés évoluent depuis le mois initial sous le même taux de revalorisation choisi, tandis que les autres actifs non liquides conservent leur valeur nominale. Dans tous les scénarios :
 
-\[
+$$
 N_m=C_m+A_m+H_m+O_m-D_m.
-\]
+$$
 
 En Monte Carlo, les échéances de prêt et la valeur immobilière restent **déterministes** ; seul le rendement des placements est aléatoire. Les résultats ne constituent donc ni une prévision immobilière ni une probabilité réelle de solvabilité.
 
