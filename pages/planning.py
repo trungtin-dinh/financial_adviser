@@ -274,7 +274,6 @@ with st.sidebar:
     if "pending_country" in st.session_state:
         st.session_state.country_choice = st.session_state.pop("pending_country")
     country = st.session_state.plan.country
-    advanced = True  # Every model input is always visible; no hidden advanced mode.
     st.divider()
 
 header_col, country_col = st.columns([2.1, 1], gap="large", vertical_alignment="center")
@@ -386,9 +385,10 @@ with plan_tab:
         start_year = st.number_input(T("start_year"), min_value=2020, max_value=2100,
                                      value=p.start_year, step=1, key="field_start_year")
  
-    if advanced:
+    # Keep optional assumptions available without pushing household editing off-screen.
+    # Streamlit still instantiates widgets inside a collapsed expander.
+    with st.expander("⚙️ " + T("advanced"), expanded=False):
         with st.container(border=True):
-            st.subheader("📐 " + T("advanced"))
             a, b = st.columns(2, wrap=True)
             with a:
                 income_growth = st.number_input(T("growth_income"), min_value=-90., max_value=200., value=float(p.income_growth_pct), step=0.5, key="field_income_growth")
@@ -413,15 +413,7 @@ with plan_tab:
             previous = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
             oneoffs_text = st.text_area(T("extra_label"), value=previous,
                 help=T("extra_hint"), key="field_oneoffs")
-    else:
-        income_growth, spending_growth = p.income_growth_pct, p.expense_growth_pct
-        cash_return, investment_return = p.cash_return_pct, p.investment_return_pct
-        inflation, volatility = p.inflation_pct, p.investment_volatility_pct
-        loan, loan_rate, loan_years = p.loan_balance, p.loan_apr_pct, p.loan_years
-        oneoffs_text = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
-        st.caption(T("auto_assumptions", inflation=f"{inflation:g}", ret=f"{investment_return:g}", growth=f"{income_growth:g}"))
-    enable_mc = st.checkbox(T("simulate_mc"), value=False, disabled=not advanced, key="mc_enable")
-    if advanced:
+        enable_mc = st.checkbox(T("simulate_mc"), value=False, key="mc_enable")
         a, b = st.columns(2, wrap=True)
         with a:
             n_paths = st.selectbox(T("paths"), options=[250, 500, 1000, 2000, 5000],
@@ -429,19 +421,22 @@ with plan_tab:
         with b:
             seed = st.number_input(T("seed"), min_value=0, max_value=2**31 - 1,
                 value=42, key="mc_seed", disabled=not enable_mc)
-    else:
-        n_paths, seed = 1000, 42
 
-# The household editor and life-event editor each use half the full page width.
-# Avoid nesting them in the narrow essential-inputs panel on desktop.
-household_col, event_col = st.columns([1, 1], gap="large", vertical_alignment="top")
-with household_col:
-    children, adults, dependents = render_household(
-        p, int(years), int(start_year), float(expenses or 0.0), LANG, step)
-with event_col:
-    events = draw_events(int(start_year), int(years), p.currency,
-                         float(income or 0.0), float(expenses or 0.0))
-with st.container():
+# Keep family and life-event editors in the scenario panel after a projection.
+# Before the first run they share the full width; beside the results dashboard
+# they stack vertically so that narrow columns remain usable on desktop/mobile.
+with plan_tab:
+    if st.session_state.result is None:
+        household_col, event_col = st.columns([1, 1], gap="large", vertical_alignment="top")
+    else:
+        household_col, event_col = st.container(), st.container()
+    with household_col:
+        children, adults, dependents = render_household(
+            p, int(years), int(start_year), float(expenses or 0.0), LANG, step)
+    with event_col:
+        events = draw_events(int(start_year), int(years), p.currency,
+                             float(income or 0.0), float(expenses or 0.0))
+with plan_tab:
     if income is not None and expenses is not None:
         operating_surplus = (float(income) - float(expenses) -
             loan_payment(float(loan), float(loan_rate), int(loan_years)))
@@ -488,7 +483,7 @@ with st.container():
                 new_plan.validate()
                 with st.spinner(T("running")):
                     result = project(new_plan)
-                    mc = monte_carlo(new_plan, n_paths=int(n_paths), seed=int(seed)) if advanced and enable_mc else None
+                    mc = monte_carlo(new_plan, n_paths=int(n_paths), seed=int(seed)) if enable_mc else None
                 is_first_projection = st.session_state.result is None
                 st.session_state.plan = new_plan
                 st.session_state.confirmed_inputs = True
