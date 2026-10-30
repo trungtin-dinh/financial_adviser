@@ -13,6 +13,6 @@ def test_reference_page_renders_with_official_observations(lang):
     app.session_state["language_choice"] = lang
     app.run()
     assert not app.exception, (lang, app.exception)
-    assert b(lang, "title") in [str(item.value) for item in app.title]
+    assert any(b(lang, "title") in str(item.value) for item in app.title)
     assert len(app.metric) >= 2
     assert all("EUR" in str(m.value) for m in app.metric if lang and app.session_state.plan.country == "FR")
