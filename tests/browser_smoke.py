@@ -64,7 +64,7 @@ with sync_playwright() as pw:
         description_input.fill(f"UI check {lang}")
         description_input.press("Tab")
         page.get_by_role("button", name=re.compile(r"▾.*📅")).first.click()
-        assert description_input.count() == 0
+        description_input.wait_for(state="hidden", timeout=10000)
         page.get_by_role("button", name=re.compile(r"▸.*📅")).first.click()
         description_input.wait_for(state="visible", timeout=10000)
         assert description_input.input_value() == f"UI check {lang}"
@@ -85,7 +85,7 @@ with sync_playwright() as pw:
             assert a_box and b_box and abs(a_box["y"]-b_box["y"]) <= 12, (
                 f"Child age fields misaligned on desktop: {a_box}, {b_box}")
         page.get_by_role("button", name=re.compile(r"▾.*" + re.escape(child_title))).first.click()
-        assert age_input.count() == 0
+        age_input.wait_for(state="hidden", timeout=10000)
         dependent_add = {"fr":"Ajouter une personne à charge", "en":"Add another dependent",
                          "vi":"Thêm người phụ thuộc"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(dependent_add))).first.click(timeout=15000)
