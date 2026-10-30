@@ -20,7 +20,8 @@ def normalize_plan(plan: object) -> tuple[Plan, bool]:
     overwrite a failed migration with illustrative defaults.
     """
     if (isinstance(plan, Plan) and hasattr(plan, "children")
-            and hasattr(plan, "adults") and hasattr(plan, "dependents")):
+            and hasattr(plan, "adults") and hasattr(plan, "dependents")
+            and hasattr(plan, "property_purchase")):
         plan.validate()
         return plan, False
     if is_dataclass(plan) and not isinstance(plan, type):
