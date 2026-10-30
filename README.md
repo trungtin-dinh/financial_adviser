@@ -45,7 +45,7 @@
 
 ## Online demonstration
 
-The public application is available at **https://financial-adviser.streamlit.app/**. Streamlit Community Cloud may put idle apps to sleep; follow its wake-up prompt if necessary. This hosted application executes on a remote server: use **synthetic data** when trying the demo, and do not enter sensitive personal finances or medical details. For public availability checks and their limits, see [Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
+The public application is available at **https://financial-adviser.streamlit.app/**. Streamlit Community Cloud may put idle apps to sleep; follow its wake-up prompt if necessary. This hosted application executes on a remote server: use **synthetic data** when trying the demo, and do not enter sensitive personal finances or medical details. For post-publication browser smoke checks (synthetic French projection and Vietnamese mobile display) and their limits, see [Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
 
 ## Run locally
 

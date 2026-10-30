@@ -1,29 +1,26 @@
-# Vérifier le déploiement public Streamlit
+# Vérification de l'application Streamlit publique
 
-**URL déclarée par le propriétaire :** https://financial-adviser.streamlit.app/
+**URL déclarée :** https://financial-adviser.streamlit.app/
 
-La publication GitHub et l'hébergement Streamlit sont deux étapes distinctes. Un commit réussi et des tests sur le serveur local **ne prouvent pas que la version en ligne s'est actualisée**.
+La publication GitHub et le déploiement Streamlit sont distincts : un workflow de tests locaux réussi ne suffit pas à certifier la version en ligne.
 
-## Deux niveaux de contrôle
+## Ce qui est vérifié
 
-1. **Application locale / CI de code** : GitHub Actions « Python checks » installe, compile, exécute les tests Python, Streamlit AppTest et Playwright sur PC/tablette/mobile. Vérifie les fonctionnalités contrôlées dans le dépôt, sans intervenir sur le site public.
-2. **Site public / transport** : le workflow « Public Streamlit availability » vérifie en HTTPS l'URL publiée et le statut de santé avec des tentatives espacées. C'est un signal de disponibilité, **pas** une preuve de l'absence d'erreur au chargement des widgets, de la justesse des calculs ou de la version déployée.
+1. **GitHub Actions « Python and UX checks »** : code, tests, simulations et parcours sur Chromium local (bureau, tablette, mobile).
+2. **GitHub Actions « Public Streamlit browser smoke »** : après succès des tests locaux (ou déclenchement manuel), ouvre **le site public dans Chromium réel** et exécute avec des données de démonstration : ouverture en français, chargement de l'exemple, projection, accès au résultat; puis ouverture sur un écran mobile en vietnamien avec vérification du reflow. Les captures sont conservées comme artefacts GitHub Actions.
 
-Le workflow de disponibilité peut échouer temporairement parce que le site est en veille (Streamlit Community Cloud suspend les applications inactives), en redémarrage ou pendant une mise à jour. Une erreur doit conduire à examiner l'état et les journaux Streamlit avant d'imputer le problème au code.
+Ce contrôle représente un **test fonctionnel de fumée**, pas un audit exhaustif, un test de charge ou une garantie de cohérence fiscale.
 
-## Vérification fonctionnelle recommandée après publication
+## Pourquoi un navigateur réel ?
 
-- Ouvrir https://financial-adviser.streamlit.app/ dans un vrai navigateur sur PC et sur mobile.
-- Contrôler la version de l'app et tester le changement FR/EN/VI sans perte des champs.
-- Avec **données fictives**, saisir les revenus/dépenses/objectifs, lancer la projection et consulter le résultat.
-- Ajouter puis modifier/supprimer un événement de vie; vérifier qu'il intervient au mois voulu.
-- Tester un objectif inverse, exporter puis réimporter un scénario.
-- Ouvrir les références FR/VN et vérifier l'origine des chiffres. Vérifier qu'une source indisponible n'altère pas les valeurs.
-- Vérifier les messages d'erreur avec une saisie incomplète et l'absence de débordement horizontal à 320 CSS px.
-- Pour une vraie validation, utiliser clavier, lecteur d'écran et appareils physiques; documenter anomalie, captures, navigateur et date.
+Le premier essai en `urllib` a renvoyé une boucle de redirections HTTP 303, sans permettre d'évaluer l'application. Ce comportement des clients non navigateurs sur Streamlit Community Cloud est décrit par l'équipe Streamlit : https://github.com/streamlit/streamlit/issues/15369 . Les clients sans JavaScript ni cookies ne complètent pas toujours le processus de session, y compris pour des applications publiques. L'échec **ne prouvait donc pas une panne de notre code**. Le test a été remplacé par Chromium + Playwright.
 
-### Limitations de cette intervention
+## Conditions et limites
 
-L'accès HTTP automatisé au site public peut être limité depuis les environnements de recherche. Ne pas transformer un échec d'accès de l'outil en conclusion de panne du service. Ne jamais présenter un simple HTTP 200 comme une revue fonctionnelle complète.
+- Une application en veille peut afficher un écran de réveil ; le test tente de le prendre en charge.
+- Une mise à jour Streamlit peut ne pas être immédiatement disponible lors du lancement du workflow ; le test n'établit pas de correspondance cryptographique entre commit GitHub et version serveur.
+- Les tests n'utilisent jamais de données financières personnelles; les valeurs de l'exemple sont fictives.
+- Tester sur appareil réel, différents lecteurs d'écran, navigateurs et réseaux reste nécessaire.
+- En cas d'échec, consulter les captures GitHub, les journaux d'exécution et les logs de Streamlit Cloud. Ne pas conclure automatiquement que le site public est indisponible.
 
-Référence Streamlit : https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app
+Sources : https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app et https://github.com/streamlit/streamlit/issues/15369

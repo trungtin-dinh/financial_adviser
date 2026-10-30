@@ -4,7 +4,7 @@
 
 - URL Streamlit communiquée par le propriétaire : https://financial-adviser.streamlit.app/ (lien ajouté au README).
 - Référentiel fondé sur NN/g, ISO 9241-210, GOV.UK et WCAG 2.2, avec audit UX priorisé.
-- Contrôle HTTPS automatique post-CI de la disponibilité publique; une réponse HTTP ne vaut pas validation complète des interactions.
+- Premier contrôle HTTPS non navigateur bloqué par une boucle de redirections HTTP 303. Remplacé par un test Chromium public (exemple → projection → résultats + rendu mobile) après le workflow CI. Un test de fumée n'est pas un audit exhaustif.
 - La description et le lien « Website » dans les métadonnées GitHub nécessitent une modification du champ « About » séparément du README.
 
 

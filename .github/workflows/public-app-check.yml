@@ -1,4 +1,4 @@
-name: Public Streamlit availability
+name: Public Streamlit browser smoke
 
 on:
   workflow_run:
@@ -11,42 +11,27 @@ permissions:
   contents: read
 
 jobs:
-  live-http:
+  live-browser:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
-      - name: Public deployment HTTPS availability (not a functional UI audit)
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium browser test
+        run: |
+          python -m pip install playwright
+          python -m playwright install chromium --with-deps
+      - name: Exercise public application in real browser
         env:
           APP_URL: https://financial-adviser.streamlit.app
-        run: |
-          python - <<'PY'
-          import os
-          import time
-          import urllib.error
-          import urllib.request
-
-          base = os.environ["APP_URL"].rstrip("/")
-          endpoints = (base + "/", base + "/_stcore/health")
-          for attempt in range(1, 9):
-              failures = []
-              for url in endpoints:
-                  try:
-                      req = urllib.request.Request(url, headers={"User-Agent": "financial-adviser-public-availability/1.0"})
-                      with urllib.request.urlopen(req, timeout=18) as response:
-                          code = response.status
-                          data = response.read(4096)
-                      if code != 200 or not data:
-                          failures.append(f"{url}: status={code} empty={not bool(data)}")
-                      else:
-                          print(f"attempt={attempt} {url}: HTTP {code}, received {len(data)} bytes")
-                  except Exception as exc:
-                      failures.append(f"{url}: {type(exc).__name__}: {exc}")
-              if not failures:
-                  print("Public HTTP availability OK. This does NOT prove UI functions or deployed commit version.")
-                  break
-              print(f"Attempt {attempt}/8: " + "; ".join(failures), flush=True)
-              if attempt == 8:
-                  raise SystemExit("Public site could not be verified. Check Streamlit logs, deploy state or app sleep.")
-              time.sleep(20)
-          PY
+        run: python tests/live_browser_smoke.py
+      - name: Upload live review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-streamlit-review
+          path: artifacts/live
+          if-no-files-found: ignore
