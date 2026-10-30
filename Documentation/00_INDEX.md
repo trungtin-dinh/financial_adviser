@@ -42,6 +42,7 @@ Cette documentation distingue systématiquement :
 | [27_AUDIT_CIBLE_V0191.md](27_AUDIT_CIBLE_V0191.md) | Audit ciblé de la version 0.19.1, correction de l'horizon des objectifs et priorités de vérification du moteur, de l'UX et des modèles |
 | [28_ECHEANCES_RECURRENTES_V020.md](28_ECHEANCES_RECURRENTES_V020.md) | Échéances récurrentes datées, flux signés, conventions, garde-fous et tests de rétrocompatibilité |
 | [29_BILAN_PATRIMONIAL_V021.md](29_BILAN_PATRIMONIAL_V021.md) | Bilan patrimonial explicite : immobilier, autres actifs non liquides, revalorisation sans flux et invariants |
+| [30_ACHAT_IMMOBILIER_V022.md](30_ACHAT_IMMOBILIER_V022.md) | Achat immobilier futur daté : apport, frais, crédit séparé et mensualités sans double comptage |
 
 ## Règles de maintenance documentaire
 
