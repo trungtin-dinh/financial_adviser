@@ -126,7 +126,7 @@ with sync_playwright() as pw:
             # are selectable without leaving the results area.
             curves_label = {"fr": "Afficher / masquer les courbes",
                             "vi": "Hiện / ẩn đường biểu diễn"}[lang]
-            page.get_by_role("button", name=re.compile(re.escape(curves_label))).first.click(timeout=15000)
+            page.get_by_role("button", name=curves_label).first.click(timeout=15000)
             cash_name = {"fr": "Trésorerie", "vi": "Tiền mặt"}[lang]
             cash_curve = page.get_by_role("checkbox", name=cash_name, exact=True).first
             cash_curve.wait_for(state="visible", timeout=15000)
