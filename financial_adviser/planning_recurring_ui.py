@@ -47,14 +47,12 @@ def parse_recurring_rows(rows: list[dict]) -> tuple[RecurringFlow, ...]:
 
 def render_recurring_editor(plan: Plan, T) -> tuple[RecurringFlow, ...] | None:
     """Edit scheduled flows. Return None when incomplete data must block Run."""
-    frequency_labels = {key: T("recurring_" + key) for key in PERIODS}
-    label_to_key = {label: key for key, label in frequency_labels.items()}
     rows = [
         dict(
             start_month=flow.start_month,
             end_month=flow.end_month,
-            frequency=frequency_labels[next(k for k, n in PERIODS.items()
-                                      if n == flow.interval_months)],
+            frequency=next(k for k, n in PERIODS.items()
+                           if n == flow.interval_months),
             amount=flow.amount,
             description=flow.description,
         )
@@ -88,8 +86,8 @@ def render_recurring_editor(plan: Plan, T) -> tuple[RecurringFlow, ...] | None:
                     required=True,
                 ),
                 "frequency": st.column_config.SelectboxColumn(
-                    T("recurring_frequency"), options=list(frequency_labels.values()),
-                    required=True,
+                    T("recurring_frequency"), options=list(PERIODS),
+                    format_func=lambda key: T("recurring_" + key), required=True,
                 ),
                 "amount": st.column_config.NumberColumn(
                     T("recurring_amount"), step=1000000 if plan.currency == "VND" else 100,
@@ -100,8 +98,6 @@ def render_recurring_editor(plan: Plan, T) -> tuple[RecurringFlow, ...] | None:
         )
         try:
             raw = edited.to_dict(orient="records")
-            for item in raw:
-                item["frequency"] = label_to_key.get(item.get("frequency"))
             flows = parse_recurring_rows(raw)
             # Dates are validated here against the current, possibly edited horizon.
             if any(flow.end_month > plan.years * 12 or
