@@ -12,6 +12,10 @@ import streamlit as st
 
 from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
+from financial_adviser.charts import (
+    DEFAULT_WEALTH_SERIES, WEALTH_SERIES, household_figure,
+    uncertainty_figure, wealth_figure,
+)
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
@@ -242,6 +246,82 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                     first_month=e["first_month"], duration_months=e["duration_months"],
                     monthly_expense=e["monthly_expense"], monthly_income_change=e["monthly_income_change"],
                     upfront_cost=e["upfront_cost"]) for e in st.session_state.event_drafts)
+
+
+
+def reset_wealth_curves() -> None:
+    """Return to the simple two-curve default on explicit request."""
+    for field in WEALTH_SERIES:
+        st.session_state["chart_curve_" + field] = field in DEFAULT_WEALTH_SERIES
+
+
+@st.fragment
+def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None) -> None:
+    """Update chart options without rerunning the financial simulations."""
+    views = ["wealth"]
+    if q.children or q.adults or q.dependents:
+        views.append("household")
+    if mc is not None:
+        views.append("uncertainty")
+    if st.session_state.get("result_chart_view") not in (None, *views):
+        st.session_state.pop("result_chart_view", None)
+    selected_view = st.segmented_control(
+        T("chart_view"), views, default="wealth", required=True,
+        format_func=lambda option: T("chart_view_" + option),
+        key="result_chart_view", width="stretch",
+    )
+    if selected_view == "wealth":
+        with st.popover("☷ " + T("chart_curves"), width="stretch"):
+            st.caption(T("chart_curves_help"))
+            selected = [
+                field for field in WEALTH_SERIES
+                if st.checkbox(
+                    T({
+                        "net_worth": "net_worth",
+                        "net_worth_real": "net_worth_real",
+                        "cash": "cash_name",
+                        "investments": "investments_name",
+                        "loan_balance": "loan_name",
+                        "goal_nominal": "target_name",
+                        "goal_real": "chart_goal_real",
+                    }[field]),
+                    value=field in DEFAULT_WEALTH_SERIES,
+                    key="chart_curve_" + field,
+                )
+            ]
+            st.button(
+                T("chart_reset"), on_click=reset_wealth_curves,
+                key="chart_reset_curves", width="stretch",
+            )
+        if selected:
+            fig = wealth_figure(df, q.goal, q.start_year, q.currency, selected, T)
+            st.plotly_chart(fig, width="stretch", key="financial_wealth_chart",
+                            config={"displaylogo": False, "scrollZoom": False})
+        else:
+            st.info(T("chart_select_one"))
+        st.caption(T("chart_goal_comparison"))
+    elif selected_view == "household":
+        st.caption(T("chart_household_signed"))
+        fig = household_figure(df, q.start_year, q.currency, T)
+        if len(fig.data):
+            st.plotly_chart(fig, width="stretch", key="financial_household_chart",
+                            config={"displaylogo": False, "scrollZoom": False})
+        else:
+            st.info(T("chart_household_no_change"))
+        if q.children:
+            st.caption(T("household_total_child", value=money(
+                float(df.child_expenses.sum()), q.currency)))
+    elif selected_view == "uncertainty" and mc is not None:
+        st.caption(T("mc_hint", paths=mc.sample_paths, seed=mc.seed))
+        st.plotly_chart(
+            uncertainty_figure(df, mc, q.start_year, q.currency, T),
+            width="stretch", key="financial_uncertainty_chart",
+            config={"displaylogo": False, "scrollZoom": False},
+        )
+        a, b = st.columns(2, wrap=True)
+        a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
+        b.metric(T("chart_min_cash"), money(float(df.cash.min()), q.currency))
+        st.caption(T("chart_mc_cash_note"))
 
 
 if "plan" not in st.session_state:
@@ -537,58 +617,15 @@ if st.session_state.result is not None:
                       help=T("debt_service_help"))
             if (df.cash < 0).any():
                 st.warning(T("negative_cash"))
-            fig = go.Figure()
-            for field, label, color in [("net_worth", "net_worth", "#145DA0"),
-                                        ("net_worth_real", "net_worth_real", "#d97706")]:
-                fig.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label), line=dict(color=color)))
-            fig.add_hline(y=q.goal, line_dash="dash", annotation_text=T("target_name"))
-            fig.update_layout(title=T("chart_wealth"), xaxis_title=T("year"), yaxis_title=q.currency,
-                              height=335, margin=dict(l=10, r=10, t=55, b=25),
-                              legend=dict(orientation="h", y=-0.25))
-            st.plotly_chart(fig, width="stretch")
-            fig2 = go.Figure()
-            for field, label in [("cash", "cash_name"), ("investments", "investments_name"), ("loan_balance", "loan_name")]:
-                fig2.add_trace(go.Scatter(x=df.year, y=df[field], name=T(label)))
-            fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
-                               height=300, margin=dict(l=10, r=10, t=55, b=25))
-            st.plotly_chart(fig2, width="stretch")
-            if q.children or q.adults or q.dependents:
-                st.subheader(T("household_graph"))
-                st.caption(T("household_graph_note"))
-                fig_household = go.Figure()
-                fig_household.add_trace(go.Scatter(x=df.year, y=df.child_expenses,
-                    name=T("household_child_delta")))
-                fig_household.add_trace(go.Scatter(x=df.year, y=df.adult_expenses,
-                    name=T("household_adult_delta")))
-                fig_household.add_trace(go.Scatter(x=df.year, y=df.dependent_expenses,
-                    name=T("household_dependent_delta")))
-                fig_household.add_trace(go.Scatter(x=df.year, y=df.retirement_income_change,
-                    name=T("household_retirement_delta")))
-                fig_household.update_layout(height=290, xaxis_title=T("year"),
-                    yaxis_title=q.currency, margin=dict(l=10, r=10, t=40, b=20))
-                st.plotly_chart(fig_household, width="stretch")
-                st.caption(T("household_total_child", value=money(float(df.child_expenses.sum()), q.currency)))
-            if result["mc"] is not None:
-                mc = result["mc"]
-                st.subheader(T("mc_title"))
-                st.caption(T("mc_hint", paths=mc.sample_paths, seed=mc.seed))
-                xs = q.start_year + mc.months / 12
-                fan = go.Figure()
-                fan.add_trace(go.Scatter(x=xs, y=mc.p90, line=dict(width=0), showlegend=False, hoverinfo="skip"))
-                fan.add_trace(go.Scatter(x=xs, y=mc.p10, fill="tonexty", line=dict(width=0), name="P10–P90",
-                                         fillcolor="rgba(20,93,160,0.17)"))
-                fan.add_trace(go.Scatter(x=xs, y=mc.p50, name=T("median"), line=dict(color="#145DA0", width=3)))
-                fan.update_layout(height=300, xaxis_title=T("year"), yaxis_title=q.currency)
-                st.plotly_chart(fan, width="stretch")
-                a, b = st.columns(2, wrap=True)
-                a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
-                b.metric(T("cash_risk"), f"{mc.probability_negative_cash:.1%}")
-            st.subheader(T("yearly"))
-            yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
-            st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),
-                "investments": T("investments_name"), "loan_balance": T("loan_name"),
-                "net_worth": T("net_worth"), "net_worth_real": T("net_worth_real")}).round(2),
-                hide_index=True, width="stretch")
+            # Stock, monthly-flow and uncertainty plots share one chart area.
+            # Controls are isolated so selecting a curve does not rerun the engine.
+            render_result_charts(q, df, result["mc"])
+            with st.expander(T("yearly"), expanded=False):
+                yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
+                st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),
+                    "investments": T("investments_name"), "loan_balance": T("loan_name"),
+                    "net_worth": T("net_worth"), "net_worth_real": T("net_worth_real")}).round(2),
+                    hide_index=True, width="stretch")
             st.download_button(T("export_csv"), df.to_csv(index=False).encode("utf-8"),
                                "financial_projection_monthly.csv", mime="text/csv")
             st.caption(T("result_limit"))

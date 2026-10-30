@@ -23,6 +23,7 @@ if pkg.__version__ != disk_version:
         "financial_adviser.households",
         "financial_adviser.models",
         "financial_adviser.engine",
+        "financial_adviser.charts",
         "financial_adviser.scenarios",
         "financial_adviser.io",
         "financial_adviser.session_compat",
