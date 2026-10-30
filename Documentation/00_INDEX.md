@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** documentation vivante du projet, revue le 30 octobre 2026. **Version applicative courante du dépôt :** v0.20.0. Les documents historiques conservent les versions et hypothèses auxquelles ils se rapportent ; ils ne décrivent pas nécessairement toutes les fonctionnalités actuelles.
+**État :** documentation vivante du projet, revue le 30 octobre 2026. **Version applicative courante du dépôt :** v0.21.0. Les documents historiques conservent les versions et hypothèses auxquelles ils se rapportent ; ils ne décrivent pas nécessairement toutes les fonctionnalités actuelles.
 
 Cette documentation distingue systématiquement :
 
@@ -41,6 +41,7 @@ Cette documentation distingue systématiquement :
 | [26_CALENDRIER_TRESORERIE.md](26_CALENDRIER_TRESORERIE.md) | Conventions du nouveau calendrier des flux mensuels, limitations et vérifications à conduire |
 | [27_AUDIT_CIBLE_V0191.md](27_AUDIT_CIBLE_V0191.md) | Audit ciblé de la version 0.19.1, correction de l'horizon des objectifs et priorités de vérification du moteur, de l'UX et des modèles |
 | [28_ECHEANCES_RECURRENTES_V020.md](28_ECHEANCES_RECURRENTES_V020.md) | Échéances récurrentes datées, flux signés, conventions, garde-fous et tests de rétrocompatibilité |
+| [29_BILAN_PATRIMONIAL_V021.md](29_BILAN_PATRIMONIAL_V021.md) | Bilan patrimonial explicite : immobilier, autres actifs non liquides, revalorisation sans flux et invariants |
 
 ## Règles de maintenance documentaire
 
