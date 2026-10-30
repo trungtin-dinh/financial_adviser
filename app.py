@@ -20,6 +20,7 @@ with st.sidebar:
 
 page = st.navigation([
     st.Page("pages/planning.py", title=t(lang, "nav_plan"), icon=":material/finance:", default=True),
+    st.Page("pages/benchmarks.py", title=t(lang, "nav_benchmarks"), icon=":material/monitoring:"),
     st.Page("pages/guide.py", title=t(lang, "nav_guide"), icon=":material/menu_book:"),
     st.Page("pages/sources.py", title=t(lang, "nav_sources"), icon=":material/public:"),
 ])

@@ -59,4 +59,14 @@ with sync_playwright() as pw:
         assert overflow <= 8, f"Event form overflow: {lang}/{device}, {overflow}px"
         print(f"OK {lang} {device} {width}x{height}: no page overflow, event card usable")
         page.close()
+
+    # Statistical reference page on different viewports and languages.
+    for lang, width, height in [("fr", 1440, 900), ("en", 390, 844), ("vi", 360, 800)]:
+        page = browser.new_page(viewport={"width": width, "height": height})
+        page.goto(f"{BASE}/benchmarks?lang={lang}", wait_until="domcontentloaded", timeout=60000)
+        title = {"fr": "Références statistiques", "en": "Statistical references", "vi": "Số liệu thống kê tham khảo"}[lang]
+        page.get_by_text(title, exact=True).first.wait_for(timeout=30000)
+        assert page.evaluate("document.documentElement.scrollWidth - window.innerWidth") <= 8
+        page.screenshot(path=str(OUT / f"{lang}_benchmarks.png"), full_page=True)
+        page.close()
     browser.close()

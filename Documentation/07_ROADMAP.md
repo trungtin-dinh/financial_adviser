@@ -1,3 +1,7 @@
+# Plan directeur
+
+Le plan complet et les critères d'acceptation de chaque phase se trouvent dans [12_PLAN_GLOBAL.md](12_PLAN_GLOBAL.md). Ce fichier conserve l'historique de la roadmap initiale.
+
 # Roadmap — Financial Adviser
 
 La progression doit être incrémentale ; chaque jalon se termine par code testable, documentation synchronisée et limites explicites.

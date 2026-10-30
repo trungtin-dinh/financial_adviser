@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.3.0_MVP-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.4.0_MVP-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
@@ -10,7 +10,12 @@
 
 > **Important:** This is a first usable **MVP**, not an investment adviser, tax calculator, account aggregator, or forecast of future asset returns. Default rates and income amounts are *illustrative assumptions*, not market estimates or personalized recommendations. Avoid entering confidential data in deployments you do not control.
 
-## Features in v0.3.0
+## Features in v0.4.0
+
+- **France/Vietnam statistical reference explorer**: dated official observations with exact population, average/median, source, and explicit incompatibility with personal inputs.
+- **Consent-based optional inflation preset**: preview the World Bank historical observation and choose whether to use it as a non-predictive future assumption. Personal inputs and life events remain unchanged.
+- **Global execution plan** with phase dependencies, acceptance criteria and remaining limitations.
+
 
 - **Unified display language:** interface strings, navigation and charts follow a single language (FR/EN/VI). Technical reference documents are explicitly identified as French originals.
 - **Responsive event cards:** individual life events replace the former seven-column editor; each card has date, duration, recurring costs, income change and upfront cost.
@@ -31,6 +36,8 @@
 - Language controls for French, English and Vietnamese; country presets in EUR/VND (no automatic foreign-exchange conversion yet).
 - Optional manual/opt-in fetch of **historical** inflation observations from the [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392), with a 24-hour Streamlit cache. The data does not silently overwrite scenario assumptions.
 - A sourced regulatory-reference catalogue that does **not** execute fiscal calculations.
+
+**Historical population statistics are not personal estimates. No median or per-capita average is silently copied into a financial plan.**
 
 ## Run locally
 
@@ -93,3 +100,8 @@ Technical documentation remains primarily in French; interface controls, message
 ## License
 
 No project license has been selected yet. The source is visible on GitHub, but it is **not automatically licensed for redistribution** until a license is added. The reference applications cited in the docs have their own independent licenses; this project does not copy their source code.
+
+## Project plan and official statistical sources
+
+- [Comprehensive execution plan](Documentation/12_PLAN_GLOBAL.md)
+- [Statistical data sources, compatibility and user consent](Documentation/13_REFERENCES_STATISTIQUES_V04.md)

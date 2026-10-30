@@ -209,6 +209,8 @@ plan_tab, results_tab, goal_tab, compare_tab = st.tabs([
 with plan_tab:
     st.subheader(T("basic"))
     st.caption(T("plan_intro"))
+    if st.button("📊 " + T("nav_benchmarks"), key="show_statistical_references", width="stretch"):
+        st.switch_page("pages/benchmarks.py")
     if not st.session_state.confirmed_inputs:
         st.warning(T("required_warning"))
     a, b = st.columns(2, wrap=True)

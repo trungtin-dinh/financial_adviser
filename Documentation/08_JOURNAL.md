@@ -1,5 +1,14 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.4.0 : catalogue statistique et plan directeur
+
+- Plan d'ensemble et critères d'acceptation : `Documentation/12_PLAN_GLOBAL.md`.
+- Sources officielles INSEE/NSO avec unité, année, population et nature moyenne/médiane.
+- Données de population incompatibles : lecture seule, sans injection personnelle automatique.
+- Inflation World Bank : aperçu et consentement avant application au scénario, jamais présentée comme prévision.
+- Les phases nationales, la fiscalité, les probabilités de risques et les études utilisateurs réelles restent non implémentées.
+
+
 ## 2026-10-29 — Refonte v0.2.0 : événements de vie, objectif inverse et parcours utilisateur
 
 - Refondre `app.py` en routeur multipage (`pages/planning.py`, `pages/guide.py`, `pages/sources.py`).
