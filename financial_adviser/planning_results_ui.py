@@ -87,6 +87,7 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None, T, money)
                         "event_start": "chart_event_start",
                         "event_end": "chart_event_end",
                         "oneoff": "chart_event_oneoff",
+                        "property_purchase": "chart_event_property_purchase",
                         "child_arrival": "chart_event_child_arrival",
                         "child_support_end": "chart_event_child_support_end",
                         "dependent_start": "chart_event_dependent_start",
