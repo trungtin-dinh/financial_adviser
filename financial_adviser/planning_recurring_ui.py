@@ -87,7 +87,8 @@ def render_recurring_editor(plan: Plan, T) -> tuple[RecurringFlow, ...] | None:
                 ),
                 "frequency": st.column_config.SelectboxColumn(
                     T("recurring_frequency"), options=list(PERIODS),
-                    format_func=lambda key: T("recurring_" + key), required=True,
+                    format_func=lambda key: T("recurring_" + key) if key in PERIODS else "",
+                    required=True,
                 ),
                 "amount": st.column_config.NumberColumn(
                     T("recurring_amount"), step=1000000 if plan.currency == "VND" else 100,
