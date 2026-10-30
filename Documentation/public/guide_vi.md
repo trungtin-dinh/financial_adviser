@@ -193,6 +193,10 @@ Các trường thiết yếu được ưu tiên; những giả định chuyên s
 
 ### Chi phí một lần và sự kiện kéo dài
 
+Bạn có thể khai **khoản thu hoặc chi định kỳ** trong một bảng riêng, với tháng bắt đầu và kết thúc, chu kỳ hằng tháng / quý / năm, số tiền có dấu và mô tả. **Tháng 1 là tháng Một của năm bắt đầu.** Chi phí mang dấu âm; thu nhập mang dấu dương. Ví dụ, bảo hiểm 600 € trả vào tháng Hai mỗi năm xuất hiện ở các tháng 2, 14 và 26 nếu lịch còn hiệu lực. Chi phí không được chia trung bình một cách giả tạo cho mọi tháng.
+
+Những khoản này **được cộng vào dòng tiền khác mà không tự điều chỉnh theo lạm phát**. Không khai lại khoản chi đã tính trong chi tiêu cơ sở. Lịch dòng tiền trong kết quả tách riêng khoản định kỳ và sự kiện một lần. Tiền mặt âm vẫn là khoản thiếu hụt chưa có nguồn tài trợ.
+
 Một khoản thu hoặc chi một lần chỉ xuất hiện ở tháng đã chọn, chẳng hạn mua thiết bị giá 2.000 € tại tháng 12. Một **sự kiện cuộc sống** có thể gồm chi phí ban đầu, chi tiêu bổ sung hằng tháng và thay đổi thu nhập trong một khoảng thời gian.
 
 **Ví dụ giả định:** chuyển nhà bắt đầu tháng 7, kéo dài hai tháng, tốn 1.500 € lúc đầu và phát sinh thêm 200 € chi tiêu mỗi tháng. Tổng tác động trực tiếp là 1.900 € trước ảnh hưởng của lợi suất và lạm phát. Nếu tiền thuê mới đã nằm trong chi tiêu cơ sở, không được cộng thêm 200 € lần nữa.
