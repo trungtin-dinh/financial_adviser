@@ -7,6 +7,15 @@ machine-readable files are intentionally not translated.
 TEXT = {
     "fr": {
     "cashflow_title": "Calendrier de trésorerie mensuel",
+    "patrimony_title": "Biens et patrimoine non liquide (facultatif)",
+    "patrimony_intro": "Déclarez uniquement des biens déjà possédés. Aucune valeur immobilière n'est créée automatiquement à partir du crédit.",
+    "patrimony_property": "Valeur actuelle du patrimoine immobilier",
+    "patrimony_other": "Autres actifs non liquides",
+    "patrimony_growth": "Variation annuelle supposée de l'immobilier (%)",
+    "patrimony_no_cash": "La variation de valeur immobilière n'est pas un revenu disponible. Les autres actifs restent constants en valeur nominale ; aucun frais, loyer ni taxe immobilière n'est calculé automatiquement.",
+    "patrimony_breakdown": "Détail du bilan patrimonial final",
+    "patrimony_gross_assets": "Total des actifs bruts",
+    "patrimony_result_note": "Patrimoine net = trésorerie + placements + immobilier + autres actifs − dette restante. Les biens ne sont pas automatiquement vendus pour financer une trésorerie négative.",
     "cashflow_intro": "Flux détaillés de la dernière projection calculée, sans utiliser les modifications non encore validées.",
     "recurring_title": "Échéances récurrentes (facultatif)",
     "recurring_intro": "Ajoutez une ligne par paiement ou revenu périodique. Le mois 1 correspond à janvier de l'année de départ. Utilisez le bouton + du tableau pour ajouter une ligne.",
@@ -81,6 +90,15 @@ TEXT = {
 }
 TEXT["en"].update({
     "cashflow_title": "Monthly cash-flow calendar",
+    "patrimony_title": "Property and illiquid assets (optional)",
+    "patrimony_intro": "Enter only assets you already own. An outstanding mortgage does not automatically create property value.",
+    "patrimony_property": "Current property value",
+    "patrimony_other": "Other illiquid assets",
+    "patrimony_growth": "Assumed annual property value change (%)",
+    "patrimony_no_cash": "Changes in property value do not generate spendable income. Other illiquid assets retain a constant nominal value; property taxes, rent and fees are not added automatically.",
+    "patrimony_breakdown": "Final balance-sheet breakdown",
+    "patrimony_gross_assets": "Total gross assets",
+    "patrimony_result_note": "Net worth = cash + investments + property + other assets − remaining debt. Illiquid assets are not automatically sold to cover a negative cash balance.",
     "cashflow_intro": "Monthly flows from the last calculated projection; unsaved form changes are not applied.",
     "recurring_title": "Recurring payments and income (optional)",
     "recurring_intro": "Add one row for each periodic payment or income. Month 1 is January of the starting year. Use the table's + control to add a row.",
@@ -151,6 +169,15 @@ TEXT["en"].update({
 
 TEXT["vi"].update({
     "cashflow_title": "Lịch dòng tiền hằng tháng",
+    "patrimony_title": "Bất động sản và tài sản khó thanh khoản (không bắt buộc)",
+    "patrimony_intro": "Chỉ khai những tài sản đã sở hữu. Khoản vay không tự tạo ra giá trị bất động sản trong mô hình.",
+    "patrimony_property": "Giá trị bất động sản hiện tại",
+    "patrimony_other": "Tài sản khó thanh khoản khác",
+    "patrimony_growth": "Thay đổi giá trị bất động sản giả định mỗi năm (%)",
+    "patrimony_no_cash": "Tăng giá bất động sản không tạo ra thu nhập có thể chi tiêu ngay. Tài sản khó thanh khoản khác giữ nguyên giá trị danh nghĩa; không tự tính thuế, tiền thuê hoặc chi phí liên quan.",
+    "patrimony_breakdown": "Chi tiết bảng cân đối tài sản cuối kỳ",
+    "patrimony_gross_assets": "Tổng giá trị tài sản trước khi trừ nợ",
+    "patrimony_result_note": "Tài sản ròng = tiền mặt + đầu tư + bất động sản + tài sản khác − dư nợ. Không tự bán tài sản khó thanh khoản để bù tiền mặt âm.",
     "cashflow_intro": "Dòng tiền lấy từ lần tính dự phóng gần nhất; các thay đổi chưa được tính lại không được áp dụng.",
     "recurring_title": "Khoản thu chi định kỳ (không bắt buộc)",
     "recurring_intro": "Thêm mỗi khoản thu hoặc chi định kỳ vào một dòng. Tháng 1 là tháng Một của năm bắt đầu. Dùng dấu + trong bảng để thêm dòng.",
