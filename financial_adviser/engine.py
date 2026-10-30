@@ -49,7 +49,7 @@ def _loan_schedule(plan: Plan) -> tuple[np.ndarray, np.ndarray]:
     return balances, payments
 
 
-def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     n = plan.years * 12
     t = np.arange(n, dtype=float) / 12.0
     income = plan.monthly_income * np.power(1 + plan.income_growth_pct / 100, t)
@@ -57,6 +57,9 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
     events = np.zeros(n)
     for event in plan.one_offs:
         events[event.month - 1] += event.amount
+    recurring = np.zeros(n)
+    for flow in plan.recurring_flows:
+        recurring[flow.start_month - 1:flow.end_month:flow.interval_months] += flow.amount
     child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
     spending += child_costs + adult_costs + dependent_adjustments(plan)
     income += retirement_income_change
@@ -67,14 +70,14 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
         income[start:stop] += item.monthly_income_change
         events[start] -= item.upfront_cost
     outstanding, payments = _loan_schedule(plan)
-    return income, spending, events, outstanding, payments
+    return income, spending, events, recurring, outstanding, payments
 
 
 def project(plan: Plan) -> pd.DataFrame:
     """Simulate each month; contributions/events occur before monthly interest."""
     plan.validate()
     n = plan.years * 12
-    income, expenses, events, loan, payment = _drivers(plan)
+    income, expenses, events, recurring, loan, payment = _drivers(plan)
     cash = np.empty(n + 1)
     invested = np.empty(n + 1)
     cash[0], invested[0] = plan.initial_cash, plan.initial_investments
@@ -83,7 +86,7 @@ def project(plan: Plan) -> pd.DataFrame:
     rc, ri, inflation = (monthly_rate(v) for v in (
         plan.cash_return_pct, plan.investment_return_pct, plan.inflation_pct))
     for m in range(1, n + 1):
-        free_cashflow = income[m - 1] - expenses[m - 1] - payment[m] + events[m - 1]
+        free_cashflow = income[m - 1] - expenses[m - 1] - payment[m] + events[m - 1] + recurring[m - 1]
         cash[m] = (cash[m - 1] + free_cashflow - plan.monthly_investment) * (1 + rc)
         invested[m] = (invested[m - 1] + plan.monthly_investment) * (1 + ri)
     periods = np.arange(n + 1)
@@ -102,6 +105,7 @@ def project(plan: Plan) -> pd.DataFrame:
         "expenses": np.r_[0, expenses],
         "loan_payment": payment,
         "one_off": np.r_[0, events],
+        "recurring_flow": np.r_[0, recurring],
         "child_expenses": np.r_[0, child_costs],
         "adult_expenses": np.r_[0, adult_costs],
         "dependent_expenses": np.r_[0, dependent_costs],
@@ -138,14 +142,14 @@ def monte_carlo(plan: Plan, n_paths: int = 1000, seed: int = 42) -> MonteCarloRe
     cash = np.full(n_paths, plan.initial_cash, dtype=float)
     invested = np.full(n_paths, plan.initial_investments, dtype=float)
     outcomes = np.empty((n + 1, n_paths))
-    income, expenses, events, loan, payments = _drivers(plan)
+    income, expenses, events, recurring, loan, payments = _drivers(plan)
     outcomes[0] = cash + invested - loan[0]
     rc = monthly_rate(plan.cash_return_pct)
     mean_return = monthly_rate(plan.investment_return_pct)
     std_return = plan.investment_volatility_pct / 100.0 / sqrt(12.0)
     negative_cash = cash < 0
     for m in range(1, n + 1):
-        free_cashflow = income[m - 1] - expenses[m - 1] - payments[m] + events[m - 1]
+        free_cashflow = income[m - 1] - expenses[m - 1] - payments[m] + events[m - 1] + recurring[m - 1]
         cash = (cash + free_cashflow - plan.monthly_investment) * (1 + rc)
         returns = np.maximum(rng.normal(mean_return, std_return, size=n_paths), -0.99)
         invested = (invested + plan.monthly_investment) * (1 + returns)
