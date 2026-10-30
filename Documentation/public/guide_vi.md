@@ -64,6 +64,12 @@ Thu nhập và chi tiêu cơ sở thay đổi theo giả định tăng trưởng
 
 Mục tiêu tài sản được nhập theo giá trị **danh nghĩa**. Đạt mục tiêu ở cuối kỳ không đồng nghĩa với việc tiền mặt luôn dương trong toàn bộ thời gian. Hãy kiểm tra riêng hai điều kiện này.
 
+### Tính ngược: cần thay đổi gì để đạt mục tiêu?
+
+Chức năng tìm cách đạt mục tiêu xem xét ba **biện pháp độc lập**: **tăng thu nhập ròng hằng tháng ngay từ đầu**, **giảm chi tiêu cơ sở hằng tháng**, hoặc **bổ sung tiền mặt ban đầu từ bên ngoài**. Với mỗi biện pháp riêng lẻ, tài sản ròng cuối kỳ phải đạt ít nhất mục tiêu danh nghĩa **và tiền mặt không được âm ở bất kỳ tháng nào**. Ba biện pháp không tự động được cộng dồn.
+
+Không thể giảm chi tiêu bằng cách bỏ qua những khoản chi gia đình bạn đã xác nhận nằm trong ngân sách cơ sở. Tiền mặt bổ sung ban đầu phải là **nguồn tiền mới bên ngoài tài sản hiện có**, không phải chuyển giữa các tài khoản của mình. Khi một biện pháp được báo là không khả thi, điều đó chỉ có nghĩa không tìm được phương án thỏa mãn **các giả định và ràng buộc đang chọn**, chứ không chứng minh rằng mục tiêu bất khả thi ngoài đời thực.
+
 ## 3. Nguồn dữ liệu và độ tin cậy
 
 Ứng dụng phân biệt **thống kê quá khứ**, **giả định cho tương lai** và **quy định pháp luật**. Không nên trực tiếp sử dụng một con số trung bình toàn quốc để thay thế thu nhập hoặc chi phí của gia đình mình.
