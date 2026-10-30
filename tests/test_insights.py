@@ -7,6 +7,8 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from financial_adviser.engine import loan_payment, project
+from financial_adviser.charts import WEALTH_SERIES, wealth_figure, comparison_figure
+from financial_adviser.comparisons import build_comparisons
 from financial_adviser.insights import summarize_projection
 from financial_adviser.models import LifeEvent, Plan
 from financial_adviser.ui_i18n import t
@@ -41,7 +43,7 @@ def test_liquidity_and_nominal_goal_are_independent():
         years=1, initial_cash=0, initial_investments=150_000,
         monthly_income=0, monthly_expenses=2_000,
         monthly_investment=0, goal=1_000, cash_return_pct=0,
-        investment_return_pct=5,
+        investment_return_pct=5, expense_growth_pct=0,
     )
     df = project(plan)
     facts = summarize_projection(plan, df)
@@ -131,3 +133,36 @@ def test_public_summary_is_readable_and_derived_from_saved_scenario(language):
                for item in app.get("expander"))
     assert app.session_state["plan"] == plan
     pd.testing.assert_frame_equal(app.session_state["result"]["df"], df)
+
+
+
+def test_zero_target_does_not_display_success_or_nominal_target_lines():
+    plan = Plan(
+        years=1, goal=0, initial_cash=3_000, monthly_income=1_600,
+        monthly_expenses=1_400, monthly_investment=0)
+    df = project(plan)
+    wealth = wealth_figure(
+        df, plan.goal, plan.start_year, plan.currency,
+        WEALTH_SERIES, lambda k: t("en", k))
+    assert len(wealth.data) == len(WEALTH_SERIES) - 2
+    comparison = comparison_figure(
+        build_comparisons(plan, 1, 3.0), plan.start_year, plan.currency,
+        lambda k: t("en", k), plan.goal)
+    assert not comparison.layout.shapes
+
+    app = AppTest.from_file(str(ROOT / "pages" / "planning.py"),
+                            default_timeout=30)
+    app.session_state["language_choice"] = "en"
+    app.session_state["plan"] = plan
+    app.session_state["result"] = {
+        "plan": plan, "df": df, "mc": None,
+    }
+    app.session_state["confirmed_inputs"] = True
+    app.run()
+    assert not app.exception, app.exception
+    goal_metric = next(
+        metric for metric in app.get("metric")
+        if metric.label == t("en", "goal_reached"))
+    assert goal_metric.value == t("en", "not_applicable")
+    rendered = "\n".join(str(item.value) for item in app.get("markdown"))
+    assert t("en", "summary_goal_zero") in rendered

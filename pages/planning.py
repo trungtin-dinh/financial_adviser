@@ -359,7 +359,8 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None) -> None:
             config={"displaylogo": False, "scrollZoom": False},
         )
         a, b = st.columns(2, wrap=True)
-        a.metric(T("goal_probability"), f"{mc.probability_goal:.1%}")
+        a.metric(T("goal_probability"),
+                 f"{mc.probability_goal:.1%}" if q.goal > 0 else T("not_applicable"))
         b.metric(T("chart_min_cash"), money(float(df.cash.min()), q.currency))
         st.caption(T("chart_mc_cash_note"))
 
@@ -525,7 +526,8 @@ def render_comparison_tab(base: Plan) -> None:
             T("compare_real_final"): money(case.terminal_real, base.currency),
             T("compare_delta"): money(case.terminal_delta, base.currency),
             T("chart_min_cash"): money(case.minimum_cash, base.currency),
-            T("reached_col"): T("yes") if case.goal_reached else T("no"),
+            T("reached_col"): T("not_applicable") if base.goal == 0
+            else (T("yes") if case.goal_reached else T("no")),
         } for case in comparisons]
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
     st.caption(T("compare_horizon_disclaimer"))
@@ -908,7 +910,8 @@ if st.session_state.result is not None:
             a.metric(T("net_worth"), money(float(last.net_worth), q.currency))
             b.metric(T("net_worth_real"), money(float(last.net_worth_real), q.currency))
             c.metric(T("remaining_loan"), money(float(last.loan_balance), q.currency))
-            d.metric(T("goal_reached"), T("yes") if last.net_worth >= q.goal else T("no"))
+            d.metric(T("goal_reached"), T("not_applicable") if q.goal == 0
+                     else (T("yes") if last.net_worth >= q.goal else T("no")))
             initial_loan_payment = loan_payment(q.loan_balance, q.loan_apr_pct, q.loan_years)
             liquidity = analyze_liquidity(q, df)
             runway = liquidity.static_reserve_months

@@ -125,6 +125,8 @@ def wealth_figure(df: pd.DataFrame, goal: float, start_year: int,
     for field in WEALTH_SERIES:
         if field not in requested:
             continue
+        if field.startswith("goal_") and goal <= 0:
+            continue  # No meaningful positive target was configured.
         dash = "dot" if field.startswith("goal_") else (
             "dash" if field == "net_worth_real" else "solid"
         )
@@ -273,9 +275,10 @@ def comparison_figure(cases: Iterable[object], start_year: int, currency: str,
               dash="solid" if key == "scenario_base" else "dash",
               width=3.2 if key == "scenario_base" else 2.0)
     _axis(fig, reference, start_year, currency, translate("year"))
-    fig.add_hline(
-        y=goal, line=dict(color="#6B7280", dash="dot", width=1.1),
-    )
+    if goal > 0:
+        fig.add_hline(
+            y=goal, line=dict(color="#6B7280", dash="dot", width=1.1),
+        )
     return fig
 
 
