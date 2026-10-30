@@ -221,6 +221,8 @@ def event_markers(plan: Plan) -> tuple[EventMarker, ...]:
         add(event.first_month + event.duration_months, event.label, "event_end")
     for item in plan.one_offs:
         add(item.month, item.description, "oneoff")
+    if plan.property_purchase is not None:
+        add(plan.property_purchase.month, "", "property_purchase")
     for child in plan.children:
         add(child.arrival_month, child.label, "child_arrival")
         add(child.arrival_month +
