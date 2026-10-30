@@ -172,8 +172,8 @@ def test_user_can_calculate_and_change_output_without_editing_saved_plan(languag
     app.session_state["confirmed_inputs"] = True
     app.run()
     assert not app.exception, app.exception
-    assert any(ex.label == t(language, "sens_title")
-               for ex in app.get("expander"))
+    assert any(str(x.value) == t(language, "sens_title")
+               for x in app.get("subheader"))
     assert app.session_state.get("_sensitivity_cache") is None
     app.button(key="sensitivity_run").click().run()
     assert not app.exception, app.exception

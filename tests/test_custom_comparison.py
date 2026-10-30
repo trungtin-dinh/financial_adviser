@@ -194,8 +194,8 @@ def test_custom_form_and_result_selectors_keep_reference_unchanged(language):
     app.session_state["confirmed_inputs"] = True
     app.run()
     assert not app.exception, app.exception
-    assert any(x.label == t(language, "custom_title")
-               for x in app.get("expander"))
+    assert any(str(x.value) == t(language, "custom_title")
+               for x in app.get("subheader"))
     assert app.session_state.get("_custom_comparison") is None
     assert app.radio(key="custom_input_mode").value == "edit"
     app.number_input(key="custom_field_monthly_income").set_value(3500.0)

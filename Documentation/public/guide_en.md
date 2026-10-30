@@ -90,7 +90,7 @@ Keep a future return, pension or wage-growth figure clearly labelled as a **scen
 
 The user journey is straightforward: **enter a plan**, **adjust assumptions**, **run the calculation** and **review the results**.
 
-Charts show net worth, cash, investments and remaining debt. Indicators flag potential cash deficits and whether the stated financial goal is reached. Optional comparisons use a **shared, user-selected horizon** without silently replacing the reference scenario. Life-event dates can be shown or hidden on the main chart to provide temporal context.
+Charts show net worth, cash, investments and remaining debt. Indicators flag potential cash deficits and whether the stated financial goal is reached. After the first calculation, three navigation tabs separate **Results**, **Reach a goal** and **Compare scenarios**. The comparison area has four distinct views: **Presets** (investment-return variants), **Two plans** (fully customized comparisons), **Sensitivity** (one input at a time) and **Stress tests** (financial shocks). They share a selected comparison horizon; the return shock applies only to the preset variants. The saved baseline is not silently replaced. Life-event dates can be shown or hidden on the main chart to provide temporal context.
 
 A **Key takeaways** section explains four verifiable observations from the latest run: any months with negative cash, the first-month regular balance after transfers to investments, whether the nominal goal is reached at the final horizon, and ending wealth in starting-date purchasing power. These are descriptive facts, not an overall risk score or a recommended emergency-fund threshold.
 

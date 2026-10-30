@@ -90,7 +90,7 @@ Lợi suất, lương hưu và tăng lương trong tương lai vẫn phải đư
 
 Quy trình chính gồm **nhập kế hoạch**, **điều chỉnh giả định**, **chạy mô phỏng** và **xem kết quả**.
 
-Biểu đồ thể hiện tài sản ròng, tiền mặt, đầu tư và dư nợ. Các chỉ báo cho biết khả năng thiếu hụt tiền mặt và mức độ đạt được mục tiêu đã đặt ra. Có thể so sánh các giả định **trên cùng một thời hạn do người dùng chọn** mà không tự động thay đổi kịch bản gốc. Các mốc sự kiện có thể được hiện hoặc ẩn trên biểu đồ chính để làm rõ thời điểm thay đổi.
+Biểu đồ thể hiện tài sản ròng, tiền mặt, đầu tư và dư nợ. Các chỉ báo cho biết khả năng thiếu hụt tiền mặt và mức độ đạt được mục tiêu đã đặt ra. Sau khi chạy dự phóng lần đầu, ba thẻ điều hướng tách riêng **Kết quả**, **Đạt mục tiêu** và **So sánh kịch bản**. Phần so sánh gồm bốn mục: **Kịch bản mẫu** (thay đổi lợi suất), **Hai kịch bản** (so sánh tùy chỉnh), **Độ nhạy** (thay đổi một biến mỗi lần) và **Thử sức chịu đựng** (các cú sốc tài chính). Chúng dùng cùng thời hạn so sánh đã chọn; thay đổi lợi suất chỉ áp dụng cho kịch bản mẫu. Kịch bản gốc không bị tự động thay thế. Các mốc sự kiện có thể được hiện hoặc ẩn trên biểu đồ chính để làm rõ thời điểm thay đổi.
 
 Phần **Những điểm chính** giải thích bốn nhận xét kiểm chứng được từ lần tính gần nhất: tháng có tiền mặt âm, số dư thường kỳ tháng đầu sau khi chuyển sang đầu tư, việc đạt mục tiêu danh nghĩa ở cuối kỳ và tài sản theo sức mua ban đầu. Các nhận xét chỉ mang tính mô tả; hệ thống không gán điểm rủi ro tổng thể hay một mức dự phòng được khuyến nghị.
 
