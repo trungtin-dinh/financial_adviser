@@ -170,6 +170,8 @@ def test_user_can_calculate_and_change_output_without_editing_saved_plan(languag
     app.session_state["plan"] = plan
     app.session_state["result"] = {"plan": plan, "df": df, "mc": None}
     app.session_state["confirmed_inputs"] = True
+    app.session_state["main_results_navigation"] = t(language, "tab_compare")
+    app.session_state["comparison_analysis_navigation"] = t(language, "analysis_sensitivity")
     app.run()
     assert not app.exception, app.exception
     assert any(str(x.value) == t(language, "sens_title")

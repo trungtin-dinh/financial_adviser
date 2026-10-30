@@ -154,11 +154,16 @@ def test_event_marker_and_horizon_controls_preserve_calculated_plan(lang):
     app.run()
     assert not app.exception, app.exception
     assert app.checkbox(key="chart_show_events").value is False
-    assert app.number_input(key="comparison_horizon").value == plan.years
+    # The default Results view does not render unrelated comparison controls.
+    assert not any(x.key == "comparison_horizon" for x in app.get("number_input"))
     app.checkbox(key="chart_show_events").set_value(True).run()
     assert not app.exception, app.exception
     assert any(t(lang, "chart_event_list") in x.label
                for x in app.get("expander"))
+    app.session_state["main_results_navigation"] = t(lang, "tab_compare")
+    app.run()
+    assert not app.exception, app.exception
+    assert app.number_input(key="comparison_horizon").value == plan.years
     app.number_input(key="comparison_horizon").set_value(5).run()
     assert not app.exception, app.exception
     assert app.number_input(key="comparison_horizon").value == 5

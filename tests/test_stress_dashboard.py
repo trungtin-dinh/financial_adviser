@@ -131,6 +131,8 @@ def test_risk_controls_work_without_editing_reference(lang):
         "plan": plan, "df": reference, "mc": None,
     }
     app.session_state["confirmed_inputs"] = True
+    app.session_state["main_results_navigation"] = t(lang, "tab_compare")
+    app.session_state["comparison_analysis_navigation"] = t(lang, "analysis_stress")
     app.run()
     assert not app.exception, app.exception
     assert app.number_input(key="stress_start_month").value == 1

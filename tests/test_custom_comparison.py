@@ -192,6 +192,8 @@ def test_custom_form_and_result_selectors_keep_reference_unchanged(language):
         "plan": base, "df": saved_df, "mc": None,
     }
     app.session_state["confirmed_inputs"] = True
+    app.session_state["main_results_navigation"] = t(language, "tab_compare")
+    app.session_state["comparison_analysis_navigation"] = t(language, "analysis_custom")
     app.run()
     assert not app.exception, app.exception
     assert any(str(x.value) == t(language, "custom_title")

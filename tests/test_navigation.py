@@ -1,4 +1,4 @@
-"""Navigation regression: results, goals and four self-contained analyses."""
+"""Lazy navigation: only the selected analysis is evaluated and rendered."""
 from pathlib import Path
 
 import pandas as pd
@@ -12,46 +12,75 @@ from financial_adviser.ui_i18n import t
 ROOT = Path(__file__).resolve().parents[1]
 
 
-@pytest.mark.parametrize("language", ("fr", "en", "vi"))
-def test_analysis_is_organized_into_seven_translated_tabs(language):
-    p = Plan(years=2)
-    df = project(p)
+def fixture_app(language: str, *, main: str = "tab_results",
+                sub: str = "analysis_variants") -> tuple[AppTest, Plan, pd.DataFrame]:
+    plan = Plan(years=3)
+    result = project(plan)
     app = AppTest.from_file(
         str(ROOT / "pages" / "planning.py"), default_timeout=40)
     app.session_state["language_choice"] = language
-    app.session_state["plan"] = p
-    app.session_state["result"] = {"plan": p, "df": df, "mc": None}
+    app.session_state["plan"] = plan
+    app.session_state["result"] = {"plan": plan, "df": result, "mc": None}
     app.session_state["confirmed_inputs"] = True
+    app.session_state["main_results_navigation"] = t(language, main)
+    app.session_state["comparison_analysis_navigation"] = t(language, sub)
     app.run()
-
     assert not app.exception, app.exception
-    expected = (
-        "tab_results", "tab_goal", "tab_compare",
-        "analysis_variants", "analysis_custom",
-        "analysis_sensitivity", "analysis_stress",
-    )
+    return app, plan, result
+
+
+@pytest.mark.parametrize("language", ("fr", "en", "vi"))
+def test_default_results_render_without_hidden_comparison_controls(language):
+    app, plan, df = fixture_app(language)
     assert [tab.label for tab in app.tabs] == [
-        t(language, label) for label in expected
+        t(language, key)
+        for key in ("tab_results", "tab_goal", "tab_compare")
     ]
-    # Eager tabs retain the original controls and don't need an extra
-    # calculation to restore a previously analyzed scenario.
-    assert app.number_input(key="comparison_horizon").value == p.years
-    assert app.number_input(key="compare_return_shock").value == 3.0
-    assert app.button(key="custom_compare_submit") is not None
-    assert app.button(key="sensitivity_run") is not None
-    assert app.number_input(key="stress_start_month") is not None
-    assert any(str(header.value) == t(language, "tab_results")
-               for header in app.tabs[0].get("subheader"))
-    assert any(str(header.value) == t(language, "tab_goal")
-               for header in app.tabs[1].get("subheader"))
-    assert any(str(header.value) == t(language, "sens_title")
-               for header in app.tabs[5].get("subheader"))
-
+    assert any(str(x.value) == t(language, "tab_results")
+               for x in app.get("subheader"))
+    assert app.segmented_control(key="result_chart_view") is not None
+    assert not any(item.key == "comparison_horizon"
+                   for item in app.get("number_input"))
+    assert not any(item.key == "stress_start_month"
+                   for item in app.get("number_input"))
+    assert not any(item.key == "sensitivity_run"
+                   for item in app.get("button"))
+    assert not any(item.key == "custom_compare_submit"
+                   for item in app.get("button"))
     pd.testing.assert_frame_equal(app.session_state["result"]["df"], df)
-    assert app.session_state["plan"] == p
+    assert app.session_state["plan"] == plan
 
 
-def test_uncomputed_inputs_are_not_obscured_by_results_navigation():
+@pytest.mark.parametrize("language", ("fr", "en", "vi"))
+@pytest.mark.parametrize("analysis,expected_key", (
+    ("analysis_variants", "compare_return_shock"),
+    ("analysis_custom", "custom_compare_submit"),
+    ("analysis_sensitivity", "sensitivity_run"),
+    ("analysis_stress", "stress_start_month"),
+))
+def test_only_selected_comparison_view_instantiates_its_controls(language, analysis, expected_key):
+    app, plan, df = fixture_app(language, main="tab_compare", sub=analysis)
+    assert [tab.label for tab in app.tabs] == [
+        t(language, key) for key in (
+            "tab_results", "tab_goal", "tab_compare",
+            "analysis_variants", "analysis_custom",
+            "analysis_sensitivity", "analysis_stress"
+        )
+    ]
+    assert app.number_input(key="comparison_horizon").value == plan.years
+    all_control_keys = {
+        x.key for collection in ("number_input", "button", "multiselect")
+        for x in app.get(collection) if x.key is not None
+    }
+    for other in ("compare_return_shock", "custom_compare_submit",
+                  "sensitivity_run", "stress_start_month"):
+        assert (other in all_control_keys) == (other == expected_key)
+    assert not any(str(x.value) == t(language, "summary_title")
+                   for x in app.get("markdown"))
+    pd.testing.assert_frame_equal(app.session_state["result"]["df"], df)
+
+
+def test_navigation_without_any_calculated_result_remains_simple():
     app = AppTest.from_file(
         str(ROOT / "pages" / "planning.py"), default_timeout=25)
     app.session_state["language_choice"] = "fr"
@@ -64,28 +93,40 @@ def test_uncomputed_inputs_are_not_obscured_by_results_navigation():
 
 
 @pytest.mark.parametrize("language", ("fr", "en", "vi"))
-def test_switching_comparison_view_does_not_modify_saved_projection(language):
-    """UI tab organization is presentation only; calculations must persist."""
-    p = Plan(years=3)
-    df = project(p)
-    app = AppTest.from_file(str(ROOT / "pages" / "planning.py"),
-                            default_timeout=40)
-    app.session_state["language_choice"] = language
-    app.session_state["plan"] = p
-    app.session_state["result"] = {"plan": p, "df": df, "mc": None}
-    app.session_state["confirmed_inputs"] = True
-    app.run()
-    assert not app.exception, app.exception
-
-    # Change a what-if input in another tab. The reference remains intact.
+def test_changing_comparison_controls_does_not_mutate_saved_projection(language):
+    app, plan, df = fixture_app(language, main="tab_compare", sub="analysis_stress")
     app.number_input(key="stress_start_month").set_value(4).run()
     assert not app.exception, app.exception
-    app.number_input(key="compare_return_shock").set_value(4.0).run()
-    assert not app.exception, app.exception
-    assert [tab.label for tab in app.tabs][:3] == [
-        t(language, k) for k in ("tab_results", "tab_goal", "tab_compare")
-    ]
     assert app.number_input(key="stress_start_month").value == 4
-    assert app.number_input(key="compare_return_shock").value == 4.0
-    assert app.session_state["plan"] == p
+    assert app.session_state["plan"] == plan
     pd.testing.assert_frame_equal(app.session_state["result"]["df"], df)
+
+
+def test_hidden_tabs_skip_heavy_scenario_work(monkeypatch):
+    """The important optimization is skipping whole analyses, not only plots."""
+    import financial_adviser.comparisons as comparators
+    import financial_adviser.scenarios as scenarios
+
+    counts = {"preset": 0, "stress": 0}
+    original_presets = comparators.build_comparisons
+    original_stresses = scenarios.evaluate_stresses
+
+    def counted_presets(*args, **kwargs):
+        counts["preset"] += 1
+        return original_presets(*args, **kwargs)
+
+    def counted_stresses(*args, **kwargs):
+        counts["stress"] += 1
+        return original_stresses(*args, **kwargs)
+
+    monkeypatch.setattr(comparators, "build_comparisons", counted_presets)
+    monkeypatch.setattr(scenarios, "evaluate_stresses", counted_stresses)
+
+    app, _, _ = fixture_app("en")
+    assert counts == {"preset": 0, "stress": 0}
+
+    app.session_state["main_results_navigation"] = t("en", "tab_compare")
+    app.run()
+    assert not app.exception, app.exception
+    assert counts["preset"] >= 1
+    assert counts["stress"] == 0
