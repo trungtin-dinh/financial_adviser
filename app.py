@@ -1,6 +1,12 @@
 """Financial Adviser — responsive multipage Streamlit application."""
 import streamlit as st
-from financial_adviser.ui_i18n import t
+# Streamlit Community Cloud can rerun app.py while keeping an older imported module
+# in the same Python process. Reload the local catalogue before constructing
+# navigation, so new page keys are not missing after a hot deployment.
+from importlib import reload
+import financial_adviser.ui_i18n as ui_i18n
+reload(ui_i18n)
+t = ui_i18n.t
 
 st.set_page_config(page_title="Financial Adviser", page_icon="📈", layout="wide", initial_sidebar_state="auto")
 

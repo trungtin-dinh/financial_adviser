@@ -24,3 +24,11 @@ Le premier essai en `urllib` a renvoyé une boucle de redirections HTTP 303, san
 - En cas d'échec, consulter les captures GitHub, les journaux d'exécution et les logs de Streamlit Cloud. Ne pas conclure automatiquement que le site public est indisponible.
 
 Sources : https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app et https://github.com/streamlit/streamlit/issues/15369
+
+## Incident constaté en production le 30 octobre 2026
+
+Le premier contrôle Chromium réel a capturé un **KeyError sur `nav_benchmarks`**, pendant l'assemblage du menu `app.py`. Le dictionnaire `ui_i18n.py` versionné sur GitHub contient pourtant cette traduction dans les trois langues. Cela est **compatible avec un module Python périmé encore chargé en mémoire lors d'un redéploiement à chaud**, mais un autre défaut de synchronisation de l'hébergement ne peut être exclu sans accès aux logs internes de Streamlit.
+
+Correctif : recharger explicitement le catalogue de traduction au démarrage de l'entrypoint et toucher le fichier de dépendances pour provoquer une nouvelle installation/reprise de l'environnement; ajouter un test des clés de navigation. Conserver la capture d'écran GitHub Actions comme preuve de régression : https://github.com/trungtin-dinh/financial_adviser/actions/runs/41012291272 .
+
+Ce diagnostic se distingue du premier échec HTTP 303 : cette fois, le **navigateur réel a effectivement chargé l'application et révélé une exception Python**.

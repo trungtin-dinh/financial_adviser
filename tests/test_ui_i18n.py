@@ -34,3 +34,8 @@ def test_legacy_categories_remain_importable():
     assert canonical_category("Health / Care") == "health"
     assert canonical_category("unemployment") == "unemployment"
     assert canonical_category("unknown") == "other"
+
+@pytest.mark.parametrize("lang", ["fr", "en", "vi"])
+def test_all_navigation_labels_exist(lang):
+    for key in ("nav_plan", "nav_benchmarks", "nav_guide", "nav_sources"):
+        assert t(lang, key).strip()

@@ -1,5 +1,12 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — Bug sur l'application publique détecté par Chromium
+
+- Premier test réel : le site charge Streamlit mais l'application échoue sur `KeyError('nav_benchmarks')` ; les tests locaux passaient.
+- Hypothèse principale : module `ui_i18n` périmé en mémoire après hot reload, bien que GitHub contienne les clés. Rechargement explicite de traduction et redéploiement complet demandé via changement du fichier de dépendances.
+- Test de non-régression des libellés de navigation ajouté; nouveau contrôle de l'app publique après CI.
+
+
 ## 2026-10-30 — URL publique et démarche ergonomique
 
 - URL Streamlit communiquée par le propriétaire : https://financial-adviser.streamlit.app/ (lien ajouté au README).
