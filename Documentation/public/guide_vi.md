@@ -58,6 +58,12 @@ Với khoản chuyển sang đầu tư $T$ mỗi tháng và tỷ suất theo th�
 
 Thu nhập và chi tiêu cơ sở thay đổi theo giả định tăng trưởng hằng năm đã chọn. Lợi suất hiệu dụng năm và lạm phát được quy đổi thành tỷ lệ theo tháng. Riêng **lãi suất danh nghĩa năm của khoản vay** được chia cho 12 để tính lãi theo tháng. Khoản vay được mô phỏng theo lịch trả đều cho đến khi tất toán.
 
+### Bất động sản và tài sản khó thanh khoản
+
+Bạn có thể khai **giá trị bất động sản đã sở hữu** và các tài sản khó thanh khoản khác. Người dùng tự chọn mức thay đổi giá bất động sản giả định hằng năm; các tài sản còn lại giữ nguyên giá trị danh nghĩa. Những tài sản này được cộng vào tài sản ròng, sau đó trừ dư nợ. **Khai một khoản vay không tự tạo ra giá trị bất động sản**: cần nhập riêng giá trị ngôi nhà nếu muốn tính vào tài sản.
+
+Bất động sản tăng giá không đồng nghĩa với thu nhập có thể tiêu ngay. Công cụ không tự mô phỏng mua bán, cho thuê, thuế nhà đất, phí hoặc bán nhà khi thiếu tiền mặt. Khi có tài sản khó thanh khoản, kết quả hiển thị bảng cân đối và cho phép xem đường biểu diễn cũng như so sánh các giả định.
+
 ### Danh nghĩa, sức mua và mục tiêu
 
 **Tài sản danh nghĩa** biểu thị số tiền tại thời điểm tương ứng. **Tài sản thực** quy về sức mua tại thời điểm bắt đầu. Ví dụ, giả sử lạm phát cố định 2%/năm, thì 100.000 € sau mười năm tương đương khoảng 82.035 € sức mua ban đầu. Đây chỉ là minh họa, không phải dự báo lạm phát.
