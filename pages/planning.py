@@ -15,6 +15,7 @@ from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
 from financial_adviser.resilience import analyze_liquidity
 from financial_adviser.planning_analysis_ui import render_comparison_tab
+from financial_adviser.planning_cashflow_ui import render_cashflow_calendar
 from financial_adviser.planning_results_ui import (
     render_financial_overview, render_resilience_panel, render_result_charts,
 )
@@ -556,6 +557,7 @@ if st.session_state.result is not None:
                 # Stock, monthly-flow and uncertainty plots share one chart area.
                 # Controls are isolated so selecting a curve does not rerun the engine.
                 render_result_charts(q, df, result["mc"], T, money)
+                render_cashflow_calendar(q, df, T, money)
                 render_resilience_panel(q, df, T, money)
                 with st.expander(T("yearly"), expanded=False):
                     yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
