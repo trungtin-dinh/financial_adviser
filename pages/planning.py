@@ -15,6 +15,7 @@ from financial_adviser.engine import loan_payment, monte_carlo, project, solve_g
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
+from financial_adviser.session_compat import normalize_plan
 from financial_adviser.scenarios import PRESET_IDS, proposed_event, stress_impact
 from financial_adviser.ui_i18n import category_label, canonical_category, t
 
@@ -197,6 +198,20 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
 
 if "plan" not in st.session_state:
     st.session_state.plan = demo("FR")
+else:
+    # A browser tab can survive a code deployment with a pre-household Plan.
+    # Preserve all compatible saved values instead of failing on missing
+    # children/adults fields. Never silently replace an unconvertible plan.
+    try:
+        updated_plan, migrated = normalize_plan(st.session_state.plan)
+    except (ValueError, TypeError, AttributeError):
+        st.error(T("session_migration_error"))
+        st.stop()
+    if migrated:
+        st.session_state.plan = updated_plan
+        st.session_state.result = None
+        reset_inputs()
+        st.session_state.session_migration_notice = True
 if "result" not in st.session_state:
     st.session_state.result = None
 if "confirmed_inputs" not in st.session_state:
@@ -229,7 +244,9 @@ if country != st.session_state.plan.country:
         st.rerun()
 p = st.session_state.plan
 st.title("Financial Adviser")
-st.caption(T("caption"))
+st.caption(T("caption") + f" · v{__version__}")
+if st.session_state.pop("session_migration_notice", False):
+    st.info(T("session_migration_ok"))
 with st.expander("🗂️ " + T("scenario_files"), expanded=False):
     uploaded = st.file_uploader(T("import"), type=["json"], max_upload_size=1)
     if uploaded is not None and st.button(T("load"), width="stretch"):

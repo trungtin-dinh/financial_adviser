@@ -6,7 +6,7 @@ machine-readable files are intentionally not translated.
 
 TEXT = {
     "fr": {
-        "language": "Langue d'affichage", "nav_plan": "Planification", "nav_guide": "Guide et modèles", "nav_sources": "Sources et règles", "nav_benchmarks": "Références statistiques", "guide_household": "Cycle de vie et budget familial",
+        "language": "Langue d'affichage", "nav_plan": "Planification", "nav_guide": "Guide et modèles", "nav_sources": "Sources et règles", "nav_benchmarks": "Références statistiques", "session_migration_ok": "Votre ancienne session a été mise à jour vers le nouveau modèle familial. Les valeurs compatibles ont été conservées ; relancez la projection.", "session_migration_error": "Impossible de convertir votre ancienne session sans risque de perdre des valeurs. Exportez vos données si possible puis actualisez la page.", "guide_household": "Cycle de vie et budget familial",
         "scenario_files": "Scénarios : charger, exemple et exporter",
         "example_confirm_text": "Charger cet exemple remplacera toutes les saisies du scénario courant, y compris les événements. Les modifications non calculées seront perdues.",
         "country_confirm_text": "Changer de pays remplacera le scénario et ses valeurs par un exemple dans la nouvelle devise. Aucune conversion automatique de monnaie n'est effectuée.",
@@ -52,7 +52,7 @@ TEXT = {
     "vi": {},
 }
 TEXT["en"].update({
-    "language":"Display language", "nav_plan":"Planning", "nav_guide":"Guide and models", "nav_sources":"Sources and rules", "nav_benchmarks": "Statistical references", "guide_household": "Household life cycle and family budgets",
+    "language":"Display language", "nav_plan":"Planning", "nav_guide":"Guide and models", "nav_sources":"Sources and rules", "nav_benchmarks": "Statistical references", "session_migration_ok": "Your previous session has been upgraded to the household model. Compatible values were preserved; please rerun the projection.", "session_migration_error": "Your previous session could not be migrated safely. Export your values if possible, then reload the page.", "guide_household": "Household life cycle and family budgets",
         "scenario_files": "Scenarios: import, example and export",
         "example_confirm_text": "Loading the example replaces the entire current plan, including events. Uncalculated changes will be lost.",
         "country_confirm_text": "Changing country replaces your plan with an example in the new currency. No automatic currency conversion is performed.",
@@ -94,7 +94,7 @@ TEXT["en"].update({
 })
 
 TEXT["vi"].update({
-    "language":"Ngôn ngữ hiển thị", "nav_plan":"Lập kế hoạch", "nav_guide":"Hướng dẫn và mô hình", "nav_sources":"Nguồn và quy định", "nav_benchmarks": "Số liệu thống kê", "guide_household": "Vòng đời và ngân sách gia đình",
+    "language":"Ngôn ngữ hiển thị", "nav_plan":"Lập kế hoạch", "nav_guide":"Hướng dẫn và mô hình", "nav_sources":"Nguồn và quy định", "nav_benchmarks": "Số liệu thống kê", "session_migration_ok": "Phiên trước đã được chuyển sang mô hình gia đình mới. Các giá trị tương thích được giữ lại; hãy chạy lại dự phóng.", "session_migration_error": "Không thể chuyển phiên cũ một cách an toàn. Hãy xuất dữ liệu nếu có thể, sau đó tải lại trang.", "guide_household": "Vòng đời và ngân sách gia đình",
         "scenario_files": "Kịch bản: nhập, ví dụ và xuất",
         "example_confirm_text": "Nạp ví dụ sẽ thay thế toàn bộ kế hoạch hiện tại, kể cả các sự kiện. Các thay đổi chưa tính sẽ bị mất.",
         "country_confirm_text": "Đổi quốc gia sẽ thay kế hoạch bằng dữ liệu ví dụ theo loại tiền mới. Không tự động quy đổi tiền tệ.",

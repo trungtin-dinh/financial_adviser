@@ -1,5 +1,10 @@
 # Journal de décisions et mises à jour
 
+### 2026-10-30 — Production verification incident
+
+Post-deployment issue reported with v0.7. Version-aware hot-reload compatibility and preservation of previous session values introduced in v0.7.1. Old browser smoke replaced with a frame-aware check for real Cloud production and current UI. Local tests passed; live validation remains unconfirmed. Automated GitHub workflow runs remain disabled to respect email preference.
+
+
 ## 2026-10-30 — v0.7.0 candidate : cycle de vie des ménages
 
 - Profils facultatifs pour plusieurs enfants, âge au démarrage, mois d'arrivée, âge de fin de soutien (25 ans par défaut, modifiable), coûts mensuels par tranches d'âge et postes de consommation.

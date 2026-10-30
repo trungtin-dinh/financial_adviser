@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.7.0_household_candidate-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.7.1_hotdeploy_candidate-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
@@ -166,3 +166,5 @@ The two GitHub Actions workflows are **manual** (`workflow_dispatch`) to avoid a
 [Read the source-backed design and limitations](Documentation/21_CYCLE_VIE_BUDGET_FAMILIAL.md). Child costs change with age (living expenses and childcare/education) and can continue after the 18th birthday to an explicitly configured end age. Adult budgets model hypothetical age-phase adjustments and retirement. Neither the example child costs nor retirement income replacement rates are official estimates. Check whether expenses are **already included** in your household base budget to avoid counting them twice.
 
 The focused local test suite currently covers household cost ages, support stops, pension transitions, JSON compatibility, Monte Carlo and inverse-planning invariants. Full Streamlit browser/device tests and independent expert review are **not** claimed for this candidate.
+
+**Production verification:** v0.7.1 adds compatibility for old browser sessions and a frame-aware, version-checked live Chromium smoke test. It is **not yet confirmed working on Streamlit Cloud**; GitHub Actions remain manually triggered to avoid automated email notifications. See [production runbook](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).

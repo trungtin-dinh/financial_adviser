@@ -1,5 +1,16 @@
 # Vérification de l'application Streamlit publique
 
+## 2026-10-30 — Production hot-reload compatibility and live verification
+
+- The old live Playwright workflow (last executed on an older commit) was outdated and could falsely fail to find visible interface content: the browser screenshot showed a loaded app while its selector queried only the top-level page.
+- The new smoke test searches all browser frames, checks the **actual deployed version** against the checkout and exercises the **current** French example → confirmation → projection → results flow plus Vietnamese mobile layout. It must run against the **new commit**, not be mistaken for an old successful local test.
+- Streamlit's long-lived worker can retain imported modules after a hot deployment. The app now checks its package version against the source on disk and reloads the relevant modules in dependency order when mismatched.
+- Existing Streamlit sessions may contain a pre-household Plan object; migration converts it to the v0.7.1 data model, preserving compatible values and invalidating stale projections. If migration fails, it reports an error rather than silently replacing user inputs.
+- Local unit tests for this migration and the household engine have passed. **The live URL has not been verified in this session**: do not call the hosted issue resolved solely from these source changes.
+- Both GitHub Actions workflows remain manual by request to avoid workflow-run notification email. **Consequently, no automatic production check is performed after every push.** To meet continuous live verification without unwanted notifications requires a connected independent browser-monitoring route or explicit GitHub notification settings change.
+- Recommended release procedure: stage changes, run tests, publish, inspect the public app using a real browser, confirm version, test example→projection and mobile. If unable to perform the post-deploy check, mark the release unverified and do not claim production success.
+
+
 **URL déclarée :** https://financial-adviser.streamlit.app/
 
 La publication GitHub et le déploiement Streamlit sont distincts : un workflow de tests locaux réussi ne suffit pas à certifier la version en ligne.
