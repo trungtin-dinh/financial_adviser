@@ -71,6 +71,9 @@ with sync_playwright() as pw:
             print("STATISTICS PAGE DEBUG:", lang, page.url, page.locator("body").inner_text()[-3500:])
             raise
         assert page.evaluate("document.documentElement.scrollWidth - window.innerWidth") <= 8
+        metric = page.locator('[data-testid="stMetricValue"]').first
+        metric.wait_for(state="visible", timeout=30000)
+        assert "€" in metric.inner_text() or "₫" in metric.inner_text()
         page.screenshot(path=str(OUT / f"{lang}_benchmarks.png"), full_page=True)
         page.close()
     browser.close()
