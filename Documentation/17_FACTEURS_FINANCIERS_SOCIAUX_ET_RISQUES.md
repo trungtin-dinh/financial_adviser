@@ -196,3 +196,7 @@ Les enquêtes de la BCE sur la situation financière des ménages incluent les a
 3. Séparer règles **France**, **Vietnam**, passage entre pays et sources officielles versionnées.
 4. Ajouter chocs macro et corrélations **uniquement après qualification des hypothèses**.
 5. Faire relire le modèle et les libellés par experts (économiste/actuaire/fiscaliste FR-VN) et tester avec **participants réels** avant de déclarer une version finale.
+
+## Évolution v0.7 — facteurs de cycle de vie désormais calculés
+
+Le catalogue initial demeure une taxonomie. Depuis la v0.7 candidate, certains facteurs précédemment classés « E » ou « N » disposent d'une modélisation déterministe supplémentaire : nombre/âge des enfants, date de prise en charge, durée du soutien jusqu'à 30 ans, coûts vivriers et garde/éducation par âge, changements de dépenses avec l'âge des adultes, fractions de revenu net et transition de retraite hypothétique. **Attention :** cela ne transforme pas les indicateurs statistiques en coût médian individuel, ne simule pas des aides légales et ne justifie pas une probabilité individuelle. Les détails scientifiques et mathématiques figurent dans [21_CYCLE_VIE_BUDGET_FAMILIAL.md](21_CYCLE_VIE_BUDGET_FAMILIAL.md).

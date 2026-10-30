@@ -1,5 +1,15 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.7.0 candidate : cycle de vie des ménages
+
+- Profils facultatifs pour plusieurs enfants, âge au démarrage, mois d'arrivée, âge de fin de soutien (25 ans par défaut, modifiable), coûts mensuels par tranches d'âge et postes de consommation.
+- Inclusion dans le budget courant traitée explicitement pour éviter le double comptage; fin de soutien libérant les dépenses précédemment incluses.
+- Profils facultatifs d'adultes, charges par âge et retraite hypothétique avec part du revenu net du ménage. Les personnes déjà retraitées ne subissent aucune seconde conversion de salaire.
+- Références et réserves scientifiques documentées dans `21_CYCLE_VIE_BUDGET_FAMILIAL.md` ; pas de coût médian par enfant inventé ni de pension réglementaire calculée.
+- Vérifications locales ciblées du moteur et des traductions; pas de tests navigateur/public revendiqués. Actions GitHub toujours en déclenchement manuel, sans notification automatique de push.
+
+
+
 ## 2026-10-30 — v0.6.0 : scénarios éditables et interactions prévisibles
 
 - Six modèles de risque déterministes paramétrés depuis le budget, sans faux taux de probabilité.

@@ -13,6 +13,7 @@ import streamlit as st
 from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
 from financial_adviser.io import dump_plan, load_plan
+from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
 from financial_adviser.scenarios import PRESET_IDS, proposed_event, stress_impact
 from financial_adviser.ui_i18n import category_label, canonical_category, t
@@ -58,9 +59,13 @@ def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
 def reset_inputs() -> None:
     """Discard old widget values after loading another plan/country/goal solution."""
     for key in list(st.session_state):
-        if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_")):
+        if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_", "child_", "adult_", "household_")):
             del st.session_state[key]
     st.session_state.pop("event_drafts", None)
+    st.session_state.pop("household_children", None)
+    st.session_state.pop("household_adults", None)
+    st.session_state.pop("household_child_id", None)
+    st.session_state.pop("household_adult_id", None)
     st.session_state.pop("goal_alternatives", None)
     st.session_state.pop("goal_query", None)
     st.session_state.pop("goal_target_input", None)
@@ -296,6 +301,8 @@ with plan_tab:
         years = st.number_input(T("horizon"), min_value=1, max_value=60, value=p.years, step=1, key="field_years")
         start_year = st.number_input(T("start_year"), min_value=2020, max_value=2100,
                                      value=p.start_year, step=1, key="field_start_year")
+    children, adults = render_household(p, int(years), int(start_year),
+        float(expenses or 0.0), LANG, step)
     events = draw_events(int(start_year), int(years), p.currency,
         float(income or 0.0), float(expenses or 0.0))
 
@@ -356,6 +363,7 @@ with plan_tab:
         or cash != p.initial_cash or investments != p.initial_investments
         or years != p.years or start_year != p.start_year
         or tuple(events) != p.life_events
+        or children != p.children or adults != p.adults
         or income_growth != p.income_growth_pct or spending_growth != p.expense_growth_pct
         or cash_return != p.cash_return_pct or investment_return != p.investment_return_pct
         or inflation != p.inflation_pct or volatility != p.investment_volatility_pct
@@ -381,7 +389,8 @@ with plan_tab:
                     cash_return_pct=cash_return, investment_return_pct=investment_return,
                     investment_volatility_pct=volatility, inflation_pct=inflation,
                     loan_balance=loan, loan_apr_pct=loan_rate, loan_years=int(loan_years),
-                    goal=float(goal), one_offs=parse_oneoffs(oneoffs_text, years), life_events=events)
+                    goal=float(goal), one_offs=parse_oneoffs(oneoffs_text, years),
+                    life_events=events, children=children, adults=adults)
                 new_plan.validate()
                 with st.spinner(T("running")):
                     result = project(new_plan)
@@ -428,6 +437,20 @@ with results_tab:
         fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
                            height=350, margin=dict(l=10, r=10, t=60, b=20))
         st.plotly_chart(fig2, width="stretch")
+        if q.children or q.adults:
+            st.subheader(T("household_graph"))
+            st.caption(T("household_graph_note"))
+            fig_household = go.Figure()
+            fig_household.add_trace(go.Scatter(x=df.year, y=df.child_expenses,
+                name=T("household_child_delta")))
+            fig_household.add_trace(go.Scatter(x=df.year, y=df.adult_expenses,
+                name=T("household_adult_delta")))
+            fig_household.add_trace(go.Scatter(x=df.year, y=df.retirement_income_change,
+                name=T("household_retirement_delta")))
+            fig_household.update_layout(height=350, xaxis_title=T("year"),
+                yaxis_title=q.currency, margin=dict(l=10, r=10, t=40, b=20))
+            st.plotly_chart(fig_household, width="stretch")
+            st.caption(T("household_total_child", value=money(float(df.child_expenses.sum()), q.currency)))
         if result["mc"] is not None:
             mc = result["mc"]
             st.subheader(T("mc_title"))
@@ -470,7 +493,8 @@ with goal_tab:
                                       step=1000.0, key="goal_target_input")
         with b:
             last_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
-                             + [e.month for e in reference.one_offs])
+                             + [e.month for e in reference.one_offs]
+                             + [c.arrival_month for c in reference.children])
             min_years = max(1, (last_event + 11) // 12)
             horizon = st.number_input(T("goal_years"), min_value=min_years, max_value=60, value=max(min_years, reference.years), step=1,
                                 key="goal_horizon_input")

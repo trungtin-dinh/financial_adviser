@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from .models import Plan
+from .households import household_adjustments, included_current_spending
 
 
 def monthly_rate(annual_pct: float) -> float:
@@ -56,6 +57,9 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
     events = np.zeros(n)
     for event in plan.one_offs:
         events[event.month - 1] += event.amount
+    child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
+    spending += child_costs + adult_costs
+    income += retirement_income_change
     for item in plan.life_events:
         start = item.first_month - 1
         stop = start + item.duration_months
@@ -74,6 +78,7 @@ def project(plan: Plan) -> pd.DataFrame:
     cash = np.empty(n + 1)
     invested = np.empty(n + 1)
     cash[0], invested[0] = plan.initial_cash, plan.initial_investments
+    child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
     rc, ri, inflation = (monthly_rate(v) for v in (
         plan.cash_return_pct, plan.investment_return_pct, plan.inflation_pct))
     for m in range(1, n + 1):
@@ -96,6 +101,9 @@ def project(plan: Plan) -> pd.DataFrame:
         "expenses": np.r_[0, expenses],
         "loan_payment": payment,
         "one_off": np.r_[0, events],
+        "child_expenses": np.r_[0, child_costs],
+        "adult_expenses": np.r_[0, adult_costs],
+        "retirement_income_change": np.r_[0, retirement_income_change],
     })
 
 
@@ -201,21 +209,25 @@ def solve_goal(plan: Plan, target: float, horizon_years: int | None = None) -> t
         solutions.append(GoalSolution("income", amount, True,
             "Additional net income per starting month; it follows the chosen income growth assumption.", scenario))
 
-    if candidate.monthly_expenses > 0:
-        no_expenses = project(replace(candidate, monthly_expenses=0.0))
-        d_terminal = (float(no_expenses.net_worth.iloc[-1]) - terminal) / candidate.monthly_expenses
-        d_cash = (no_expenses.cash.to_numpy() - cash) / candidate.monthly_expenses
+    minimum_spending = included_current_spending(candidate)
+    maximum_reduction = candidate.monthly_expenses - minimum_spending
+    if maximum_reduction > 1e-9:
+        spending_floor = project(replace(candidate, monthly_expenses=minimum_spending))
+        d_terminal = (float(spending_floor.net_worth.iloc[-1]) - terminal) / maximum_reduction
+        d_cash = (spending_floor.cash.to_numpy() - cash) / maximum_reduction
         savings = required_unit(d_terminal, d_cash)
-        if savings is not None and savings <= candidate.monthly_expenses + 1e-6:
-            savings = min(candidate.monthly_expenses, savings)
-            scenario = replace(candidate, monthly_expenses=max(0., candidate.monthly_expenses - savings))
+        if savings is not None and savings <= maximum_reduction + 1e-6:
+            savings = min(maximum_reduction, savings)
+            scenario = replace(candidate, monthly_expenses=max(
+                minimum_spending, candidate.monthly_expenses - savings))
             solutions.append(GoalSolution("expenses", savings, True,
-                "Monthly starting spending reduction; residual spending follows the configured growth rate.", scenario))
+                "Starting spending reduction, respecting costs already included in the baseline.", scenario))
         else:
             solutions.append(GoalSolution("expenses", 0., False,
-                "Reducing ordinary spending to zero would still not satisfy the target and cash constraint."))
+                "Reducing flexible spending to zero still would not satisfy the target and cash constraint."))
     else:
-        solutions.append(GoalSolution("expenses", 0., False, "Starting spending is already zero."))
+        solutions.append(GoalSolution("expenses", 0., False,
+            "No baseline spending can be removed without cutting already-included costs."))
 
     unit_cash = max(1., candidate.initial_cash * 0.05)
     added_cash = project(replace(candidate, initial_cash=candidate.initial_cash + unit_cash))

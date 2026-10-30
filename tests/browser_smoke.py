@@ -37,6 +37,8 @@ with sync_playwright() as pw:
         page.on("pageerror", lambda err: errors.append(str(err)))
         page.goto(f"{BASE}/?lang={lang}", wait_until="domcontentloaded", timeout=60000)
         page.get_by_text(basic, exact=True).first.wait_for(timeout=45000)
+        child_add = {"fr":"Ajouter un enfant", "en":"Add a child", "vi":"Thêm một người con"}[lang]
+        page.get_by_role("button", name=re.compile(re.escape(child_add))).first.wait_for(timeout=15000)
         page.screenshot(path=str(OUT / f"{lang}_{device}_overview.png"), full_page=True)
         overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
         assert overflow <= 8, f"Unexpected page-level horizontal scroll: {lang}/{device}, {overflow}px"

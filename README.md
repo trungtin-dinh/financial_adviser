@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.6.0_candidate-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.7.0_household_candidate-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
@@ -14,7 +14,14 @@
 
 > **Important:** This is a first usable **MVP**, not an investment adviser, tax calculator, account aggregator, or forecast of future asset returns. Default rates and income amounts are *illustrative assumptions*, not market estimates or personalized recommendations. Avoid entering confidential data in deployments you do not control.
 
-## Features in v0.6.0
+## Features in v0.7.0
+
+- **Household life-cycle model:** optional children aged from 0 to up to 30; age-specific living and childcare/education monthly budgets, configurable age when support ends (illustrative default 25), future births and several children.
+- **Avoid double counting:** each current child can be marked as already included in the household's current spending. The projection then includes only future changes, and releases that part of the original budget when financial support ends.
+- **Adults' finances across the life cycle:** age-dependent discretionary monthly expense adjustments, income-share allocation between adults (up to 100% combined), and an explicitly hypothetical retirement transition. No automatic legal pension/tax/health estimate.
+- **Year-by-year finances:** child/adult spending and retirement income are reflected in baseline projection, Monte Carlo and goal-seek, with dedicated signed-change chart. Legacy saved scenarios remain supported.
+- **No official average child cost assumed:** all starter values are synthetic and user-editable. Country-specific research is documented with DREES, Insee, IRES, NSO and OECD references.
+
 
 - **Six editable event templates:** income interruption, healthcare, emergency expense, childcare, family support and relocation. All proposed values are synthetic proportions of your own budget, never official medians or personalized probabilities. Events are added only on confirmation, then remain fully editable.
 - **Separate stress comparisons:** terminal nominal wealth change, minimum cash and negative-cash flag compared with the last calculated plan; these tests never alter the baseline.
@@ -64,7 +71,7 @@ The public application is available at **https://financial-adviser.streamlit.app
 
 ## Run locally
 
-**Release status:** v0.6.0 is an ergonomics and scenario-design candidate, not a certified final application. Independent human user tests, actuarial/fiscal peer reviews, and physical-device verification remain necessary. See [Review plan](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md). 
+**Release status:** v0.7.0 is a household life-cycle modelling candidate, not a certified final application. Independent human user tests, actuarial/fiscal peer reviews, and physical-device verification remain necessary. See [Review plan](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md). 
 
 
 ```bash
@@ -153,3 +160,9 @@ The two GitHub Actions workflows are **manual** (`workflow_dispatch`) to avoid a
 - [v0.6 design, risk templates and prioritized audit](Documentation/20_REDESIGN_V06.md)
 
 **Validation caveat:** the new scenario module has passed focused local unit tests, but the complete v0.6 Streamlit app has not been browser-tested against this commit. GitHub Actions remain manual to avoid automatic notification emails. No independent human or expert review is claimed.
+
+## Household life-cycle model
+
+[Read the source-backed design and limitations](Documentation/21_CYCLE_VIE_BUDGET_FAMILIAL.md). Child costs change with age (living expenses and childcare/education) and can continue after the 18th birthday to an explicitly configured end age. Adult budgets model hypothetical age-phase adjustments and retirement. Neither the example child costs nor retirement income replacement rates are official estimates. Check whether expenses are **already included** in your household base budget to avoid counting them twice.
+
+The focused local test suite currently covers household cost ages, support stops, pension transitions, JSON compatibility, Monte Carlo and inverse-planning invariants. Full Streamlit browser/device tests and independent expert review are **not** claimed for this candidate.

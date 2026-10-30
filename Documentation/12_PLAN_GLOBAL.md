@@ -57,3 +57,7 @@ Les deux workflows GitHub Actions sont désormais déclenchables manuellement se
 ## Candidate v0.6.0 — avancement sans certification finale
 
 Les corrections P0/P1 sur la perte silencieuse de saisie, le parcours de projection et l'exploration de risques ont été réalisées dans la branche `main`, avec la taxonomie [20_REDESIGN_V06.md](20_REDESIGN_V06.md). Six scénarios de stress sont *déterministes* et séparés des décisions personnelles; aucun modèle de probabilité démographique ou médical n'a été ajouté. Les tests locaux ciblés ne suffisent pas à valider le site public et les tests GitHub Actions restent **manuels** à la demande du propriétaire. Les revues par utilisateurs et experts externes sont toujours non réalisées.
+
+## 30 octobre 2026 — Phase cycle de vie familial (v0.7 candidate)
+
+Le moteur ajoute [des enfants et adultes évoluant selon l'âge](21_CYCLE_VIE_BUDGET_FAMILIAL.md), sans prétendre inférer les coûts d'un enfant à partir d'une médiane générale. Les doubles comptes avec les dépenses actuelles sont traités par une convention explicite « déjà compris dans le budget actuel ». L'âge des adultes et le départ en retraite agissent sur les flux d'après des hypothèses de simulation personnelles et non des droits légaux. Les prestations françaises/vietnamiennes, les frais de santé probabilistes et les pensions réglementaires demeurent non modélisés. Aucun panel de familles ni audit indépendant n'a été recruté ; la clôture finale reste conditionnée aux tests utilisateurs et revues expertes.

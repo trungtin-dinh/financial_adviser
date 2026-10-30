@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 import math
 
+from .households import AdultBudget, ChildBudget, validate_household
+
 
 @dataclass(frozen=True)
 class OneOff:
@@ -54,6 +56,8 @@ class Plan:
     goal: float = 100000.0
     one_offs: tuple[OneOff, ...] = field(default_factory=tuple)
     life_events: tuple[LifeEvent, ...] = field(default_factory=tuple)
+    children: tuple[ChildBudget, ...] = field(default_factory=tuple)
+    adults: tuple[AdultBudget, ...] = field(default_factory=tuple)
 
     def validate(self) -> None:
         if self.country not in {"FR", "VN"}:
@@ -92,6 +96,7 @@ class Plan:
                     raise ValueError("Life event amounts must be finite")
             if item.monthly_expense < 0 or item.upfront_cost < 0:
                 raise ValueError("Life event costs must be positive or zero")
+        validate_household(self)
         for event in self.one_offs:
             if not isinstance(event.month, int) or not 1 <= event.month <= self.years * 12:
                 raise ValueError("One-off month must be in projection horizon.")
@@ -111,6 +116,22 @@ class Plan:
             if not isinstance(data["life_events"], (list, tuple)) or len(data["life_events"]) > 100:
                 raise ValueError("life_events must be a list of at most 100 items")
             data["life_events"] = tuple(LifeEvent(**x) for x in data["life_events"])
+        if "children" in data:
+            if (not isinstance(data["children"], (list, tuple)) or len(data["children"]) > 12
+                    or any(not isinstance(x, dict) for x in data["children"])):
+                raise ValueError("Invalid children list")
+            data["children"] = tuple(ChildBudget(**{
+                **x,
+                "living": tuple(x.get("living", (0.,) * 5)),
+                "care_education": tuple(x.get("care_education", (0.,) * 5)),
+            }) for x in data["children"])
+        if "adults" in data:
+            if (not isinstance(data["adults"], (list, tuple)) or len(data["adults"]) > 8
+                    or any(not isinstance(x, dict) for x in data["adults"])):
+                raise ValueError("Invalid adults list")
+            data["adults"] = tuple(AdultBudget(**{
+                **x, "expenses_by_age": tuple(x.get("expenses_by_age", (0.,) * 4)),
+            }) for x in data["adults"])
         if "one_offs" in data:
             if not isinstance(data["one_offs"], (list, tuple)):
                 raise ValueError("one_offs must be a list.")

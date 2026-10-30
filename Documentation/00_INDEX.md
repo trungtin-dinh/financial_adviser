@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.6.0 (candidate ergonomie et scénarios).
+**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.7.0 (candidate budget familial et cycle de vie).
 
 Cette documentation distingue systématiquement :
 
@@ -33,6 +33,7 @@ Cette documentation distingue systématiquement :
 | [18_PROTOCOL_EVALUATIONS_HUMAINES.md](18_PROTOCOL_EVALUATIONS_HUMAINES.md) | Tâches de tests multi-profils et revues expertes : protocoles, non réalisés |
 | [19_REVUE_HEURISTIQUE_MULTIPROFILS.md](19_REVUE_HEURISTIQUE_MULTIPROFILS.md) | Audit des principaux comportements contre-intuitifs et corrections v0.5 |
 | [20_REDESIGN_V06.md](20_REDESIGN_V06.md) | Audit v0.6, six scénarios de risques, ergonomie, hypothèses et validations à réaliser |
+| [21_CYCLE_VIE_BUDGET_FAMILIAL.md](21_CYCLE_VIE_BUDGET_FAMILIAL.md) | Recherche DREES/Insee/IRES/NSO/OCDE, enfants selon âge, adultes et retraite hypothétique, double comptage |
 
 ## Règles de maintenance documentaire
 

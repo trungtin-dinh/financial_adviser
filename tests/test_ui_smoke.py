@@ -21,6 +21,7 @@ def test_planner_renders_with_required_inputs_and_event_controls(lang):
     assert any(t(lang, "tab_results") in str(item.value) for item in app.get("subheader"))
     assert app.number_input(key="field_years") is not None
     assert app.selectbox(key="preset_selected") is not None
+    assert any("Household" in str(x.value) or "foyer" in str(x.value).lower() or "gia đình" in str(x.value).lower() for x in app.get("subheader"))
 
 @pytest.mark.parametrize("lang", ["fr", "en", "vi"])
 def test_documentation_and_sources_load(lang):
