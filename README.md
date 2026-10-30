@@ -18,7 +18,7 @@ Elle est conçue pour être accessible sans connaissances avancées en finance :
 ## Fonctionnalités
 
 - **Projection du patrimoine** : évolution mensuelle de la trésorerie, des placements, de la dette et du patrimoine net nominal ou corrigé de l'inflation.
-- **Calendrier de trésorerie** : consultation des flux mensuels calculés, des versements vers les placements et des mois de tension, sans supposer de financement automatique des soldes négatifs.
+- **Calendrier et échéances récurrentes** : saisie de flux signés mensuels, trimestriels ou annuels, consultation des paiements réellement prévus et des mois de tension, sans supposer de financement automatique des soldes négatifs.
 - **Budget du foyer** : revenus et dépenses du ménage, enfants avec coûts selon l'âge, profils d'adultes et changements hypothétiques à la retraite, ainsi que soutien à d'autres personnes à charge.
 - **Événements de vie** : changements de revenus, dépenses mensuelles supplémentaires et coûts ponctuels avec calendrier et durée.
 - **Scénarios de risque** : comparaisons déterministes, notamment en cas d'interruption de revenus ou de dépense imprévue ; les risques ne sont pas appliqués automatiquement à la projection principale.
