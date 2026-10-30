@@ -126,7 +126,7 @@ def test_goal_and_comparison_cannot_skip_property_closing():
     assert minimum_comparison_years(p) == 3
     with pytest.raises(ValueError, match="obligation"):
         build_comparisons(p, 2, 2.0)
-    with pytest.raises(ValueError, match="horizon"):
+    with pytest.raises(ValueError, match="outside projection"):
         solve_goal(p, 0, horizon_years=2)
 
 
