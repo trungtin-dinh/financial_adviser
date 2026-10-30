@@ -7,6 +7,9 @@ machine-readable files are intentionally not translated.
 TEXT = {
     "fr": {
     "cashflow_title": "Calendrier de trésorerie mensuel",
+    "custom_field_initial_property_value": "Valeur immobilière initiale",
+    "custom_field_initial_other_assets": "Autres actifs non liquides initiaux",
+    "custom_field_property_growth_pct": "Variation annuelle de l'immobilier (%)",
     "patrimony_title": "Biens et patrimoine non liquide (facultatif)",
     "patrimony_intro": "Déclarez uniquement des biens déjà possédés. Aucune valeur immobilière n'est créée automatiquement à partir du crédit.",
     "patrimony_property": "Valeur actuelle du patrimoine immobilier",
@@ -90,6 +93,9 @@ TEXT = {
 }
 TEXT["en"].update({
     "cashflow_title": "Monthly cash-flow calendar",
+    "custom_field_initial_property_value": "Starting property value",
+    "custom_field_initial_other_assets": "Starting other illiquid assets",
+    "custom_field_property_growth_pct": "Annual property value change (%)",
     "patrimony_title": "Property and illiquid assets (optional)",
     "patrimony_intro": "Enter only assets you already own. An outstanding mortgage does not automatically create property value.",
     "patrimony_property": "Current property value",
@@ -169,6 +175,9 @@ TEXT["en"].update({
 
 TEXT["vi"].update({
     "cashflow_title": "Lịch dòng tiền hằng tháng",
+    "custom_field_initial_property_value": "Giá trị bất động sản ban đầu",
+    "custom_field_initial_other_assets": "Tài sản khó thanh khoản ban đầu",
+    "custom_field_property_growth_pct": "Thay đổi giá trị bất động sản hằng năm (%)",
     "patrimony_title": "Bất động sản và tài sản khó thanh khoản (không bắt buộc)",
     "patrimony_intro": "Chỉ khai những tài sản đã sở hữu. Khoản vay không tự tạo ra giá trị bất động sản trong mô hình.",
     "patrimony_property": "Giá trị bất động sản hiện tại",
