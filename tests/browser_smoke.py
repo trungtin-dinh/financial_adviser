@@ -122,6 +122,12 @@ with sync_playwright() as pw:
             page.get_by_role("button", name=confirm, exact=True).first.click(timeout=15000)
             page.get_by_role("button", name=re.compile(re.escape(run_name))).first.click(timeout=20000)
             results_heading.wait_for(timeout=30000)
+            overview_title = {
+                "fr": "À retenir sur votre projection",
+                "vi": "Những điểm chính từ kết quả dự phóng",
+            }[lang]
+            overview = page.get_by_role("heading", name=overview_title, exact=True).first
+            overview.wait_for(timeout=15000)
             # Cash resilience is discoverable after running the calculation;
             # its inputs are editable without replacing the saved scenario.
             resilience_label = {

@@ -92,6 +92,8 @@ Quy trình chính gồm **nhập kế hoạch**, **điều chỉnh giả định
 
 Biểu đồ thể hiện tài sản ròng, tiền mặt, đầu tư và dư nợ. Các chỉ báo cho biết khả năng thiếu hụt tiền mặt và mức độ đạt được mục tiêu đã đặt ra. Có thể so sánh các giả định **trên cùng một thời hạn do người dùng chọn** mà không tự động thay đổi kịch bản gốc. Các mốc sự kiện có thể được hiện hoặc ẩn trên biểu đồ chính để làm rõ thời điểm thay đổi.
 
+Phần **Những điểm chính** giải thích bốn nhận xét kiểm chứng được từ lần tính gần nhất: tháng có tiền mặt âm, số dư thường kỳ tháng đầu sau khi chuyển sang đầu tư, việc đạt mục tiêu danh nghĩa ở cuối kỳ và tài sản theo sức mua ban đầu. Các nhận xét chỉ mang tính mô tả; hệ thống không gán điểm rủi ro tổng thể hay một mức dự phòng được khuyến nghị.
+
 Người dùng có thể chủ động nhập hoặc xuất kế hoạch dưới dạng JSON. Ứng dụng không tự lấy giao dịch từ ngân hàng.
 
 ### Quy trình sử dụng đề xuất

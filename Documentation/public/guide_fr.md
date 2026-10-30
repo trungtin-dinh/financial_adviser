@@ -94,6 +94,8 @@ Le parcours repose sur quatre étapes lisibles : **saisir un scénario**, **ajus
 
 Les graphiques permettent de suivre le patrimoine net, la trésorerie, les investissements et la dette. Des indicateurs signalent notamment un déficit de trésorerie ou l'atteinte d'un objectif. Plusieurs hypothèses peuvent être comparées **sur un horizon commun choisi**, sans modifier automatiquement le scénario de référence. Les repères chronologiques des événements de vie peuvent être affichés ou masqués sur le graphique pour faciliter son interprétation.
 
+Une rubrique **« À retenir »** résume quatre constats vérifiables du dernier calcul : les éventuels déficits de trésorerie, le solde régulier du premier mois après transfert vers les placements, l'atteinte de l'objectif nominal à la fin de l'horizon et le patrimoine en pouvoir d'achat de départ. Ces résultats sont descriptifs : aucun score général de risque ou seuil de réserve « idéal » n'est attribué.
+
 Les données d'un scénario peuvent être importées ou exportées volontairement au format JSON. La comparaison porte sur les résultats financiers, et non sur des transactions bancaires récupérées à votre insu.
 
 ### Parcours conseillé

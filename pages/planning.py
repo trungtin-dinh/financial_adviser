@@ -20,6 +20,7 @@ from financial_adviser.comparisons import build_comparisons, minimum_comparison_
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
+from financial_adviser.insights import summarize_projection
 from financial_adviser.resilience import analyze_liquidity
 from financial_adviser.session_compat import normalize_plan
 from financial_adviser.scenarios import PRESET_IDS, evaluate_stresses, proposed_event
@@ -363,6 +364,59 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None) -> None:
         st.caption(T("chart_mc_cash_note"))
 
 
+
+
+
+def render_financial_overview(plan: Plan, df: pd.DataFrame) -> None:
+    """Read-only, plain-language summary of the LAST calculated scenario."""
+    facts = summarize_projection(plan, df)
+    st.markdown("#### " + T("summary_title"))
+    st.caption(T("summary_intro"))
+
+    if facts.first_deficit_month is None:
+        minimum_cash = money(float(df.cash.min()), plan.currency)
+        liquidity = T("summary_liquidity_nonnegative", minimum=minimum_cash)
+    else:
+        month = facts.first_deficit_month
+        date = f"{plan.start_year + (month - 1) // 12}-{(month - 1) % 12 + 1:02d}"
+        liquidity = T(
+            "summary_liquidity_negative", date=date,
+            months=facts.negative_cash_months,
+            funding=money(facts.funding_gap, plan.currency),
+        )
+    st.markdown("**" + T("summary_liquidity_label") + "** — " + liquidity)
+
+    margin = facts.first_month_regular_balance
+    if margin < 0:
+        regular = T("summary_margin_negative", value=money(abs(margin), plan.currency))
+    elif margin > 0:
+        regular = T("summary_margin_positive", value=money(margin, plan.currency))
+    else:
+        regular = T("summary_margin_balanced")
+    st.markdown("**" + T("summary_margin_label") + "** — " + regular)
+
+    if not facts.goal_is_specified:
+        goal_text = T("summary_goal_zero")
+    elif facts.nominal_goal_reached:
+        goal_text = T("summary_goal_reached",
+                      value=money(facts.final_nominal_wealth, plan.currency))
+    else:
+        goal_text = T("summary_goal_not_reached",
+                      gap=money(facts.nominal_goal_gap, plan.currency))
+    if facts.nominal_goal_reached and facts.first_deficit_month is not None:
+        goal_text += " " + T("summary_goal_liquidity_warning")
+    st.markdown("**" + T("summary_goal_label") + "** — " + goal_text)
+
+    purchasing = T(
+        "summary_purchasing",
+        nominal=money(facts.final_nominal_wealth, plan.currency),
+        real=money(facts.final_real_wealth, plan.currency),
+        inflation=f"{facts.inflation_pct:g}",
+    )
+    st.markdown("**" + T("summary_purchasing_label") + "** — " + purchasing)
+    with st.expander(T("summary_method_title"), expanded=False):
+        st.markdown(T("summary_method"))
+    st.caption(T("summary_disclaimer"))
 
 
 @st.fragment
@@ -865,8 +919,7 @@ if st.session_state.result is not None:
             b2.metric(T("debt_service"), (f"{100 * initial_loan_payment / q.monthly_income:.1f}%")
                       if q.monthly_income > 0 else T("not_applicable"),
                       help=T("debt_service_help"))
-            if (df.cash < 0).any():
-                st.warning(T("negative_cash"))
+            render_financial_overview(q, df)
             # Stock, monthly-flow and uncertainty plots share one chart area.
             # Controls are isolated so selecting a curve does not rerun the engine.
             render_result_charts(q, df, result["mc"])

@@ -92,6 +92,8 @@ The user journey is straightforward: **enter a plan**, **adjust assumptions**, *
 
 Charts show net worth, cash, investments and remaining debt. Indicators flag potential cash deficits and whether the stated financial goal is reached. Optional comparisons use a **shared, user-selected horizon** without silently replacing the reference scenario. Life-event dates can be shown or hidden on the main chart to provide temporal context.
 
+A **Key takeaways** section explains four verifiable observations from the latest run: any months with negative cash, the first-month regular balance after transfers to investments, whether the nominal goal is reached at the final horizon, and ending wealth in starting-date purchasing power. These are descriptive facts, not an overall risk score or a recommended emergency-fund threshold.
+
 Plans may be imported or exported as JSON at the user's request. No bank transactions are fetched automatically.
 
 ### Recommended workflow
