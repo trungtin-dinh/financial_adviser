@@ -185,7 +185,7 @@ def test_editor_strings_exist_in_all_languages(lang):
         "purchase_remaining", "purchase_first_repayment",
         "cashflow_property_purchase",
     )
-    assert all(t(lang, key) for key in keys)
+    assert all(t(lang, key, payment="100", mortgage="80") for key in keys)
 
 
 def test_streamlit_editor_and_existing_purchases_render():
