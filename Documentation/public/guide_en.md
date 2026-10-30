@@ -64,6 +64,12 @@ Baseline income and spending change according to the selected annual growth assu
 
 The entered financial target is **nominal**. Reaching it at the end does not necessarily mean cash remained positive in every month. Review both measures.
 
+### Reverse planning: what would be needed to reach a target?
+
+The goal-planning feature estimates three **independent levers**: **extra starting monthly net income**, a **reduction in baseline monthly expenses**, or an **external initial cash contribution**. For each lever separately, the resulting plan must reach the final nominal target **while keeping cash non-negative in every month**. The three adjustments are not combined automatically.
+
+The spending reduction cannot erase family costs you have already explicitly included in baseline expenses. Initial extra cash means **new money from outside the existing household assets**, not a transfer between accounts. An unavailable lever means no qualifying solution was identified **under the current assumptions and constraints**, not that the real-life target is universally impossible.
+
 ## 3. Sources and reliability
 
 The application distinguishes **historical observations**, **user-defined future assumptions** and **legal rules**. A national statistic is not automatically a suitable estimate of a particular household's income or expenses.
