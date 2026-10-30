@@ -13,13 +13,14 @@ from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
 from financial_adviser.charts import (
     DEFAULT_WEALTH_SERIES, WEALTH_SERIES, comparison_figure, event_markers,
-    household_figure, overlay_event_markers, stress_liquidity_figure,
-    uncertainty_figure, wealth_figure,
+    household_figure, overlay_event_markers, resilience_figure,
+    stress_liquidity_figure, uncertainty_figure, wealth_figure,
 )
 from financial_adviser.comparisons import build_comparisons, minimum_comparison_years
 from financial_adviser.io import dump_plan, load_plan
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
+from financial_adviser.resilience import analyze_liquidity
 from financial_adviser.session_compat import normalize_plan
 from financial_adviser.scenarios import PRESET_IDS, evaluate_stresses, proposed_event
 from financial_adviser.ui_i18n import category_label, canonical_category, t
@@ -361,6 +362,74 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None) -> None:
         b.metric(T("chart_min_cash"), money(float(df.cash.min()), q.currency))
         st.caption(T("chart_mc_cash_note"))
 
+
+
+
+@st.fragment
+def render_resilience_panel(plan: Plan, df: pd.DataFrame) -> None:
+    """Optional cash-only what-if: rerender without running the main engine."""
+    with st.expander(T("resilience_title"), expanded=False):
+        st.caption(T("resilience_intro"))
+        if st.session_state.get("_resilience_source") != plan:
+            st.session_state.pop("resilience_shock_month", None)
+            st.session_state.pop("resilience_expense_amount", None)
+            st.session_state["_resilience_source"] = plan
+        baseline = analyze_liquidity(plan, df)
+        a, b = st.columns(2, wrap=True)
+        a.metric(T("resilience_baseline_gap"),
+                 money(baseline.baseline_funding_gap, plan.currency))
+        if baseline.baseline_first_deficit_month is None:
+            first_baseline = T("not_applicable")
+        else:
+            month = baseline.baseline_first_deficit_month
+            first_baseline = f"{plan.start_year + (month - 1) // 12}-{(month - 1) % 12 + 1:02d}"
+        b.metric(T("resilience_first_deficit"), first_baseline)
+        st.caption(T("resilience_initial_buffer_help"))
+        left, right = st.columns(2, wrap=True)
+        with left:
+            shock_month = st.number_input(
+                T("resilience_month"), min_value=1, max_value=plan.years * 12,
+                value=1, step=1, key="resilience_shock_month",
+                help=T("resilience_month_help"),
+            )
+        with right:
+            shock_amount = st.number_input(
+                T("resilience_amount"), min_value=0.0, value=0.0,
+                step=1_000_000.0 if plan.currency == "VND" else 100.0,
+                key="resilience_expense_amount",
+            )
+        try:
+            test = analyze_liquidity(
+                plan, df, shock_month=int(shock_month),
+                shock_amount=float(shock_amount),
+            )
+        except (ValueError, OverflowError):
+            st.error(T("resilience_invalid"))
+            return
+        a, b = st.columns(2, wrap=True)
+        a.metric(T("resilience_capacity"),
+                 money(test.maximum_absorbable_expense, plan.currency),
+                 help=T("resilience_capacity_help"))
+        b.metric(T("resilience_test_gap"),
+                 money(test.shock_funding_gap, plan.currency))
+        if test.baseline_funding_gap > 0:
+            st.warning(T("resilience_baseline_deficit"))
+        elif test.shock_amount == 0:
+            st.info(T("resilience_select_amount"))
+        elif test.shock_first_deficit_month is not None:
+            first = test.shock_first_deficit_month
+            date = f"{plan.start_year + (first - 1) // 12}-{(first - 1) % 12 + 1:02d}"
+            st.warning(T("resilience_shock_deficit",
+                         date=date, count=test.shock_deficit_months))
+        else:
+            st.info(T("resilience_no_simulated_deficit"))
+        st.plotly_chart(
+            resilience_figure(df, test, plan.start_year, plan.currency, T),
+            width="stretch", key="cash_resilience_chart",
+            config={"displaylogo": False, "scrollZoom": False},
+        )
+        st.caption(T("resilience_chart_note"))
+        st.caption(T("resilience_disclaimer"))
 
 
 @st.fragment
@@ -787,9 +856,8 @@ if st.session_state.result is not None:
             c.metric(T("remaining_loan"), money(float(last.loan_balance), q.currency))
             d.metric(T("goal_reached"), T("yes") if last.net_worth >= q.goal else T("no"))
             initial_loan_payment = loan_payment(q.loan_balance, q.loan_apr_pct, q.loan_years)
-            essential_monthly_outflow = q.monthly_expenses + initial_loan_payment
-            runway = (q.initial_cash / essential_monthly_outflow
-                      if essential_monthly_outflow > 0 else None)
+            liquidity = analyze_liquidity(q, df)
+            runway = liquidity.static_reserve_months
             a2, b2 = st.columns(2, wrap=True)
             a2.metric(T("cash_buffer"), (f"{runway:.1f} " + T("months"))
                       if runway is not None else T("not_applicable"),
@@ -802,6 +870,7 @@ if st.session_state.result is not None:
             # Stock, monthly-flow and uncertainty plots share one chart area.
             # Controls are isolated so selecting a curve does not rerun the engine.
             render_result_charts(q, df, result["mc"])
+            render_resilience_panel(q, df)
             with st.expander(T("yearly"), expanded=False):
                 yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
                 st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),

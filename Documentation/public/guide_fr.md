@@ -135,7 +135,7 @@ La comparaison de scénarios éclaire la **sensibilité** des résultats ; elle 
 
 Les calculs n'intègrent pas une fiscalité exhaustive, les frais de tous les produits, les prestations sociales, les taux de change ni l'ensemble des actifs immobiliers.
 
-Une **trésorerie négative** signale un besoin de financement non couvert : le simulateur ne suppose pas qu'un découvert ou une vente d'actifs sera accordé. Une trajectoire financière favorable n'est pas une garantie de faisabilité.
+Une **trésorerie négative** signale un besoin de financement non couvert : le simulateur ne suppose pas qu'un découvert ou une vente d'actifs sera accordé. La rubrique **Résilience** distingue une réserve statique exprimée en mois de dépenses courantes et une expérience hypothétique de dépense ponctuelle à une date choisie. Elle compare les trésoreries avec et sans cette dépense, ainsi que le montant maximal absorbable sans solde négatif sur tout l'horizon. Si la référence est déjà déficitaire, cette capacité est nulle. Le calcul suppose les revenus, placements et autres choix inchangés ; ce n'est ni un seuil de réserve recommandé ni une garantie de financement. Une trajectoire financière favorable n'est pas une garantie de faisabilité.
 
 L'application ne demande pas de connexion bancaire. Les valeurs saisies sur l'application hébergée sont néanmoins traitées sur son serveur pendant la session. Pour des informations sensibles, utilisez des montants fictifs ou une exécution locale. Les simulations ne constituent pas un conseil personnalisé.
 

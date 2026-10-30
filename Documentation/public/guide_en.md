@@ -131,7 +131,7 @@ Scenario comparisons measure **sensitivity** to assumptions; they do not establi
 
 The model does not comprehensively account for taxes, product fees, social benefits, foreign exchange, or unrepresented property assets.
 
-**Negative cash** indicates an unfunded shortfall, not an approved overdraft or automatic asset sale. Favorable results should not be interpreted as proof that a plan is feasible.
+**Negative cash** indicates an unfunded shortfall, not an approved overdraft or automatic asset sale. The optional **Resilience** section distinguishes static reserve coverage in months of current spending from a hypothetical one-time expense on a selected date. It compares cash before and after that expense and estimates the largest expense that keeps projected cash nonnegative through the full horizon. This capacity is zero if the baseline already contains a deficit. Income, investments and other plan inputs remain unchanged; the figure is neither a recommended buffer nor a financing guarantee. Favorable results should not be interpreted as proof that a plan is feasible.
 
 No banking connection is required. Data entered into the hosted application are nevertheless processed by its server during the session. Prefer fictional values or a local installation for sensitive personal information.
 

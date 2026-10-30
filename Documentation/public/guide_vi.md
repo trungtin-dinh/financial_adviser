@@ -131,7 +131,7 @@ So sánh kịch bản giúp hiểu **độ nhạy đối với các giả địn
 
 Mô hình chưa bao quát đầy đủ thuế, mọi loại phí sản phẩm, trợ cấp xã hội, tỷ giá và giá trị tài sản bất động sản chưa được khai báo.
 
-**Tiền mặt âm** thể hiện khoản thiếu hụt chưa có nguồn tài trợ, không đồng nghĩa với việc ngân hàng chấp nhận thấu chi hay tài sản được bán tự động. Kết quả tốt không chứng minh kế hoạch chắc chắn khả thi.
+**Tiền mặt âm** thể hiện khoản thiếu hụt chưa có nguồn tài trợ, không đồng nghĩa với việc ngân hàng chấp nhận thấu chi hay tài sản được bán tự động. Phần **Khả năng chống chịu** phân biệt số tháng dự phòng tĩnh dựa trên chi tiêu hiện tại với phép thử một khoản chi bất ngờ tại tháng đã chọn. Người dùng có thể so sánh tiền mặt trước và sau khoản chi, cùng số tiền tối đa có thể chi mà không làm tiền mặt âm trong toàn kỳ. Nếu kịch bản cơ sở đã thiếu hụt, khả năng này bằng 0. Thu nhập, đầu tư và các giả định khác vẫn giữ nguyên; đây không phải ngưỡng dự phòng được khuyên dùng hay bảo đảm có nguồn tiền. Kết quả tốt không chứng minh kế hoạch chắc chắn khả thi.
 
 Ứng dụng không yêu cầu kết nối ngân hàng. Dữ liệu nhập trên phiên bản trực tuyến vẫn được xử lý trên máy chủ trong thời gian sử dụng. Hãy dùng số liệu giả định hoặc chạy cục bộ nếu dữ liệu quá nhạy cảm.
 

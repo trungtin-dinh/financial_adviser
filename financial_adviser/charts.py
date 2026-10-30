@@ -315,3 +315,33 @@ def stress_liquidity_figure(evaluation: object, start_year: int,
         fillcolor="#D55E00", opacity=0.06, line_width=0,
     )
     return fig
+
+
+
+def resilience_figure(
+    df: pd.DataFrame, measure: object,
+    start_year: int, currency: str, translate: Callable[[str], str],
+) -> go.Figure:
+    """Cash comparison for a user-entered one-off expense (no probabilities)."""
+    if len(df) != len(measure.baseline_cash) or len(df) != len(measure.stressed_cash):
+        raise ValueError("Cash paths do not match the projection horizon")
+    dates = _month_labels(df, start_year, translate)
+    fig = go.Figure()
+    _line(fig, df, measure.baseline_cash, translate("scenario_base"),
+          _COLORS["net_worth"], dates, currency, width=2.8)
+    if measure.shock_amount > 0:
+        _line(fig, df, measure.stressed_cash, translate("resilience_expense_case"),
+              _COLORS["net_worth_real"], dates, currency, dash="dash",
+              width=2.8)
+    _axis(fig, df, start_year, currency, translate("year"))
+    fig.add_hline(y=0, line=dict(color="#6B7280", dash="dot", width=1.2))
+    lowest = min(measure.baseline_minimum_cash, measure.shock_minimum_cash)
+    if lowest < 0:
+        fig.add_hrect(y0=lowest * 1.04, y1=0, fillcolor="#D55E00",
+                      opacity=0.07, line_width=0)
+    if measure.shock_amount > 0:
+        fig.add_vline(
+            x=measure.shock_month,
+            line=dict(color="#D55E00", dash="dot", width=1.2),
+        )
+    return fig

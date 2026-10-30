@@ -122,6 +122,24 @@ with sync_playwright() as pw:
             page.get_by_role("button", name=confirm, exact=True).first.click(timeout=15000)
             page.get_by_role("button", name=re.compile(re.escape(run_name))).first.click(timeout=20000)
             results_heading.wait_for(timeout=30000)
+            # Cash resilience is discoverable after running the calculation;
+            # its inputs are editable without replacing the saved scenario.
+            resilience_label = {
+                "fr": "Résilience : réserve et dépense imprévue",
+                "vi": "Khả năng chống chịu: dự phòng và chi phí bất ngờ",
+            }[lang]
+            page.get_by_text(resilience_label, exact=True).first.click(timeout=15000)
+            extra_amount_label = {
+                "fr": "Montant supplémentaire simulé",
+                "vi": "Chi phí phát sinh mô phỏng",
+            }[lang]
+            cash_shock = page.get_by_role(
+                "spinbutton", name=extra_amount_label, exact=True).first
+            cash_shock.wait_for(state="visible", timeout=15000)
+            cash_shock.fill("500", timeout=15000)
+            cash_shock.press("Tab")
+            assert float(cash_shock.input_value().replace(",", ".")) == 500.0
+            page.screenshot(path=str(OUT / f"{lang}_{device}_resilience.png"), full_page=True)
             # Two core curves are visible by default; the remaining series
             # are selectable without leaving the results area.
             curves_label = {"fr": "Afficher / masquer les courbes",
