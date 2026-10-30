@@ -37,6 +37,7 @@ def render_cashflow_calendar(plan: Plan, projection: pd.DataFrame, T, money) -> 
             "loan_payment": "cashflow_loan",
             "one_off": "cashflow_events",
             "recurring_flow": "cashflow_recurring",
+            "property_purchase_cashflow": "cashflow_property_purchase",
             "investment_transfer": "cashflow_transfer",
             "net_cashflow_before_returns": "cashflow_flow",
             "cash": "cashflow_cash",
