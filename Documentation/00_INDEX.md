@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.7.0 (candidate budget familial et cycle de vie).
+**État :** documentation vivante du projet, revue le 30 octobre 2026. **Version applicative courante du dépôt :** v0.19.1. Les documents historiques conservent les versions et hypothèses auxquelles ils se rapportent ; ils ne décrivent pas nécessairement toutes les fonctionnalités actuelles.
 
 Cette documentation distingue systématiquement :
 
