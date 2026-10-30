@@ -30,7 +30,7 @@ def loan_payment(balance: float, apr_pct: float, years: int) -> float:
     return balance / n if r == 0 else balance * r / (1.0 - (1.0 + r) ** (-n))
 
 
-def _loan_schedule(plan: Plan) -> tuple[np.ndarray, np.ndarray]:
+def _loan_schedule(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Return outstanding balance and monthly payment, including initial month."""
     n = 12 * plan.years
     balances = np.zeros(n + 1)
@@ -46,10 +46,39 @@ def _loan_schedule(plan: Plan) -> tuple[np.ndarray, np.ndarray]:
         payment = min(fixed, before + interest)
         payments[m] = payment
         balances[m] = max(0.0, before + interest - payment)
-    return balances, payments
+    # Mortgage issued at closing (month P), with its first instalment in P+1.
+    # The original outstanding loan remains independent throughout.
+    new_balances = np.zeros(n + 1)
+    new_payments = np.zeros(n + 1)
+    purchase = plan.property_purchase
+    if purchase is not None:
+        principal = purchase.price - purchase.down_payment
+        fixed_new = loan_payment(principal, purchase.loan_apr_pct, purchase.loan_years)
+        new_interest = purchase.loan_apr_pct / 1200.0
+        new_balances[purchase.month] = principal
+        for m in range(purchase.month + 1, n + 1):
+            before = new_balances[m - 1]
+            if before <= 1e-7:
+                continue
+            due = before * new_interest
+            installment = min(fixed_new, before + due)
+            new_payments[m] = installment
+            new_balances[m] = max(0.0, before + due - installment)
+    return balances + new_balances, payments + new_payments, new_balances, new_payments
 
 
-def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def _property_values(plan: Plan, periods: np.ndarray) -> np.ndarray:
+    """Existing assets plus a home purchased only on or after its closing month."""
+    factor = 1.0 + monthly_rate(plan.property_growth_pct)
+    values = plan.initial_property_value * factor ** periods
+    purchase = plan.property_purchase
+    if purchase is not None:
+        since = periods - purchase.month
+        values = values + np.where(since >= 0, purchase.price * factor ** np.maximum(since, 0), 0.0)
+    return values
+
+
+def _drivers(plan: Plan) -> tuple[np.ndarray, ...]:
     n = plan.years * 12
     t = np.arange(n, dtype=float) / 12.0
     income = plan.monthly_income * np.power(1 + plan.income_growth_pct / 100, t)
@@ -69,15 +98,22 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
         spending[start:stop] += item.monthly_expense
         income[start:stop] += item.monthly_income_change
         events[start] -= item.upfront_cost
-    outstanding, payments = _loan_schedule(plan)
-    return income, spending, events, recurring, outstanding, payments
+    purchase_outflow = np.zeros(n)
+    if plan.property_purchase is not None:
+        purchase = plan.property_purchase
+        # Mortgage funds go directly to the seller, never through household cash.
+        purchase_outflow[purchase.month - 1] = -(purchase.down_payment + purchase.fees)
+    outstanding, payments, new_loan, new_payment = _loan_schedule(plan)
+    return (income, spending, events, recurring, purchase_outflow,
+            outstanding, payments, new_loan, new_payment)
 
 
 def project(plan: Plan) -> pd.DataFrame:
     """Simulate each month; contributions/events occur before monthly interest."""
     plan.validate()
     n = plan.years * 12
-    income, expenses, events, recurring, loan, payment = _drivers(plan)
+    (income, expenses, events, recurring, purchase_outflow,
+     loan, payment, new_loan, new_payment) = _drivers(plan)
     cash = np.empty(n + 1)
     invested = np.empty(n + 1)
     cash[0], invested[0] = plan.initial_cash, plan.initial_investments
@@ -86,14 +122,15 @@ def project(plan: Plan) -> pd.DataFrame:
     rc, ri, inflation = (monthly_rate(v) for v in (
         plan.cash_return_pct, plan.investment_return_pct, plan.inflation_pct))
     for m in range(1, n + 1):
-        free_cashflow = income[m - 1] - expenses[m - 1] - payment[m] + events[m - 1] + recurring[m - 1]
+        free_cashflow = (income[m - 1] - expenses[m - 1] - payment[m]
+                         + events[m - 1] + recurring[m - 1] + purchase_outflow[m - 1])
         cash[m] = (cash[m - 1] + free_cashflow - plan.monthly_investment) * (1 + rc)
         invested[m] = (invested[m - 1] + plan.monthly_investment) * (1 + ri)
     periods = np.arange(n + 1)
     factor = (1 + inflation) ** periods
     # Assets entered explicitly remain distinct from cash and invested capital.
     # A loan never creates property automatically; appreciation is non-cash.
-    property_value = plan.initial_property_value * (1 + monthly_rate(plan.property_growth_pct)) ** periods
+    property_value = _property_values(plan, periods)
     other_assets = np.full(n + 1, plan.initial_other_assets, dtype=float)
     illiquid_assets = property_value + other_assets
     nominal = cash + invested + illiquid_assets - loan
@@ -107,6 +144,8 @@ def project(plan: Plan) -> pd.DataFrame:
         "illiquid_assets": illiquid_assets,
         "gross_assets": cash + invested + illiquid_assets,
         "loan_balance": loan,
+        "new_mortgage_balance": new_loan,
+        "new_mortgage_payment": new_payment,
         "net_worth": nominal,
         "net_worth_real": nominal / factor,
         "purchasing_power_factor": factor,
@@ -115,6 +154,7 @@ def project(plan: Plan) -> pd.DataFrame:
         "loan_payment": payment,
         "one_off": np.r_[0, events],
         "recurring_flow": np.r_[0, recurring],
+        "property_purchase_cashflow": np.r_[0, purchase_outflow],
         "child_expenses": np.r_[0, child_costs],
         "adult_expenses": np.r_[0, adult_costs],
         "dependent_expenses": np.r_[0, dependent_costs],
@@ -151,22 +191,22 @@ def monte_carlo(plan: Plan, n_paths: int = 1000, seed: int = 42) -> MonteCarloRe
     cash = np.full(n_paths, plan.initial_cash, dtype=float)
     invested = np.full(n_paths, plan.initial_investments, dtype=float)
     outcomes = np.empty((n + 1, n_paths))
-    income, expenses, events, recurring, loan, payments = _drivers(plan)
-    outcomes[0] = (cash + invested + plan.initial_property_value
-                   + plan.initial_other_assets - loan[0])
+    (income, expenses, events, recurring, purchase_outflow,
+     loan, payments, _, _) = _drivers(plan)
+    property_values = _property_values(plan, np.arange(n + 1))
+    outcomes[0] = cash + invested + property_values[0] + plan.initial_other_assets - loan[0]
     rc = monthly_rate(plan.cash_return_pct)
     mean_return = monthly_rate(plan.investment_return_pct)
     std_return = plan.investment_volatility_pct / 100.0 / sqrt(12.0)
     negative_cash = cash < 0
     for m in range(1, n + 1):
-        free_cashflow = income[m - 1] - expenses[m - 1] - payments[m] + events[m - 1] + recurring[m - 1]
+        free_cashflow = (income[m - 1] - expenses[m - 1] - payments[m]
+                         + events[m - 1] + recurring[m - 1] + purchase_outflow[m - 1])
         cash = (cash + free_cashflow - plan.monthly_investment) * (1 + rc)
         returns = np.maximum(rng.normal(mean_return, std_return, size=n_paths), -0.99)
         invested = (invested + plan.monthly_investment) * (1 + returns)
         negative_cash |= cash < 0
-        property_value = plan.initial_property_value * (
-            (1 + monthly_rate(plan.property_growth_pct)) ** m)
-        outcomes[m] = cash + invested + property_value + plan.initial_other_assets - loan[m]
+        outcomes[m] = cash + invested + property_values[m] + plan.initial_other_assets - loan[m]
     q10, q50, q90 = np.quantile(outcomes, [0.1, 0.5, 0.9], axis=1)
     return MonteCarloResult(
         months=np.arange(n + 1), p10=q10, p50=q50, p90=q90,
