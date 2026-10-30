@@ -111,6 +111,9 @@ def hydrate_inputs(plan: Plan) -> None:
         "field_contribution": float(plan.monthly_investment),
         "field_cash": float(plan.initial_cash),
         "field_investments": float(plan.initial_investments),
+        "field_property_value": float(plan.initial_property_value),
+        "field_other_assets": float(plan.initial_other_assets),
+        "field_property_growth": float(plan.property_growth_pct),
         "field_years": int(plan.years),
         "field_start_year": int(plan.start_year),
         "field_income_growth": float(plan.income_growth_pct),
@@ -433,6 +436,28 @@ with plan_tab:
                 loan_years = st.number_input(T("loan_years"), min_value=1, max_value=60, value=p.loan_years, key="field_loan_years")
             st.caption(T("loan_hint"))
         with st.container(border=True):
+            st.subheader("🏠 " + T("patrimony_title"))
+            st.caption(T("patrimony_intro"))
+            a, b = st.columns(2, wrap=True)
+            with a:
+                property_value = st.number_input(
+                    T("patrimony_property"), min_value=0.0,
+                    value=float(p.initial_property_value), step=step * 10,
+                    key="field_property_value",
+                )
+            with b:
+                other_assets = st.number_input(
+                    T("patrimony_other"), min_value=0.0,
+                    value=float(p.initial_other_assets), step=step * 10,
+                    key="field_other_assets",
+                )
+            property_growth = st.number_input(
+                T("patrimony_growth"), min_value=-90.0, max_value=200.0,
+                value=float(p.property_growth_pct), step=0.5,
+                key="field_property_growth",
+            )
+            st.caption(T("patrimony_no_cash"))
+        with st.container(border=True):
             st.subheader("📅 " + T("extra_title"))
             previous = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
             oneoffs_text = st.text_area(T("extra_label"), value=previous,
@@ -475,6 +500,9 @@ with plan_tab:
         income != p.monthly_income or expenses != p.monthly_expenses
         or goal != p.goal or contribution != p.monthly_investment
         or cash != p.initial_cash or investments != p.initial_investments
+        or property_value != p.initial_property_value
+        or other_assets != p.initial_other_assets
+        or property_growth != p.property_growth_pct
         or years != p.years or start_year != p.start_year
         or tuple(events) != p.life_events
         or recurring_flows is None or recurring_flows != p.recurring_flows
@@ -502,6 +530,9 @@ with plan_tab:
             else:
                 new_plan = Plan(country=p.country, currency=p.currency, start_year=int(start_year), years=int(years),
                     initial_cash=float(cash), initial_investments=float(investments),
+                    initial_property_value=float(property_value),
+                    initial_other_assets=float(other_assets),
+                    property_growth_pct=float(property_growth),
                     monthly_income=float(income), monthly_expenses=float(expenses), monthly_investment=float(contribution),
                     income_growth_pct=income_growth, expense_growth_pct=spending_growth,
                     cash_return_pct=cash_return, investment_return_pct=investment_return,
@@ -568,6 +599,21 @@ if st.session_state.result is not None:
                           if q.monthly_income > 0 else T("not_applicable"),
                           help=T("debt_service_help"))
                 render_financial_overview(q, df, T, money)
+                if q.initial_property_value > 0 or q.initial_other_assets > 0:
+                    with st.expander(T("patrimony_breakdown"), expanded=False):
+                        last_asset = df.iloc[-1]
+                        st.metric(T("patrimony_gross_assets"),
+                                  money(float(last_asset.gross_assets), q.currency))
+                        for field, label in (
+                            ("cash", "cash_name"),
+                            ("investments", "investments_name"),
+                            ("property_value", "patrimony_property"),
+                            ("other_assets", "patrimony_other"),
+                            ("loan_balance", "loan_name"),
+                            ("net_worth", "net_worth"),
+                        ):
+                            st.markdown(f"**{T(label)}** : {money(float(last_asset[field]), q.currency)}")
+                        st.caption(T("patrimony_result_note"))
                 # Stock, monthly-flow and uncertainty plots share one chart area.
                 # Controls are isolated so selecting a curve does not rerun the engine.
                 render_result_charts(q, df, result["mc"], T, money)
