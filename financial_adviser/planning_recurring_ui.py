@@ -60,9 +60,15 @@ def render_recurring_editor(plan: Plan, T) -> tuple[RecurringFlow, ...] | None:
         )
         for flow in plan.recurring_flows
     ]
-    table = pd.DataFrame.from_records(
-        rows, columns=("start_month", "end_month", "frequency", "amount", "description"),
-    )
+    # Even an empty editor needs explicit dtypes so its first new row can
+    # accept numeric dates and amounts rather than locking them as text.
+    table = pd.DataFrame({
+        "start_month": pd.Series([r["start_month"] for r in rows], dtype="int64"),
+        "end_month": pd.Series([r["end_month"] for r in rows], dtype="int64"),
+        "frequency": pd.Series([r["frequency"] for r in rows], dtype="string"),
+        "amount": pd.Series([r["amount"] for r in rows], dtype="float64"),
+        "description": pd.Series([r["description"] for r in rows], dtype="string"),
+    })
     with st.expander("📆 " + T("recurring_title"), expanded=False):
         st.caption(T("recurring_intro"))
         st.caption(T("recurring_conventions"))
