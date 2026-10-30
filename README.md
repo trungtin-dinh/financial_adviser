@@ -9,6 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
 [![Status](https://img.shields.io/badge/status-v0.8.0_desktop_review-yellow)](Documentation/07_ROADMAP.md)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/trungtin-dinh/financial_adviser)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
