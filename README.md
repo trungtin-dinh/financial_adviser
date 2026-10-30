@@ -4,7 +4,7 @@
 
 [![Application Streamlit](https://img.shields.io/badge/Application-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://financial-adviser.streamlit.app/)
 [![Documentation](https://img.shields.io/badge/Documentation-Technique-blue?logo=readthedocs&logoColor=white)](Documentation/00_INDEX.md)
-[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/trungtin-dinh/financial_adviser)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Consulter-4A90E2?logo=readthedocs&logoColor=white)](https://deepwiki.com/trungtin-dinh/financial_adviser)
 
 [![Tests Python et ergonomie](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml)
 [![Vérification sur Streamlit Cloud](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml)
