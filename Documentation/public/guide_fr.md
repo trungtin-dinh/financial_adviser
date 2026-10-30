@@ -199,6 +199,10 @@ Les paramètres courants sont accessibles en priorité ; les hypothèses plus te
 
 ### Événements ponctuels et récurrents
 
+Vous pouvez désormais saisir des **paiements ou revenus périodiques** dans un tableau séparé : mois de début et de fin, fréquence mensuelle, trimestrielle ou annuelle, montant signé et description. Le **mois 1 correspond à janvier de l'année de départ**. Une dépense est négative, une entrée de revenu positive. Par exemple, une assurance annuelle de 600 € payée en février apparaît aux mois 2, 14 et 26 si l'échéance va jusque-là. Elle n'est pas répartie artificiellement sur chaque mois.
+
+Ces montants sont **ajoutés aux autres flux sans indexation automatique** : ne saisissez pas une seconde fois une charge déjà présente dans vos dépenses courantes. Le calendrier des résultats distingue les mouvements récurrents des événements ponctuels. La trésorerie négative reste un déficit non financé.
+
 Une dépense ponctuelle n'agit qu'au mois indiqué : par exemple, un équipement à 2 000 € payé au douzième mois. Une **fiche d'événement de vie** peut combiner un coût initial, une dépense mensuelle et une variation de revenu pendant plusieurs mois.
 
 **Exemple fictif :** un déménagement démarre au mois 7, dure deux mois, coûte 1 500 € au départ et entraîne 200 € de charges supplémentaires par mois. Le scénario représente un coût total direct de 1 900 €, avant tout effet de rendement ou d'inflation. Si le nouveau loyer est déjà intégré aux dépenses de référence, il ne faut pas ajouter ces 200 € une seconde fois.
