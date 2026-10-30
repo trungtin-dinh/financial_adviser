@@ -64,6 +64,14 @@ You may enter the **value of property already owned** and other illiquid assets.
 
 A property valuation increase is not spendable income. The model does not simulate purchasing, selling, rent, property taxes, fees or an automatic sale to cover a cash deficit. A balance-sheet breakdown appears when you enter illiquid assets; their curves and assumptions can also be compared.
 
+### Buying a home later in the projection
+
+You can simulate **one future property purchase**, separately from homes already owned. Enter the **closing month**, **price**, **down payment**, **upfront acquisition fees**, and the **new loan's rate and term**. The property enters net worth only once the purchase happens. Cash decreases by the down payment and fees, while the difference between price and down payment becomes a new debt. **Only the fees reduce net worth immediately at closing**, before cash returns.
+
+Existing debt continues independently. The first new mortgage instalment is due **one month after closing**. For example, a €120,000 home bought with a €20,000 down payment and €5,000 in fees reduces cash by €25,000 and creates €100,000 of new debt, alongside the €120,000 property asset.
+
+**Avoid double counting:** do not include this future property among assets already owned or include its repayments in ordinary baseline spending. Taxes, insurance, maintenance and other expenses not entered are not automatically estimated. This is an illustrative scenario, not a bank offer or a legally regulated mortgage calculation.
+
 ### Nominal wealth, purchasing power and targets
 
 **Nominal** net worth is expressed in currency units at the date shown. **Real** net worth expresses that amount in the purchasing power of the starting date. For illustration, €100,000 in ten years with hypothetical annual inflation of 2% would have a starting-date purchasing power of about €82,035. This is not an inflation forecast.
