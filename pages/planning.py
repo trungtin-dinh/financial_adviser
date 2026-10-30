@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+from dataclasses import replace
 from io import StringIO
 import json
 
@@ -20,6 +21,7 @@ from financial_adviser.models import LifeEvent, OneOff, Plan
 from financial_adviser.resilience import analyze_liquidity
 from financial_adviser.planning_analysis_ui import render_comparison_tab
 from financial_adviser.planning_cashflow_ui import render_cashflow_calendar
+from financial_adviser.planning_recurring_ui import render_recurring_editor
 from financial_adviser.planning_results_ui import (
     render_financial_overview, render_resilience_panel, render_result_charts,
 )
@@ -444,6 +446,9 @@ with plan_tab:
             seed = st.number_input(T("seed"), min_value=0, max_value=2**31 - 1,
                 value=42, key="mc_seed", disabled=not enable_mc)
 
+with plan_tab:
+    recurring_flows = render_recurring_editor(replace(p, years=int(years)), T)
+
 # Keep family and life-event editors in the scenario panel after a projection.
 # Before the first run they share the full width; beside the results dashboard
 # they stack vertically so that narrow columns remain usable on desktop/mobile.
@@ -472,6 +477,7 @@ with plan_tab:
         or cash != p.initial_cash or investments != p.initial_investments
         or years != p.years or start_year != p.start_year
         or tuple(events) != p.life_events
+        or recurring_flows is None or recurring_flows != p.recurring_flows
         or children != p.children or adults != p.adults
         or dependents != p.dependents
         or income_growth != p.income_growth_pct or spending_growth != p.expense_growth_pct
@@ -488,6 +494,8 @@ with plan_tab:
         try:
             if income is None or expenses is None or goal is None:
                 st.error(T("required_error"))
+            elif recurring_flows is None:
+                st.error(T("recurring_invalid"))
             elif any(not e.label or not 1 <= e.first_month or
                      e.first_month + e.duration_months - 1 > years * 12 for e in events):
                 st.error(T("event_error"))
@@ -500,6 +508,7 @@ with plan_tab:
                     investment_volatility_pct=volatility, inflation_pct=inflation,
                     loan_balance=loan, loan_apr_pct=loan_rate, loan_years=int(loan_years),
                     goal=float(goal), one_offs=parse_oneoffs(oneoffs_text, years),
+                    recurring_flows=recurring_flows,
                     life_events=events, children=children, adults=adults,
                     dependents=dependents)
                 new_plan.validate()
