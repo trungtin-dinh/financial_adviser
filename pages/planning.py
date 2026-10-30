@@ -83,6 +83,7 @@ def reset_inputs() -> None:
     st.session_state.pop("goal_horizon_input", None)
     for key in (
         "comparison_horizon", "_comparison_source", "chart_show_events",
+        "cashflow_selected_year",
         "_sensitivity_cache", "sensitivity_metric", "sensitivity_show_table",
         "_last_analysis_view", "_last_custom_input_mode",
         "_custom_comparison", "_custom_form_source", "custom_input_mode",
