@@ -452,7 +452,7 @@ with plan_tab:
                     key="field_other_assets",
                 )
             property_growth = st.number_input(
-                T("patrimony_growth"), min_value=-90.0, max_value=200.0,
+                T("patrimony_growth"), min_value=-98.999999, max_value=200.0,
                 value=float(p.property_growth_pct), step=0.5,
                 key="field_property_growth",
             )
