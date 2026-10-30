@@ -66,6 +66,14 @@ Le simulateur permet de déclarer **la valeur de biens immobiliers déjà possé
 
 Une hausse de la valeur d'un bien ne signifie pas un revenu disponible. Aucun achat, vente, loyer, impôt foncier, frais ou revente automatique en cas de manque de trésorerie n'est simulé. Le détail du bilan devient visible dans les résultats lorsqu'un actif non liquide est renseigné. Il est également possible d'afficher les courbes immobilières ou de comparer leurs hypothèses entre scénarios.
 
+### Achat immobilier dans les années à venir
+
+Vous pouvez simuler **l'achat futur d'un logement**, distinct de la valeur des biens déjà possédés. Indiquez le **mois de l'acquisition**, le **prix**, l'**apport**, les **frais à payer** et le **taux et la durée du nouveau prêt**. Le modèle ne fait apparaître le logement dans le patrimoine qu'à la date d'achat. L'apport et les frais diminuent la trésorerie ; la différence entre prix et apport constitue une dette nouvelle. À la date de l'achat, **les frais seuls réduisent immédiatement le patrimoine net** (hors rendement).
+
+Le prêt existant, s'il y en a un, continue normalement. La première mensualité du nouveau crédit arrive **le mois suivant l'achat**. Par exemple, un logement acheté 120 000 € avec 20 000 € d'apport et 5 000 € de frais génère 25 000 € de sortie de trésorerie et 100 000 € de dette nouvelle ; la propriété vaut 120 000 € dès son acquisition.
+
+**Attention au double comptage :** ne déclarez pas ce futur bien comme un logement déjà possédé et n'incluez pas ces mensualités dans les dépenses de base. Les frais, taxes, charges de copropriété, assurance et entretien non déclarés ne sont pas estimés automatiquement. Ce modèle pédagogique ne constitue pas une offre bancaire ni une simulation réglementaire d'acquisition.
+
 ### Nominal, réel et objectif
 
 Le patrimoine **nominal** est un montant en monnaie courante. Le patrimoine **réel** le ramène au pouvoir d'achat de l'année de départ. Par exemple, avec 2 % d'inflation hypothétique par an, 100 000 € dans dix ans représentent environ 82 035 € de pouvoir d'achat initial : ce n'est pas une prévision d'inflation.
