@@ -1,5 +1,12 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — Confirmation production v0.8.2
+
+- CI Python et Chromium local réussies. Chromium externe confirme le site Streamlit en v0.8.2, parcours FR exemple → projection → résultats et rendu VI mobile réussis (GitHub Actions 41033538584).
+- README mis à jour : badges des workflows automatiques, suppression des mentions historiques incorrectes indiquant que les Actions sont uniquement manuelles.
+
+
+
 ## 2026-10-30 — v0.8.2 : correction à partir du navigateur public
 
 - Chromium sur financial-adviser.streamlit.app confirme que v0.8.1 est bien déployée et chargée.

@@ -43,3 +43,11 @@ Le premier contrôle Chromium réel a capturé un **KeyError sur `nav_benchmarks
 Correctif : recharger explicitement le catalogue de traduction au démarrage de l'entrypoint et toucher le fichier de dépendances pour provoquer une nouvelle installation/reprise de l'environnement; ajouter un test des clés de navigation. Conserver la capture d'écran GitHub Actions comme preuve de régression : https://github.com/trungtin-dinh/financial_adviser/actions/runs/41012291272 .
 
 Ce diagnostic se distingue du premier échec HTTP 303 : cette fois, le **navigateur réel a effectivement chargé l'application et révélé une exception Python**.
+
+## Résultat confirmé : v0.8.2 (30 octobre 2026)
+
+Les tests Python/AppTest et Chromium local du commit `64a5873af433e204fb00c7fe137a816327ccedc1` ont terminé avec succès. Le workflow navigateur du site public [41033538584](https://github.com/trungtin-dinh/financial_adviser/actions/runs/41033538584) a observé la version **v0.8.2** puis a réussi le parcours FR exemple → confirmation → projection → résultats, et le chargement mobile VI sans débordement horizontal.
+
+L'incident découvert sur v0.8.1 (champs obligatoires vides après confirmation de l'exemple) est corrigé par rehydratation explicite des clés de saisie avant création des widgets Streamlit et par un test de non-régression. Les actions GitHub sont de nouveau déclenchées **automatiquement après chaque push**, sans modifier les préférences de notification e-mail du compte utilisateur.
+
+Les captures du navigateur sont jointes comme artefacts du workflow. Cette vérification ponctuelle ne garantit pas la disponibilité continue du fournisseur d'hébergement.

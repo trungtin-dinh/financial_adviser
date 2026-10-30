@@ -1,5 +1,7 @@
 **v0.8.2:** Desktop side-by-side editor and results, responsive mobile stacking, explicit cash runway and loan-service ratios, and automatic GitHub Actions checks of local UI and the deployed Streamlit site after each push. All financial ratios are educational approximations, not individualized recommendations. [UX/finance audit](Documentation/22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md).
 
+[![Python and local UX](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml) [![Real Streamlit browser](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml)
+
 # Financial Adviser
 
 **[🌐 Open the live Streamlit app](https://financial-adviser.streamlit.app/)** · [Source code](https://github.com/trungtin-dinh/financial_adviser) · [Documentation](Documentation/00_INDEX.md)
@@ -38,7 +40,7 @@
 - **Visible update status:** changing inputs marks the previous results as outdated, prevents stale inverse calculations and distinguishes export of the last calculated scenario from unsaved edits.
 - **Socioeconomic risk map:** 87 candidate factors and actual model maturity documented; unimplemented risks never masquerade as calibrated forecasts.
 - **Review methodology:** synthetic socioeconomic scenarios and independent user/expert test protocol, clearly distinguished from real external reviews (not performed).
-- **GitHub Actions run manually only** to avoid unsolicited workflow-run notifications from repository pushes. Configure GitHub notification preferences separately if unwanted mail persists.
+- **GitHub Actions run automatically** on pushes to main; the production Chromium check follows the successful local suite. Email notification preferences remain controlled in the GitHub account.
 
 
 - **France/Vietnam statistical reference explorer**: dated official observations with exact population, average/median, source, and explicit incompatibility with personal inputs.
@@ -158,11 +160,11 @@ These text suggestions are documented here because repository About metadata mus
 - [Independent user and professional-review protocol](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md)
 - [Heuristic audit of the v0.5 UX candidate](Documentation/19_REVUE_HEURISTIQUE_MULTIPROFILS.md)
 
-The two GitHub Actions workflows are **manual** (`workflow_dispatch`) to avoid automatic run notifications. They can be launched from the Actions tab when validation is explicitly desired. Changing repository workflows does not directly alter your GitHub account's [email notification settings](https://github.com/settings/notifications).
+The GitHub Actions workflows are triggered **automatically** by pushes to main, with an additional manual trigger for rechecks. Account-level [GitHub notification settings](https://github.com/settings/notifications) remain independent from workflow triggers.
 
 - [v0.6 design, risk templates and prioritized audit](Documentation/20_REDESIGN_V06.md)
 
-**Validation caveat:** the new scenario module has passed focused local unit tests, but the complete v0.6 Streamlit app has not been browser-tested against this commit. GitHub Actions remain manual to avoid automatic notification emails. No independent human or expert review is claimed.
+**Validation scope:** the current v0.8.2 build passed the Python and local PC/tablet/mobile Chromium workflows and the actual hosted Streamlit French projection/Vietnamese-mobile smoke checks. Independent usability and financial expert reviews have not been performed.
 
 ## Household life-cycle model
 
@@ -170,4 +172,4 @@ The two GitHub Actions workflows are **manual** (`workflow_dispatch`) to avoid a
 
 The focused local test suite currently covers household cost ages, support stops, pension transitions, JSON compatibility, Monte Carlo and inverse-planning invariants. Full Streamlit browser/device tests and independent expert review are **not** claimed for this candidate.
 
-**Production verification:** v0.7.1 adds compatibility for old browser sessions and a frame-aware, version-checked live Chromium smoke test. It is **not yet confirmed working on Streamlit Cloud**; GitHub Actions remain manually triggered to avoid automated email notifications. See [production runbook](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
+**Production verification:** v0.8.2 was observed running and computing a synthetic example on the real hosted site on 30 October 2026. See [successful live browser run](https://github.com/trungtin-dinh/financial_adviser/actions/runs/41033538584) and [production runbook](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).

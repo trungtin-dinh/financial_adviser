@@ -52,3 +52,9 @@ Les deux workflows GitHub Actions sont réactivés à chaque push depuis que l'u
 ## Incident réel de déploiement et mesures correctrices (v0.8.2)
 
 Le navigateur public a bien trouvé la v0.8.1, mais le parcours « Charger un exemple » puis « Confirmer le remplacement » puis « Lancer la projection » a conduit à l'erreur « Le revenu, les dépenses et l'objectif doivent être renseignés ». Contrairement aux tests de compilation et de l'apparence seule, ce test a détecté une anomalie d'état utilisateur. La v0.8.2 programme une restauration des clés de saisie depuis le Plan enregistré **avant** que les widgets Streamlit soient construits. Le test navigateur attend que le champ revenu soit effectivement rempli avant de déclencher la projection. Cet incident ne concerne pas des probabilités ou hypothèses économiques, mais l'intégrité des saisies de simulation.
+
+## Résolution et vérification publique
+
+Le commit v0.8.2 `64a5873af` a réussi les suites locales Python, PC/tablette/mobile, puis le workflow Playwright [41033538584](https://github.com/trungtin-dinh/financial_adviser/actions/runs/41033538584) sur le vrai site. Messages dans les journaux : version hébergée v0.8.2, parcours FR complet (exemple, calcul, résultats) réussi et chargement VI mobile sans débordement. Ce contrôle corrige une panne d'interaction concrète, et non une simple détection HTTP.
+
+La disponibilité continue, les droits fiscaux FR/VN et une étude avec des personnes réelles restent hors de portée de cette seule validation automatique.
