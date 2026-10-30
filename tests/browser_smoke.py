@@ -65,7 +65,11 @@ with sync_playwright() as pw:
         page = browser.new_page(viewport={"width": width, "height": height})
         page.goto(f"{BASE}/benchmarks?lang={lang}", wait_until="domcontentloaded", timeout=60000)
         title = {"fr": "Références statistiques", "en": "Statistical references", "vi": "Số liệu thống kê tham khảo"}[lang]
-        page.get_by_text(title, exact=True).first.wait_for(timeout=30000)
+        try:
+            page.get_by_role("heading", name=re.compile(re.escape(title))).first.wait_for(timeout=15000)
+        except Exception:
+            print("STATISTICS PAGE DEBUG:", lang, page.url, page.locator("body").inner_text()[-3500:])
+            raise
         assert page.evaluate("document.documentElement.scrollWidth - window.innerWidth") <= 8
         page.screenshot(path=str(OUT / f"{lang}_benchmarks.png"), full_page=True)
         page.close()
