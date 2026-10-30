@@ -1,35 +1,46 @@
-"""Reference documents: full French sources, with complete localized navigation."""
+"""User-facing documentation, separate from internal technical notes."""
 from pathlib import Path
+import re
+
 import streamlit as st
+
 from financial_adviser.ui_i18n import t
 
 ROOT = Path(__file__).resolve().parent.parent
-lang = st.session_state.get("language_choice", "fr")
-st.title("📖 " + t(lang, "nav_guide"))
-st.caption(t(lang, "guide_caption") if lang == "fr" else t(lang, "guide_language_note"))
+PUBLIC_DIR = ROOT / "Documentation" / "public"
+LANG = st.session_state.get("language_choice", "fr")
 
-DOCS = [
-    ("01_CAHIER_DES_CHARGES.md", "guide_requirements"),
-    ("02_MODELES_MATHEMATIQUES.md", "guide_math"),
-    ("03_SOURCES_ET_REGLES.md", "guide_provenance"),
-    ("04_ARCHITECTURE.md", "guide_arch"),
-    ("05_BENCHMARK.md", "guide_bench"),
-    ("06_QUALITE_ET_LIMITES.md", "guide_limits"),
-    ("07_ROADMAP.md", "guide_roadmap"),
-    ("08_JOURNAL.md", "guide_journal"),
-    ("09_FACTEURS_DE_VIE_ET_UX.md", "guide_life"),
-    ("17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md", "guide_risk_factors"),
-    ("18_PROTOCOL_EVALUATIONS_HUMAINES.md", "guide_research"),
-    ("21_CYCLE_VIE_BUDGET_FAMILIAL.md", "guide_household"),
-]
-if lang == "fr":
-    for filename, key in DOCS:
-        with st.expander(t(lang, key), expanded=False):
-            st.markdown((ROOT / "Documentation" / filename).read_text(encoding="utf-8"))
-else:
-    st.info(t(lang, "guide_summary"))
-    for filename, key in DOCS:
-        st.link_button(t(lang, key),
-                       f"https://github.com/trungtin-dinh/financial_adviser/blob/main/Documentation/{filename}",
-                       width="stretch")
-st.link_button(t(lang, "guide_link"), "https://github.com/trungtin-dinh/financial_adviser/tree/main/Documentation")
+SECTION_KEYS = (
+    "guide_requirements", "guide_math", "guide_provenance",
+    "guide_arch", "guide_bench", "guide_limits", "guide_roadmap",
+    "guide_journal", "guide_life", "guide_risk_factors",
+    "guide_research", "guide_household",
+)
+
+
+def load_public_sections(language: str) -> list[str]:
+    """Read the reviewed user-facing sections in their display order."""
+    if language not in ("fr", "en", "vi"):
+        raise ValueError("Unsupported guide language")
+    markdown = (PUBLIC_DIR / f"guide_{language}.md").read_text(encoding="utf-8")
+    # Numbered headings remain readable on GitHub; the Streamlit page shows
+    # each section inside a separate, localized expandable panel.
+    parts = re.split(r"(?m)^## \d{1,2}\. [^\n]+\n", markdown)
+    sections = [part.strip() for part in parts[1:]]
+    if len(sections) != len(SECTION_KEYS) or any(not part for part in sections):
+        raise ValueError("Invalid public guide section structure")
+    return sections
+
+
+st.title("📖 " + t(LANG, "nav_guide"))
+st.caption(t(LANG, "guide_caption"))
+
+for key, body in zip(SECTION_KEYS, load_public_sections(LANG)):
+    with st.expander(t(LANG, key), expanded=False):
+        st.markdown(body)
+
+st.link_button(
+    t(LANG, "guide_link"),
+    "https://github.com/trungtin-dinh/financial_adviser/blob/main/"
+    f"Documentation/public/guide_{LANG}.md",
+)
