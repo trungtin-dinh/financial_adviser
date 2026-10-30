@@ -52,39 +52,57 @@ with sync_playwright() as pw:
         add = {"fr":"Ajouter un événement", "en":"Add an event", "vi":"Thêm sự kiện"}[lang]
         page.get_by_role("button", name=re.compile(re.escape(add))).click(timeout=10000)
         event = {"fr":"Événement 1", "en":"Event 1", "vi":"Sự kiện 1"}[lang]
-        title = page.get_by_text(re.compile(re.escape(event) + r".*(?:Modifier|Edit|Sửa)")).first
+        title = page.get_by_role("button", name=re.compile(r"▸.*" + re.escape(event))).first
         title.wait_for(timeout=30000)
         short_label = {"fr": "Description courte", "en": "Short description", "vi": "Mô tả ngắn"}[lang]
         description_input = page.get_by_role("textbox", name=short_label, exact=True)
-        # Verify arrow opens and closes details without deleting their values.
-        title.click()
-        description_input.wait_for(state="hidden", timeout=10000)
+        # New items must be collapsed, with delete reachable in the header.
+        assert description_input.count() == 0
+        assert page.get_by_role("button", name="✕", exact=True).count() >= 1
         title.click()
         description_input.wait_for(state="visible", timeout=10000)
         description_input.fill(f"UI check {lang}")
         description_input.press("Tab")
+        page.get_by_role("button", name=re.compile(r"▾.*UI check")).first.click()
+        assert description_input.count() == 0
+        page.get_by_role("button", name=re.compile(r"▸.*UI check")).first.click()
+        description_input.wait_for(state="visible", timeout=10000)
         assert description_input.input_value() == f"UI check {lang}"
         page.screenshot(path=str(OUT / f"{lang}_{device}_event.png"), full_page=True)
-        # Child profiles have a compact, collapsible header; age fields align
-        # in the same horizontal row on the desktop layout.
         page.get_by_role("button", name=re.compile(re.escape(child_add))).first.click(timeout=15000)
         child_title = {"fr": "Enfant 1", "en": "Child 1", "vi": "Con 1"}[lang]
-        child_header = page.get_by_text(re.compile(re.escape(child_title) + r".*(?:Modifier|Edit|Sửa)")).first
+        child_header = page.get_by_role("button", name=re.compile(r"▸.*" + re.escape(child_title))).first
         child_header.wait_for(timeout=15000)
         age_label = {"fr":"Âge au début","en":"Age at start","vi":"Tuổi lúc bắt đầu"}[lang]
         end_label = {"fr":"Âge de fin","en":"Support ends at age","vi":"Tuổi ngừng chu cấp"}[lang]
         age_input = page.get_by_role("spinbutton", name=age_label, exact=True)
         end_input = page.get_by_role("spinbutton", name=end_label, exact=True)
+        assert age_input.count() == 0, "A newly added child is unexpectedly expanded"
+        child_header.click()
         age_input.wait_for(state="visible", timeout=15000)
         if width >= 1024:
             a_box, b_box = age_input.bounding_box(), end_input.bounding_box()
             assert a_box and b_box and abs(a_box["y"]-b_box["y"]) <= 12, (
                 f"Child age fields misaligned on desktop: {a_box}, {b_box}")
-        child_header.click()
-        age_input.wait_for(state="hidden", timeout=10000)
-        child_header.click()
-        age_input.wait_for(state="visible", timeout=10000)
-        page.screenshot(path=str(OUT / f"{lang}_{device}_child.png"), full_page=True)
+        page.get_by_role("button", name=re.compile(r"▾.*" + re.escape(child_title))).first.click()
+        assert age_input.count() == 0
+        dependent_add = {"fr":"Ajouter une personne à charge", "en":"Add another dependent",
+                         "vi":"Thêm người phụ thuộc"}[lang]
+        page.get_by_role("button", name=re.compile(re.escape(dependent_add))).first.click(timeout=15000)
+        # An additional dependent must also appear collapsed.
+        dependent_title = {"fr": "Proche 1", "en": "Dependent 1",
+                           "vi": "Người phụ thuộc 1"}[lang]
+        page.get_by_role("button", name=re.compile(r"▸.*" + re.escape(dependent_title))).first.wait_for(timeout=15000)
+        page.screenshot(path=str(OUT / f"{lang}_{device}_household.png"), full_page=True)
+        if width >= 1024:
+            house_title = {"fr":"Composition du foyer et dépenses selon l'âge",
+                "en":"Household members and age-related expenses",
+                "vi":"Thành viên gia đình và chi tiêu theo độ tuổi"}[lang]
+            house_heading = page.get_by_role("heading", name=house_title, exact=True).first
+            event_heading = page.get_by_role("heading", name=re.compile(re.escape(life))).first
+            house_rect, event_rect = house_heading.bounding_box(), event_heading.bounding_box()
+            assert house_rect and event_rect and event_rect["x"] > house_rect["x"] + 180, (
+                f"Household and events are not side by side: {house_rect}, {event_rect}")
         assert not errors, f"Client errors: {lang}/{device}: {errors}"
         overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
         assert overflow <= 8, f"Event form overflow: {lang}/{device}, {overflow}px"

@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from .models import Plan
-from .households import household_adjustments, included_current_spending
+from .households import household_adjustments, dependent_adjustments, included_current_spending
 
 
 def monthly_rate(annual_pct: float) -> float:
@@ -58,7 +58,7 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray
     for event in plan.one_offs:
         events[event.month - 1] += event.amount
     child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
-    spending += child_costs + adult_costs
+    spending += child_costs + adult_costs + dependent_adjustments(plan)
     income += retirement_income_change
     for item in plan.life_events:
         start = item.first_month - 1
@@ -79,6 +79,7 @@ def project(plan: Plan) -> pd.DataFrame:
     invested = np.empty(n + 1)
     cash[0], invested[0] = plan.initial_cash, plan.initial_investments
     child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
+    dependent_costs = dependent_adjustments(plan)
     rc, ri, inflation = (monthly_rate(v) for v in (
         plan.cash_return_pct, plan.investment_return_pct, plan.inflation_pct))
     for m in range(1, n + 1):
@@ -103,6 +104,7 @@ def project(plan: Plan) -> pd.DataFrame:
         "one_off": np.r_[0, events],
         "child_expenses": np.r_[0, child_costs],
         "adult_expenses": np.r_[0, adult_costs],
+        "dependent_expenses": np.r_[0, dependent_costs],
         "retirement_income_change": np.r_[0, retirement_income_change],
     })
 

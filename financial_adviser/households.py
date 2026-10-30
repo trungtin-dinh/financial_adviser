@@ -60,6 +60,27 @@ class AdultBudget:
     included_in_baseline: bool = True
 
 
+@dataclass(frozen=True)
+class DependentBudget:
+    """Extra support for an adult relative or another non-child dependent.
+
+    These are *user-specified* cash costs, not diagnosed healthcare needs,
+    eligibility estimates or a probability of dependency. An existing expense
+    may be included in the household baseline and is then subtracted after
+    the end of support.
+    """
+    label: str
+    relation: str = "parent"
+    first_month: int = 1
+    duration_months: int = 120
+    monthly_support: float = 0.0
+    monthly_care: float = 0.0
+    included_in_baseline: bool = False
+
+
+DEPENDENT_RELATIONS = ("parent", "adult_relative", "partner", "other")
+
+
 def _amounts(values: tuple[float, ...], length: int, key: str) -> None:
     if not isinstance(values, (tuple, list)) or len(values) != length:
         raise ValueError(f"{key} must contain exactly {length} stage values")
@@ -68,7 +89,7 @@ def _amounts(values: tuple[float, ...], length: int, key: str) -> None:
 
 
 def validate_household(plan: "Plan") -> None:
-    if len(plan.children) > 12 or len(plan.adults) > 8:
+    if len(plan.children) > 12 or len(plan.adults) > 8 or len(plan.dependents) > 12:
         raise ValueError("Too many household members")
     for child in plan.children:
         if not isinstance(child, ChildBudget):
@@ -85,6 +106,23 @@ def validate_household(plan: "Plan") -> None:
             raise ValueError("Only a child already present can have costs included in baseline")
         _amounts(child.living, 5, "child living expenses")
         _amounts(child.care_education, 5, "child care and education expenses")
+    for person in plan.dependents:
+        if not isinstance(person, DependentBudget):
+            raise ValueError("Invalid non-child dependent")
+        if not 1 <= len(person.label.strip()) <= 100:
+            raise ValueError("Dependent requires a short name")
+        if person.relation not in DEPENDENT_RELATIONS:
+            raise ValueError("Unknown dependent relation")
+        if (not isinstance(person.first_month, int) or not isinstance(person.duration_months, int)
+                or person.first_month < 1 or person.duration_months < 1
+                or person.first_month + person.duration_months - 1 > plan.years * 12):
+            raise ValueError("Dependent support must fit within projection horizon")
+        if not isinstance(person.included_in_baseline, bool) or (
+                person.included_in_baseline and person.first_month != 1):
+            raise ValueError("Future dependent expenses cannot be in the current budget")
+        for amount in (person.monthly_support, person.monthly_care):
+            if not isinstance(amount, (float, int)) or not math.isfinite(amount) or amount < 0:
+                raise ValueError("Dependent monthly costs must be finite and nonnegative")
     shares = 0.0
     for adult in plan.adults:
         if not isinstance(adult, AdultBudget):
@@ -118,7 +156,9 @@ def included_current_spending(plan: "Plan") -> float:
         c.care_education[_stage(c.age_years, CHILD_AGE_BANDS)]
         for c in plan.children if c.included_in_baseline
     ) + sum(a.expenses_by_age[_stage(a.age_years, ADULT_AGE_BANDS)]
-            for a in plan.adults if a.included_in_baseline))
+            for a in plan.adults if a.included_in_baseline)
+      + sum(d.monthly_support + d.monthly_care for d in plan.dependents
+            if d.included_in_baseline))
 
 
 def child_example(baseline_monthly_expenses: float, label: str = "Child") -> ChildBudget:
@@ -192,3 +232,23 @@ def household_adjustments(plan: "Plan") -> tuple[np.ndarray, np.ndarray, np.ndar
                 1. + plan.inflation_pct / 100., months_retired / 12.)
         income_delta[mask] += pension - plan.monthly_income * share * income_factor[mask]
     return child_spending, adult_spending, income_delta
+
+
+def dependent_adjustments(plan: "Plan") -> np.ndarray:
+    """Monthly additional support for other dependents, relative to base costs.
+
+    Returns signed cash-expense differences, which may become negative after
+    an existing dependency ends. All values use the scenario currency.
+    """
+    count = plan.years * 12
+    factor = np.power(1. + plan.expense_growth_pct / 100.,
+                      np.arange(count, dtype=float) / 12.)
+    delta = np.zeros(count, dtype=float)
+    for person in plan.dependents:
+        monthly = person.monthly_support + person.monthly_care
+        if person.included_in_baseline:
+            delta -= monthly * factor
+        start = person.first_month - 1
+        end = start + person.duration_months
+        delta[start:end] += monthly * factor[start:end]
+    return delta

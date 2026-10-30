@@ -1,176 +1,76 @@
-**v0.9.0 UX update:** Before the first projection, only editable inputs appear. After the user runs the simulation, results and analyses appear beside the inputs on desktop (or below on mobile). Children, adults and life events are collapsible cards with visible summaries; new cards open for editing. Age/date controls use aligned rows and concise labels with help tooltips. GitHub Actions test interactions locally and verify the deployed app after every push. [UX audit](Documentation/23_PHASED_RESULTS_AND_COMPACT_CARDS.md).
-
-
-[![Python and local UX](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml) [![Real Streamlit browser](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml)
-
 # Financial Adviser
 
-**[🌐 Open the live Streamlit app](https://financial-adviser.streamlit.app/)** · [Source code](https://github.com/trungtin-dinh/financial_adviser) · [Documentation](Documentation/00_INDEX.md)
+**Simulateur de planification financière des ménages, pour explorer l'évolution du budget et du patrimoine dans le temps.**
 
-[![Live Streamlit app](https://img.shields.io/badge/Live_app-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://financial-adviser.streamlit.app/)
+[**Ouvrir l'application Streamlit**](https://financial-adviser.streamlit.app/) · [Documentation technique et scientifique](Documentation/00_INDEX.md) · [Consulter l'explication du dépôt dans DeepWiki](https://deepwiki.com/trungtin-dinh/financial_adviser)
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.8.2_desktop_review-yellow)](Documentation/07_ROADMAP.md)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/trungtin-dinh/financial_adviser)
+[![Application Streamlit](https://img.shields.io/badge/Application-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://financial-adviser.streamlit.app/)
+[![Tests Python et ergonomie](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/tests.yml)
+[![Vérification sur Streamlit Cloud](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml/badge.svg)](https://github.com/trungtin-dinh/financial_adviser/actions/workflows/public-app-check.yml)
 
-**Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
+## Présentation
 
-**Simulate, compare and explain — without implying that a model predicts the future.**
+Financial Adviser est une application éducative de **simulation financière sur plusieurs années**, développée avec Python et Streamlit. Elle permet de comprendre comment les revenus, les dépenses, les placements, les crédits et les événements de la vie influencent la trésorerie et le patrimoine d'un ménage.
 
-> **Important:** This is a first usable **MVP**, not an investment adviser, tax calculator, account aggregator, or forecast of future asset returns. Default rates and income amounts are *illustrative assumptions*, not market estimates or personalized recommendations. Avoid entering confidential data in deployments you do not control.
+Elle est conçue pour être accessible sans connaissances avancées en finance : les hypothèses sont visibles, les montants sont modifiables et les résultats sont séparés des données saisies. L'interface propose le **français, l'anglais et le vietnamien** ; les scénarios peuvent être exprimés en euros ou en dôngs vietnamiens. Le choix d'un pays ne convertit pas les montants.
 
-## Features in v0.7.0
+## Fonctionnalités
 
-- **Household life-cycle model:** optional children aged from 0 to up to 30; age-specific living and childcare/education monthly budgets, configurable age when support ends (illustrative default 25), future births and several children.
-- **Avoid double counting:** each current child can be marked as already included in the household's current spending. The projection then includes only future changes, and releases that part of the original budget when financial support ends.
-- **Adults' finances across the life cycle:** age-dependent discretionary monthly expense adjustments, income-share allocation between adults (up to 100% combined), and an explicitly hypothetical retirement transition. No automatic legal pension/tax/health estimate.
-- **Year-by-year finances:** child/adult spending and retirement income are reflected in baseline projection, Monte Carlo and goal-seek, with dedicated signed-change chart. Legacy saved scenarios remain supported.
-- **No official average child cost assumed:** all starter values are synthetic and user-editable. Country-specific research is documented with DREES, Insee, IRES, NSO and OECD references.
+- **Projection du patrimoine** : évolution mensuelle de la trésorerie, des placements, de la dette et du patrimoine net nominal ou corrigé de l'inflation.
+- **Budget du foyer** : revenus et dépenses du ménage, enfants avec coûts selon l'âge, profils d'adultes et changements hypothétiques à la retraite, ainsi que soutien à d'autres personnes à charge.
+- **Événements de vie** : changements de revenus, dépenses mensuelles supplémentaires et coûts ponctuels avec calendrier et durée.
+- **Scénarios de risque** : comparaisons déterministes, notamment en cas d'interruption de revenus ou de dépense imprévue ; les risques ne sont pas appliqués automatiquement à la projection principale.
+- **Recherche d'objectif** : estimation d'efforts financiers permettant d'atteindre un patrimoine cible sous les contraintes du modèle.
+- **Simulation Monte Carlo simplifiée** : exploration de la sensibilité des placements à des rendements aléatoires, avec quantiles conditionnels aux hypothèses utilisées.
+- **Import et export** : sauvegarde locale d'un scénario au format JSON pour le reprendre ou le partager volontairement.
+- **Références statistiques** : consultation distincte de données officielles et de leur provenance, sans assimiler ces chiffres à des prédictions personnelles.
 
+## Utilisation
 
-- **Six editable event templates:** income interruption, healthcare, emergency expense, childcare, family support and relocation. All proposed values are synthetic proportions of your own budget, never official medians or personalized probabilities. Events are added only on confirmation, then remain fully editable.
-- **Separate stress comparisons:** terminal nominal wealth change, minimum cash and negative-cash flag compared with the last calculated plan; these tests never alter the baseline.
-- **Explicit confirmation before destructive actions:** country change and example replacement do not silently reset a plan.
-- **Less surprising navigation:** simulation results render after a calculation without forced page restart; file actions on the main page; numeric fields instead of pointer-only sliders for key horizons and stress parameters.
-- **Expanded audit:** source-backed UX review, risk catalogue and mathematical unit tests. **This is a review candidate, not an independently peer-reviewed final release.**
+1. Ouvrez l'[application](https://financial-adviser.streamlit.app/) et choisissez la langue et le pays.
+2. Renseignez vos revenus, dépenses, avoirs, objectifs et horizon de projection, ou chargez un scénario d'exemple.
+3. Si nécessaire, ajoutez des enfants, des adultes, d'autres personnes à charge ou des événements. Vérifiez toujours ce qui est **déjà inclus dans le budget initial**, afin d'éviter le double comptage.
+4. Cliquez sur **Lancer la projection** pour calculer les résultats, puis étudiez l'évolution de la trésorerie, du patrimoine, des risques et des objectifs.
+5. Enregistrez un scénario JSON lorsque vous souhaitez le retrouver ultérieurement.
 
+Les informations peuvent être fictives. L'application ne nécessite ni connexion bancaire ni compte personnel.
 
-- **Straightforward workflow:** inputs, output, inverse goal and comparisons appear in reading order on one page; no calculation settings hidden behind tabs or an Advanced switch.
-- **Editable life events always visible:** explicit duration, up-front and monthly costs, income change, and their approximate cumulative net impact.
-- **Visible update status:** changing inputs marks the previous results as outdated, prevents stale inverse calculations and distinguishes export of the last calculated scenario from unsaved edits.
-- **Socioeconomic risk map:** 87 candidate factors and actual model maturity documented; unimplemented risks never masquerade as calibrated forecasts.
-- **Review methodology:** synthetic socioeconomic scenarios and independent user/expert test protocol, clearly distinguished from real external reviews (not performed).
-- **GitHub Actions run automatically** on pushes to main; the production Chromium check follows the successful local suite. Email notification preferences remain controlled in the GitHub account.
+## Exécution locale
 
-
-- **France/Vietnam statistical reference explorer**: dated official observations with exact population, average/median, source, and explicit incompatibility with personal inputs.
-- **Consent-based optional inflation preset**: preview the World Bank historical observation and choose whether to use it as a non-predictive future assumption. Personal inputs and life events remain unchanged.
-- **Global execution plan** with phase dependencies, acceptance criteria and remaining limitations.
-
-
-- **Unified display language:** interface strings, navigation and charts follow a single language (FR/EN/VI). Technical reference documents are explicitly identified as French originals.
-- **Responsive event cards:** individual life events replace the former seven-column editor; each card has date, duration, recurring costs, income change and upfront cost.
-- **Automated UX checks:** browser screenshots and overflow assertions for desktop, tablet and mobile viewports.
-
-
-- **Life events and personal disruptions:** optional dated changes to income and expenses and one-time costs, such as childcare, care obligations, unemployment or major purchases. The app does not estimate their likelihood.
-- **Goal-seeking / reverse simulation:** set target net worth and horizon, compute three separate conditional alternatives (additional net income, lower baseline spending or additional external capital) while enforcing non-negative projected cash.
-- **Progressive disclosure:** income, spending and goal must be entered at first use (or explicitly load the example); remaining assumptions use transparent, editable defaults.
-- **Separate documentation pages:** financial setup and calculations live in Plan & Simulations, technical reference in Guide & Models, economic and regulatory sources in Sources & Regulations.
-- Monthly, deterministic simulation of income, spending, cash, investments, savings transfers and net worth for up to 60 years.
-- Growth of income and spending, effective monthly investment returns and inflation-adjusted net worth.
-- Optional outstanding fixed-rate amortizing loan: debt repayments affect cash flow; no property asset is invented.
-- One-time dated cash events, e.g. a repair, bonus, or home down-payment.
-- Monte Carlo simulation with a configurable annualized volatility, path count and reproducible seed; P10/P50/P90 and illustrative target attainment probability.
-- Return shock comparison (baseline, higher, lower), interactive Plotly charts and annual results table.
-- Import/export versioned JSON scenarios and export monthly results as CSV.
-- Language controls for French, English and Vietnamese; country presets in EUR/VND (no automatic foreign-exchange conversion yet).
-- Optional manual/opt-in fetch of **historical** inflation observations from the [World Bank Indicators API](https://datahelpdesk.worldbank.org/knowledgebase/articles/889392), with a 24-hour Streamlit cache. The data does not silently overwrite scenario assumptions.
-- A sourced regulatory-reference catalogue that does **not** execute fiscal calculations.
-
-**Historical population statistics are not personal estimates. No median or per-capita average is silently copied into a financial plan.**
-
-## Online demonstration
-
-The public application is available at **https://financial-adviser.streamlit.app/**. Streamlit Community Cloud may put idle apps to sleep; follow its wake-up prompt if necessary. This hosted application executes on a remote server: use **synthetic data** when trying the demo, and do not enter sensitive personal finances or medical details. For post-publication browser smoke checks (synthetic French projection and Vietnamese mobile display) and their limits, see [Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
-
-## Run locally
-
-**Release status:** v0.7.0 is a household life-cycle modelling candidate, not a certified final application. Independent human user tests, actuarial/fiscal peer reviews, and physical-device verification remain necessary. See [Review plan](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md). 
-
+Prérequis : **Python 3.11 ou ultérieur**.
 
 ```bash
-# Python 3.11+ recommended
+git clone https://github.com/trungtin-dinh/financial_adviser.git
+cd financial_adviser
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Open the local address printed by Streamlit (usually `http://localhost:8501`). A modern browser is required. The app is intended primarily for desktop use; desktop/tablet/mobile viewports are covered by automated Chromium tests; physical-device evaluation remains a separate task.
+Sous Windows, activez l'environnement avec `.venv\Scripts\activate`.
 
-### Tests
+L'exécution locale est autorisée **uniquement dans les conditions d'évaluation personnelle** décrites dans la [licence propriétaire](LICENSE). Le dépôt est consultable publiquement, mais **ce n'est pas un projet open source**.
 
-```bash
-pip install -e '.[dev]'
-pytest -q
-```
+## Précautions et limites
 
-### Recommended first use
+Financial Adviser est un **outil d'étude et d'aide à la compréhension**, pas un conseiller en investissement, un outil de déclaration fiscale, un estimateur officiel de pension ou un service bancaire.
 
-1. Choose **France (EUR)** or **Việt Nam (VND)** on the left. Currency switching resets example assumptions; it does **not** convert values.
-2. Enter the **required** net income, monthly spending and nominal target, plus a horizon. Load the sample explicitly if preferred; initial cash, investments and monthly transfers are optional.
-3. Select a duration and target; click **Run projection**.
-4. Inspect charts and CSV in **Results**, use **Goal seek** to work backward from a desired output, and compare alternate returns / life-event costs in **Scenarios**.
-5. Add optional **Life events** (child, care, unemployment, major purchase) in the collapsible editor; switch to **Advanced** for volatility, return rates, loan assumptions and detailed one-off flows.
-6. Export the scenario JSON to save it; browser session state is not permanent storage.
-
-A public Streamlit server processes form data on the host server; local launching is recommended for private information. The repository does not offer a login, bank API connection, or server-side personal-profile database.
-
-## Calculation boundaries
-
-- Taxation, social insurance, pensions, tax wrappers (PEA/PER/etc.), cross-border tax treaties and legal compliance are **not modeled** in v0.3.0. Enter income already **net** of salary-related deductions. Investment returns are modeled **before any specific investment tax or fee**.
-- Debt represents **outstanding principal** and not a property acquisition. Enter a matching property asset only when a future real-estate module supports it; otherwise debt reduces model net worth.
-- Negative cash values indicate an **unfunded shortfall**, not an approved overdraft; overdraft costs are not calculated.
-- Life events are user-defined **deterministic scenario assumptions**, not risk probabilities; this version does not infer healthcare expenses, benefits, medical outcomes or family decisions.
-- Goal-seek solves one lever at a time for nominal ending net worth, while demanding non-negative cash every projected month. It does **not** optimize taxation, likelihood, or combinations of levers.
-- The Monte Carlo model is deliberately simple (independent normal investment returns with a -99% lower clipping bound, constant inflation, no correlations); its probabilities are **conditional on assumptions**, not calibrated likelihoods.
-- Annual returns used by the cash/investment engine are *effective* rates; borrowing APR is a *nominal* annual rate with monthly interest APR/12. Values are calculated monthly and one-off events occur before monthly returns.
+- Les rendements, la croissance des revenus, l'inflation et les coûts des événements sont des **hypothèses**, non des prévisions garanties.
+- Les frais, prélèvements, allocations, droits à pension et règles fiscales propres à la France ou au Vietnam ne sont pas intégralement modélisés.
+- La simulation Monte Carlo utilise des hypothèses simplifiées : elle ne représente pas la totalité des risques économiques, sociaux, familiaux ou médicaux.
+- Une trésorerie négative signifie un **besoin de financement non couvert** ; le moteur ne présume pas l'existence d'un découvert ou la revente automatique des placements.
+- Les avoirs immobiliers et les autres actifs non explicitement modélisés ne sont pas implicitement ajoutés au patrimoine.
+- Les informations saisies sur la version publique sont traitées sur le serveur de l'hébergeur. Pour des données personnelles sensibles, préférez des montants fictifs ou une exécution locale.
 
 ## Documentation
 
-All design decisions, equations, official references, specification and future work are stored in **[`Documentation/`](Documentation/00_INDEX.md)**:
+Le répertoire [`Documentation/`](Documentation/00_INDEX.md) réunit les [conventions mathématiques](Documentation/02_MODELES_MATHEMATIQUES.md), les [sources statistiques et économiques](Documentation/03_SOURCES_ET_REGLES.md), le [modèle de cycle de vie du foyer](Documentation/21_CYCLE_VIE_BUDGET_FAMILIAL.md), les [facteurs de risques](Documentation/17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md) et les [audits UX et techniques](Documentation/00_INDEX.md).
 
-- [Vision and specifications](Documentation/01_CAHIER_DES_CHARGES.md)
-- [Equations and conventions](Documentation/02_MODELES_MATHEMATIQUES.md)
-- [Economics, legal sources and updates](Documentation/03_SOURCES_ET_REGLES.md)
-- [Architecture and data contracts](Documentation/04_ARCHITECTURE.md)
-- [Existing-app research](Documentation/05_BENCHMARK.md)
-- [Quality, privacy and limitations](Documentation/06_QUALITE_ET_LIMITES.md)
-- [Roadmap](Documentation/07_ROADMAP.md)
-- [Decision journal](Documentation/08_JOURNAL.md)
-- [Life events, inverse planning, usability and simulated-persona audit](Documentation/09_FACTEURS_DE_VIE_ET_UX.md)
-- [Responsive UI and localization audit](Documentation/10_ERGONOMIE_RESPONSIVE_ET_LANGUES.md)
-- [Statistical default profiles: research and implementation constraints](Documentation/11_PROFILS_STATISTIQUES.md)
-- [Human-centred software UX reference](Documentation/14_REFERENTIEL_ERGONOMIE.md)
-- [Prioritized usability audit](Documentation/15_AUDIT_ERGONOMIQUE_V04.md)
-- [Live application verification protocol](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md)
+Les demandes d'évolution, décisions techniques et nouveaux comportements sont consignés dans les notes de version et le [journal du projet](Documentation/08_JOURNAL.md), plutôt que dans cette page de présentation.
 
-Technical documentation remains primarily in French; interface controls, messages, charts and navigation are localized consistently in French, English or Vietnamese.
+## Licence
 
-## License
+**© 2026 Trung-Tin Dinh — Tous droits réservés.** Le code et la documentation sont distribués selon une **licence propriétaire**. Leur consultation et une évaluation personnelle limitée sont autorisées ; toute redistribution, mise à disposition publique, exploitation commerciale ou création de dérivés diffusés nécessite une autorisation écrite préalable. Consulter le texte complet : [LICENSE](LICENSE).
 
-No project license has been selected yet. The source is visible on GitHub, but it is **not automatically licensed for redistribution** until a license is added. The reference applications cited in the docs have their own independent licenses; this project does not copy their source code.
-
-## Project plan and official statistical sources
-
-- [Comprehensive execution plan](Documentation/12_PLAN_GLOBAL.md)
-- [Statistical data sources, compatibility and user consent](Documentation/13_REFERENCES_STATISTIQUES_V04.md)
-
-### Suggested GitHub About fields
-
-- **Description:** `Transparent financial planning simulator for France & Vietnam — Python/Streamlit, scenarios, life events and Monte Carlo.`
-- **Website:** https://financial-adviser.streamlit.app/
-
-These text suggestions are documented here because repository About metadata must be updated using GitHub repository settings, which are separate from Markdown files.
-
-## Socioeconomic model coverage and UX reviews
-
-- [87-factor catalogue with implementation status](Documentation/17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md)
-- [Independent user and professional-review protocol](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md)
-- [Heuristic audit of the v0.5 UX candidate](Documentation/19_REVUE_HEURISTIQUE_MULTIPROFILS.md)
-
-The GitHub Actions workflows are triggered **automatically** by pushes to main, with an additional manual trigger for rechecks. Account-level [GitHub notification settings](https://github.com/settings/notifications) remain independent from workflow triggers.
-
-- [v0.6 design, risk templates and prioritized audit](Documentation/20_REDESIGN_V06.md)
-
-**Validation scope:** the current v0.8.2 build passed the Python and local PC/tablet/mobile Chromium workflows and the actual hosted Streamlit French projection/Vietnamese-mobile smoke checks. Independent usability and financial expert reviews have not been performed.
-
-## Household life-cycle model
-
-[Read the source-backed design and limitations](Documentation/21_CYCLE_VIE_BUDGET_FAMILIAL.md). Child costs change with age (living expenses and childcare/education) and can continue after the 18th birthday to an explicitly configured end age. Adult budgets model hypothetical age-phase adjustments and retirement. Neither the example child costs nor retirement income replacement rates are official estimates. Check whether expenses are **already included** in your household base budget to avoid counting them twice.
-
-The focused local test suite currently covers household cost ages, support stops, pension transitions, JSON compatibility, Monte Carlo and inverse-planning invariants. Full Streamlit browser/device tests and independent expert review are **not** claimed for this candidate.
-
-**Production verification:** v0.8.2 was observed running and computing a synthetic example on the real hosted site on 30 October 2026. See [successful live browser run](https://github.com/trungtin-dinh/financial_adviser/actions/runs/41033538584) and [production runbook](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
+Les bibliothèques tierces conservent leurs licences respectives.

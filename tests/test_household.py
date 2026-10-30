@@ -207,3 +207,62 @@ def test_goal_seek_can_reduce_only_unassigned_spending():
     if option.feasible:
         assert option.amount <= 600 + 1e-6
         assert option.scenario.monthly_expenses >= 400
+
+
+def test_dependent_costs_are_monthly_and_bounded():
+    from financial_adviser.households import DependentBudget, dependent_adjustments
+    d = DependentBudget("older parent", first_month=13, duration_months=24,
+                        monthly_support=100, monthly_care=50)
+    p = base(years=4, dependents=(d,))
+    costs = dependent_adjustments(p)
+    assert costs[11] == 0
+    assert costs[12] == 150
+    assert costs[35] == 150
+    assert costs[36] == 0
+    assert project(p).dependent_expenses.iloc[13] == 150
+
+
+def test_existing_dependent_in_baseline_releases_budget_after_end():
+    from financial_adviser.households import DependentBudget, dependent_adjustments
+    d = DependentBudget("family", duration_months=12, monthly_support=100,
+                        monthly_care=50, included_in_baseline=True)
+    p = base(years=2, dependents=(d,))
+    costs = dependent_adjustments(p)
+    assert costs[0] == 0
+    assert costs[11] == 0
+    assert costs[12] == -150
+
+
+def test_dependent_baseline_budget_cannot_exceed_initial_spending():
+    from financial_adviser.households import DependentBudget
+    with pytest.raises(ValueError, match="Already included"):
+        base(monthly_expenses=50, dependents=(
+            DependentBudget("family", monthly_care=100, included_in_baseline=True),)).validate()
+
+
+def test_dependent_json_roundtrip_and_legacy_scenario():
+    from financial_adviser.households import DependentBudget
+    p = base(years=2, dependents=(DependentBudget("aunt", duration_months=18, monthly_support=250),))
+    assert type(Plan.from_dict(p.to_dict()).dependents[0]).__name__ == "DependentBudget"
+    old = p.to_dict()
+    del old["dependents"]
+    assert Plan.from_dict(old).dependents == ()
+
+
+def test_dependent_validation_rejects_future_in_baseline_and_outside_horizon():
+    from financial_adviser.households import DependentBudget
+    with pytest.raises(ValueError):
+        base(years=2, dependents=(DependentBudget(
+            "family", first_month=2, duration_months=12, included_in_baseline=True),)).validate()
+    with pytest.raises(ValueError):
+        base(years=2, dependents=(DependentBudget(
+            "family", duration_months=48),)).validate()
+
+
+def test_dependent_costs_included_in_monte_carlo_and_goal_seek():
+    from financial_adviser.households import DependentBudget
+    d = DependentBudget("partner", duration_months=24, monthly_support=75)
+    p = base(years=2, dependents=(d,), initial_cash=10000,
+             initial_investments=1000, investment_volatility_pct=0)
+    assert monte_carlo(p, n_paths=100).p50[-1] == pytest.approx(project(p).net_worth.iloc[-1])
+    assert solve_goal(p, 100000)

@@ -60,12 +60,14 @@ def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
 def reset_inputs() -> None:
     """Clear widgets and rehydrate them before a new plan is rendered."""
     for key in list(st.session_state):
-        if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_", "child_", "adult_", "household_")):
+        if key.startswith(("field_", "evt_", "mc_", "preset_", "stress_", "child_", "adult_", "household_", "dependent_")):
             del st.session_state[key]
     st.session_state.pop("event_drafts", None)
     st.session_state.pop("event_expanded_id", None)
     st.session_state.pop("household_children", None)
     st.session_state.pop("household_adults", None)
+    st.session_state.pop("household_dependents", None)
+    st.session_state.pop("household_dependent_id", None)
     st.session_state.pop("household_child_id", None)
     st.session_state.pop("household_adult_id", None)
     st.session_state.pop("goal_alternatives", None)
@@ -132,7 +134,6 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                 st.session_state.event_drafts.append({"id": eid, "category": "other", "label": "",
                     "first_month": 1, "duration_months": 1, "monthly_expense": 0.0,
                     "monthly_income_change": 0.0, "upfront_cost": 0.0})
-                st.session_state.event_expanded_id = eid
                 st.rerun()
         st.subheader(T("preset_title"))
         st.caption(T("preset_hint"))
@@ -168,7 +169,6 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                     "monthly_expense": suggestion.monthly_expense,
                     "monthly_income_change": suggestion.monthly_income_change,
                     "upfront_cost": suggestion.upfront_cost})
-                    st.session_state.event_expanded_id = eid
                     st.rerun()
         if not st.session_state.event_drafts:
             st.caption(T("life_empty"))
@@ -182,17 +182,24 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
             event_title = draft["label"].strip() or T("life_event", index=index)
             event_date = f"{initial_year}-{initial_cal_month:02d}"
             event_months = int(draft["duration_months"])
-            st.caption(f"{event_title} · {event_date} · {event_months} {T('months')}")
-            with st.expander(
-                f"📅 {T('life_event', index=index)} · {T('edit_details')}",
-                expanded=st.session_state.get("event_expanded_id") == eid,
-            ):
-                if st.button("✕ " + T("life_remove"), key=prefix + "remove"):
-                    st.session_state.event_drafts = [x for x in st.session_state.event_drafts if x["id"] != eid]
-                    for key in list(st.session_state):
-                        if key.startswith(prefix):
-                            del st.session_state[key]
+            open_key = prefix + "open"
+            with st.container(border=True):
+                is_open = st.session_state.get(open_key, False)
+                head, delete = st.columns([9, 1], vertical_alignment="center", gap="small")
+                if head.button(
+                    f"{'▾' if is_open else '▸'} 📅 {event_title} · {event_date} · {event_months} {T('months')}",
+                    key=prefix + "toggle", type="tertiary", width="stretch"):
+                    st.session_state[open_key] = not is_open
                     st.rerun()
+                if delete.button("✕", key=prefix + "remove",
+                                 help=T("remove_card_help")):
+                    st.session_state.event_drafts = [
+                        x for x in st.session_state.event_drafts if x["id"] != eid]
+                    for old_key in list(st.session_state):
+                        if old_key.startswith(prefix):
+                            del st.session_state[old_key]
+                    st.rerun()
+                if is_open:
                 a, b = st.columns(2, wrap=True)
                 with a:
                     category = st.selectbox(T("life_type"), CATEGORIES,
@@ -378,11 +385,7 @@ with plan_tab:
         years = st.number_input(T("horizon"), min_value=1, max_value=60, value=p.years, step=1, key="field_years")
         start_year = st.number_input(T("start_year"), min_value=2020, max_value=2100,
                                      value=p.start_year, step=1, key="field_start_year")
-    children, adults = render_household(p, int(years), int(start_year),
-        float(expenses or 0.0), LANG, step)
-    events = draw_events(int(start_year), int(years), p.currency,
-        float(income or 0.0), float(expenses or 0.0))
-
+ 
     if advanced:
         with st.container(border=True):
             st.subheader("📐 " + T("advanced"))
@@ -428,6 +431,17 @@ with plan_tab:
                 value=42, key="mc_seed", disabled=not enable_mc)
     else:
         n_paths, seed = 1000, 42
+
+# The household editor and life-event editor each use half the full page width.
+# Avoid nesting them in the narrow essential-inputs panel on desktop.
+household_col, event_col = st.columns([1, 1], gap="large", vertical_alignment="top")
+with household_col:
+    children, adults, dependents = render_household(
+        p, int(years), int(start_year), float(expenses or 0.0), LANG, step)
+with event_col:
+    events = draw_events(int(start_year), int(years), p.currency,
+                         float(income or 0.0), float(expenses or 0.0))
+with st.container():
     if income is not None and expenses is not None:
         operating_surplus = (float(income) - float(expenses) -
             loan_payment(float(loan), float(loan_rate), int(loan_years)))
@@ -442,6 +456,7 @@ with plan_tab:
         or years != p.years or start_year != p.start_year
         or tuple(events) != p.life_events
         or children != p.children or adults != p.adults
+        or dependents != p.dependents
         or income_growth != p.income_growth_pct or spending_growth != p.expense_growth_pct
         or cash_return != p.cash_return_pct or investment_return != p.investment_return_pct
         or inflation != p.inflation_pct or volatility != p.investment_volatility_pct
@@ -468,7 +483,8 @@ with plan_tab:
                     investment_volatility_pct=volatility, inflation_pct=inflation,
                     loan_balance=loan, loan_apr_pct=loan_rate, loan_years=int(loan_years),
                     goal=float(goal), one_offs=parse_oneoffs(oneoffs_text, years),
-                    life_events=events, children=children, adults=adults)
+                    life_events=events, children=children, adults=adults,
+                    dependents=dependents)
                 new_plan.validate()
                 with st.spinner(T("running")):
                     result = project(new_plan)
@@ -541,7 +557,7 @@ if st.session_state.result is not None:
             fig2.update_layout(title=T("chart_composition"), xaxis_title=T("year"), yaxis_title=q.currency,
                                height=300, margin=dict(l=10, r=10, t=55, b=25))
             st.plotly_chart(fig2, width="stretch")
-            if q.children or q.adults:
+            if q.children or q.adults or q.dependents:
                 st.subheader(T("household_graph"))
                 st.caption(T("household_graph_note"))
                 fig_household = go.Figure()
@@ -549,6 +565,8 @@ if st.session_state.result is not None:
                     name=T("household_child_delta")))
                 fig_household.add_trace(go.Scatter(x=df.year, y=df.adult_expenses,
                     name=T("household_adult_delta")))
+                fig_household.add_trace(go.Scatter(x=df.year, y=df.dependent_expenses,
+                    name=T("household_dependent_delta")))
                 fig_household.add_trace(go.Scatter(x=df.year, y=df.retirement_income_change,
                     name=T("household_retirement_delta")))
                 fig_household.update_layout(height=290, xaxis_title=T("year"),

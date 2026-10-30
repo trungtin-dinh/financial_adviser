@@ -19,7 +19,8 @@ def normalize_plan(plan: object) -> tuple[Plan, bool]:
     Unknown fields and invalid plans raise ValueError; callers must not silently
     overwrite a failed migration with illustrative defaults.
     """
-    if isinstance(plan, Plan) and hasattr(plan, "children") and hasattr(plan, "adults"):
+    if (isinstance(plan, Plan) and hasattr(plan, "children")
+            and hasattr(plan, "adults") and hasattr(plan, "dependents")):
         plan.validate()
         return plan, False
     if is_dataclass(plan) and not isinstance(plan, type):

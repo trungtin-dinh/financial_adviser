@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 import math
 
-from .households import AdultBudget, ChildBudget, validate_household
+from .households import AdultBudget, ChildBudget, DependentBudget, validate_household
 
 
 @dataclass(frozen=True)
@@ -58,6 +58,7 @@ class Plan:
     life_events: tuple[LifeEvent, ...] = field(default_factory=tuple)
     children: tuple[ChildBudget, ...] = field(default_factory=tuple)
     adults: tuple[AdultBudget, ...] = field(default_factory=tuple)
+    dependents: tuple[DependentBudget, ...] = field(default_factory=tuple)
 
     def validate(self) -> None:
         if self.country not in {"FR", "VN"}:
@@ -132,6 +133,11 @@ class Plan:
             data["adults"] = tuple(AdultBudget(**{
                 **x, "expenses_by_age": tuple(x.get("expenses_by_age", (0.,) * 4)),
             }) for x in data["adults"])
+        if "dependents" in data:
+            if (not isinstance(data["dependents"], (list, tuple)) or len(data["dependents"]) > 12
+                    or any(not isinstance(x, dict) for x in data["dependents"])):
+                raise ValueError("Invalid dependents list")
+            data["dependents"] = tuple(DependentBudget(**x) for x in data["dependents"])
         if "one_offs" in data:
             if not isinstance(data["one_offs"], (list, tuple)):
                 raise ValueError("one_offs must be a list.")

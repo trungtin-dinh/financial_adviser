@@ -49,3 +49,5 @@ Le dossier `rules/` contient le **catalogue de références**, non un moteur fis
 | [22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md](22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md) | Audit bureau/mobile, économie des ménages, nouveaux ratios financiers et protocole de vérification |
 
 | [23_PHASED_RESULTS_AND_COMPACT_CARDS.md](23_PHASED_RESULTS_AND_COMPACT_CARDS.md) | Interface avant/après projection, fiches compactes et contrôles d'alignement |
+
+| [24_AUDIT_UI_SIDEBAR_DEPENDANTS.md](24_AUDIT_UI_SIDEBAR_DEPENDANTS.md) | Navigation latérale, cartes compactes, proches à charge, licence et exigences de vérification |

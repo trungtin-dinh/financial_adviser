@@ -45,14 +45,33 @@ if st.session_state.get("language_choice") not in ("fr", "en", "vi"):
 if st.session_state.get("language_choice") not in ("fr", "en", "vi"):
     st.session_state.language_choice = "fr"
 
-lang = st.selectbox(
-    t(st.session_state.language_choice, "language"),
-    ["fr", "en", "vi"], key="language_choice",
-    format_func=lambda code: {"fr": "Français", "en": "English", "vi": "Tiếng Việt"}[code],
-    width=240,
-)
 with st.sidebar:
     st.title("📈 Financial Adviser")
+    lang = st.selectbox(
+        t(st.session_state.language_choice, "language"),
+        ["fr", "en", "vi"], key="language_choice",
+        format_func=lambda code: {"fr": "Français", "en": "English", "vi": "Tiếng Việt"}[code])
+    st.caption(t(lang, "sidebar_navigation_hint"))
+    st.divider()
+    st.caption(t(lang, "sidebar_plan_summary"))
+    current_plan = st.session_state.get("plan")
+    if current_plan is not None:
+        st.caption(t(lang, "sidebar_country_horizon",
+            country=current_plan.country, currency=current_plan.currency,
+            years=current_plan.years))
+        st.caption(t(lang, "sidebar_people_count",
+            children=len(getattr(current_plan, "children", ())),
+            dependents=len(getattr(current_plan, "dependents", ())),
+            adults=len(getattr(current_plan, "adults", ()))))
+        event_drafts = st.session_state.get("event_drafts")
+        event_count = (len(event_drafts) if event_drafts is not None
+                       else len(getattr(current_plan, "life_events", ())))
+        st.caption(t(lang, "sidebar_events_count", count=event_count))
+    if st.session_state.get("result") is None:
+        st.info(t(lang, "sidebar_not_run"), icon="ℹ️")
+    else:
+        st.info(t(lang, "sidebar_last_run"), icon="✅")
+    st.divider()
     st.caption(t(lang, "privacy"))
 
 page = st.navigation([

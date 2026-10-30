@@ -50,33 +50,46 @@ def test_example_confirmation_restores_required_inputs_and_calculates():
     assert app.session_state["result"] is not None
 
 @pytest.mark.parametrize("lang", ["fr", "en", "vi"])
-def test_child_and_adult_cards_are_collapsible(lang):
+def test_new_cards_are_collapsed_and_deletable_without_opening(lang):
     app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)
     app.session_state["language_choice"] = lang
     app.run()
-    app.button(key="household_add_child").click().run()
-    assert not app.exception, app.exception
-    child_expanders = [e for e in app.get("expander") if "👶" in str(e.label)]
-    assert len(child_expanders) == 1
-    # The date is shown in the separate compact summary, not in the stable toggle label.
-    app.button(key="household_add_adult").click().run()
-    assert not app.exception, app.exception
-    adult_expanders = [e for e in app.get("expander") if "🧑" in str(e.label)]
-    assert len(adult_expanders) == 1
-    assert app.number_input(key="child_1_age").value == 0
-    assert app.number_input(key="child_1_support").value == 25
+    for add, toggle, remove in (
+        ("household_add_child", "child_1_toggle", "child_1_remove"),
+        ("household_add_dependent", "dependent_1_toggle", "dependent_1_remove"),
+        ("household_add_adult", "adult_1_toggle", "adult_1_remove"),
+        ("add_life_event", "evt_1_toggle", "evt_1_remove"),
+    ):
+        app.button(key=add).click().run()
+        assert not app.exception, app.exception
+        assert app.button(key=toggle) is not None
+        assert app.button(key=remove) is not None
+    assert not app.session_state.get("child_1_open", False)
+    assert not app.session_state.get("dependent_1_open", False)
+    assert not app.session_state.get("adult_1_open", False)
+    assert not app.session_state.get("evt_1_open", False)
+    assert not any("Modifier / réduire" in str(b.label) for b in app.get("button"))
+
+    # Expand and collapse without deleting draft data, then remove while closed.
+    app.button(key="child_1_toggle").click().run()
+    assert app.number_input(key="child_1_age") is not None
+    app.button(key="child_1_toggle").click().run()
+    assert not app.session_state.get("child_1_open")
+    app.button(key="child_1_remove").click().run()
+    assert not app.session_state["household_children"]
+
 
 @pytest.mark.parametrize("lang", ["fr", "en", "vi"])
-def test_event_card_has_compact_summary(lang):
+def test_other_dependent_can_be_configured_and_used(lang):
     app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)
     app.session_state["language_choice"] = lang
     app.run()
-    app.button(key="add_life_event").click().run()
+    app.button(key="household_add_dependent").click().run()
+    app.button(key="dependent_1_toggle").click().run()
+    assert app.number_input(key="dependent_1_support") is not None
+    assert app.number_input(key="dependent_1_care") is not None
     assert not app.exception, app.exception
-    events = [e for e in app.get("expander") if "📅" in str(e.label)]
-    assert len(events) == 1
-    # The date is shown in the separate compact summary, not in the stable toggle label.
-    assert app.text_input(key="evt_1_label") is not None
+
 
 def test_results_only_after_explicit_run():
     app = AppTest.from_file(str(ROOT / "pages" / "planning.py"), default_timeout=30)

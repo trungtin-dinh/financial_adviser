@@ -1,5 +1,16 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.10 : foyer et navigation latérale
+
+- Langue, statut et contexte synthétique du scénario dans la barre latérale ; les saisies financières restent au centre.
+- Fiches enfants, adultes, événements et proches à charge repliées par défaut ; bouton de suppression ✕ directement visible sur chaque en-tête.
+- Soutien d'autres personnes à charge avec dépenses mensuelles, période et déduction des montants déjà inclus dans le budget.
+- Foyer et événements côte à côte sur PC, empilés sur mobile.
+- README français sans historique de releases ni badge DeepWiki cassé ; licence propriétaire ajoutée.
+- Revue et hypothèses dans `24_AUDIT_UI_SIDEBAR_DEPENDANTS.md`.
+
+
+
 ## 2026-10-30 — v0.9.0 candidate : saisie d'abord, cartes compactes et alignement
 
 - Aucun résultat affiché avant le premier calcul ; sur PC basculement à deux colonnes après Run, sur mobile ordre vertical.
