@@ -34,6 +34,10 @@ Cette documentation distingue systématiquement :
 | [19_REVUE_HEURISTIQUE_MULTIPROFILS.md](19_REVUE_HEURISTIQUE_MULTIPROFILS.md) | Audit des principaux comportements contre-intuitifs et corrections v0.5 |
 | [20_REDESIGN_V06.md](20_REDESIGN_V06.md) | Audit v0.6, six scénarios de risques, ergonomie, hypothèses et validations à réaliser |
 | [21_CYCLE_VIE_BUDGET_FAMILIAL.md](21_CYCLE_VIE_BUDGET_FAMILIAL.md) | Recherche DREES/Insee/IRES/NSO/OCDE, enfants selon âge, adultes et retraite hypothétique, double comptage |
+| [22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md](22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md) | Audit bureau/mobile, économie des ménages, nouveaux ratios financiers et protocole de vérification |
+| [23_PHASED_RESULTS_AND_COMPACT_CARDS.md](23_PHASED_RESULTS_AND_COMPACT_CARDS.md) | Interface avant/après projection, fiches compactes et contrôles d'alignement |
+| [24_AUDIT_UI_SIDEBAR_DEPENDANTS.md](24_AUDIT_UI_SIDEBAR_DEPENDANTS.md) | Navigation latérale, cartes compactes, proches à charge, licence et exigences de vérification |
+| [25_REVUE_SELECTIVE_FINANCE_ECONOMIE_UX.md](25_REVUE_SELECTIVE_FINANCE_ECONOMIE_UX.md) | 36 dépôts recensés, 14 études ciblées et recommandations sélectives en finance, économie et UX |
 
 ## Règles de maintenance documentaire
 
@@ -45,9 +49,3 @@ Cette documentation distingue systématiquement :
 6. Pour conserver les résultats antérieurs, enregistrer à terme la version des règles et les hypothèses dans chaque export de simulation.
 
 Le dossier `rules/` contient le **catalogue de références**, non un moteur fiscal actif. Aucun texte réglementaire n'est prétendu exhaustif à la date de ce document.
-
-| [22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md](22_AUDIT_PC_ET_INDICATEURS_FINANCIERS.md) | Audit bureau/mobile, économie des ménages, nouveaux ratios financiers et protocole de vérification |
-
-| [23_PHASED_RESULTS_AND_COMPACT_CARDS.md](23_PHASED_RESULTS_AND_COMPACT_CARDS.md) | Interface avant/après projection, fiches compactes et contrôles d'alignement |
-
-| [24_AUDIT_UI_SIDEBAR_DEPENDANTS.md](24_AUDIT_UI_SIDEBAR_DEPENDANTS.md) | Navigation latérale, cartes compactes, proches à charge, licence et exigences de vérification |
