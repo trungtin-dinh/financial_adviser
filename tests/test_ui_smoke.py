@@ -16,7 +16,9 @@ def test_planner_renders_with_required_inputs_and_event_controls(lang):
     assert app.number_input(key="field_income") is not None
     assert app.number_input(key="field_expenses") is not None
     assert app.number_input(key="field_goal") is not None
-    assert any(t(lang, "life_title") in item.label for item in app.get("expander"))
+    assert any(t(lang, "life_title") in str(item.value) for item in app.get("subheader"))
+    assert any(t(lang, "advanced") in str(item.value) for item in app.get("subheader"))
+    assert any(t(lang, "tab_results") in str(item.value) for item in app.get("subheader"))
 
 @pytest.mark.parametrize("lang", ["fr", "en", "vi"])
 def test_documentation_and_sources_load(lang):

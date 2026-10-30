@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-web_app-red)](https://streamlit.io/)
-[![Status](https://img.shields.io/badge/status-v0.4.0_MVP-yellow)](Documentation/07_ROADMAP.md)
+[![Status](https://img.shields.io/badge/status-v0.5.0_ux_candidate-yellow)](Documentation/07_ROADMAP.md)
 
 **Educational financial scenario simulator** for desktop browsers, with a responsive Streamlit interface and initial France / Vietnam presets. Designed to become an extensible, source-traceable financial planning platform.
 
@@ -14,7 +14,15 @@
 
 > **Important:** This is a first usable **MVP**, not an investment adviser, tax calculator, account aggregator, or forecast of future asset returns. Default rates and income amounts are *illustrative assumptions*, not market estimates or personalized recommendations. Avoid entering confidential data in deployments you do not control.
 
-## Features in v0.4.0
+## Features in v0.5.0
+
+- **Straightforward workflow:** inputs, output, inverse goal and comparisons appear in reading order on one page; no calculation settings hidden behind tabs or an Advanced switch.
+- **Editable life events always visible:** explicit duration, up-front and monthly costs, income change, and their approximate cumulative net impact.
+- **Visible update status:** changing inputs marks the previous results as outdated, prevents stale inverse calculations and distinguishes export of the last calculated scenario from unsaved edits.
+- **Socioeconomic risk map:** 87 candidate factors and actual model maturity documented; unimplemented risks never masquerade as calibrated forecasts.
+- **Review methodology:** synthetic socioeconomic scenarios and independent user/expert test protocol, clearly distinguished from real external reviews (not performed).
+- **GitHub Actions run manually only** to avoid unsolicited workflow-run notifications from repository pushes. Configure GitHub notification preferences separately if unwanted mail persists.
+
 
 - **France/Vietnam statistical reference explorer**: dated official observations with exact population, average/median, source, and explicit incompatibility with personal inputs.
 - **Consent-based optional inflation preset**: preview the World Bank historical observation and choose whether to use it as a non-predictive future assumption. Personal inputs and life events remain unchanged.
@@ -48,6 +56,9 @@
 The public application is available at **https://financial-adviser.streamlit.app/**. Streamlit Community Cloud may put idle apps to sleep; follow its wake-up prompt if necessary. This hosted application executes on a remote server: use **synthetic data** when trying the demo, and do not enter sensitive personal finances or medical details. For post-publication browser smoke checks (synthetic French projection and Vietnamese mobile display) and their limits, see [Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md](Documentation/16_VERIFICATION_APPLICATION_PUBLIQUE.md).
 
 ## Run locally
+
+**Release status:** v0.5.0 is an ergonomics review candidate, not a certified final application. Independent human user tests, actuarial/fiscal peer reviews, and physical-device verification remain necessary. See [Review plan](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md). 
+
 
 ```bash
 # Python 3.11+ recommended
@@ -123,3 +134,11 @@ No project license has been selected yet. The source is visible on GitHub, but i
 - **Website:** https://financial-adviser.streamlit.app/
 
 These text suggestions are documented here because repository About metadata must be updated using GitHub repository settings, which are separate from Markdown files.
+
+## Socioeconomic model coverage and UX reviews
+
+- [87-factor catalogue with implementation status](Documentation/17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md)
+- [Independent user and professional-review protocol](Documentation/18_PROTOCOL_EVALUATIONS_HUMAINES.md)
+- [Heuristic audit of the v0.5 UX candidate](Documentation/19_REVUE_HEURISTIQUE_MULTIPROFILS.md)
+
+The two GitHub Actions workflows are **manual** (`workflow_dispatch`) to avoid automatic run notifications. They can be launched from the Actions tab when validation is explicitly desired. Changing repository workflows does not directly alter your GitHub account's [email notification settings](https://github.com/settings/notifications).

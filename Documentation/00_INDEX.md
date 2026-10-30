@@ -1,6 +1,6 @@
 # Documentation — Financial Adviser
 
-**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.4.0.
+**État :** socle versionné du projet, au 30 octobre 2026. **Version applicative :** v0.5.0 (candidate UX).
 
 Cette documentation distingue systématiquement :
 
@@ -29,6 +29,9 @@ Cette documentation distingue systématiquement :
 | [14_REFERENTIEL_ERGONOMIE.md](14_REFERENTIEL_ERGONOMIE.md) | Principes UX fondés sur ISO, NN/g, GOV.UK et WCAG, parcours et tests utilisateurs |
 | [15_AUDIT_ERGONOMIQUE_V04.md](15_AUDIT_ERGONOMIQUE_V04.md) | Risques ergonomiques priorisés, observations vs hypothèses, critères d'acceptation |
 | [16_VERIFICATION_APPLICATION_PUBLIQUE.md](16_VERIFICATION_APPLICATION_PUBLIQUE.md) | Contrôles de disponibilité du site Streamlit public après publication |
+| [17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md](17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md) | 87 facteurs économiques, sociaux, financiers et de risque, statut de chaque modèle |
+| [18_PROTOCOL_EVALUATIONS_HUMAINES.md](18_PROTOCOL_EVALUATIONS_HUMAINES.md) | Tâches de tests multi-profils et revues expertes : protocoles, non réalisés |
+| [19_REVUE_HEURISTIQUE_MULTIPROFILS.md](19_REVUE_HEURISTIQUE_MULTIPROFILS.md) | Audit des principaux comportements contre-intuitifs et corrections v0.5 |
 
 ## Règles de maintenance documentaire
 

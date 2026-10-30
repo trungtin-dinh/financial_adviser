@@ -18,6 +18,8 @@ DOCS = [
     ("07_ROADMAP.md", "guide_roadmap"),
     ("08_JOURNAL.md", "guide_journal"),
     ("09_FACTEURS_DE_VIE_ET_UX.md", "guide_life"),
+    ("17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md", "guide_risk_factors"),
+    ("18_PROTOCOL_EVALUATIONS_HUMAINES.md", "guide_research"),
 ]
 if lang == "fr":
     for filename, key in DOCS:

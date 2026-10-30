@@ -17,11 +17,14 @@ if st.session_state.get("language_choice") not in ("fr", "en", "vi"):
 if st.session_state.get("language_choice") not in ("fr", "en", "vi"):
     st.session_state.language_choice = "fr"
 
+lang = st.selectbox(
+    t(st.session_state.language_choice, "language"),
+    ["fr", "en", "vi"], key="language_choice",
+    format_func=lambda code: {"fr": "Français", "en": "English", "vi": "Tiếng Việt"}[code],
+    width=240,
+)
 with st.sidebar:
     st.title("📈 Financial Adviser")
-    lang = st.selectbox(t(st.session_state.language_choice, "language"),
-                        ["fr", "en", "vi"], key="language_choice",
-                        format_func=lambda code: {"fr": "Français", "en": "English", "vi": "Tiếng Việt"}[code])
     st.caption(t(lang, "privacy"))
 
 page = st.navigation([

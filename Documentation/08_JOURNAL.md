@@ -1,5 +1,14 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — Refonte ergonomique et notifications
+
+- Suppression des déclencheurs GitHub Actions automatiques; exécution manuelle seulement. La préférence e-mail GitHub nécessite un réglage du compte.
+- Inventaire sourcé de 87 facteurs financiers, économiques et sociaux; séparation calculé / événement explicite / référence descriptive / non implémenté.
+- UI simplifiée : paramètres toujours visibles, ordre de lecture unique données → résultats → objectif → comparaison, pays/langue visibles, état périmé des résultats et coût cumulé des événements.
+- Ajout d'un protocole de tests synthétiques et d'une liste de relecteurs indépendants à consulter. **Aucun véritable participant ni expert indépendant recruté** ; version candidate et non finale.
+
+
+
 ## 2026-10-30 — Bug sur l'application publique détecté par Chromium
 
 - Premier test réel : le site charge Streamlit mais l'application échoue sur `KeyError('nav_benchmarks')` ; les tests locaux passaient.

@@ -47,3 +47,9 @@ Un livrable n'est marqué comme terminé qu'après : liens/documentation et limi
 Le [référentiel ergonomique](14_REFERENTIEL_ERGONOMIE.md) et son [audit priorisé](15_AUDIT_ERGONOMIQUE_V04.md) s'appliquent à **toutes les phases**, et non comme finition du produit. Les problèmes de fiabilité des résultats, de compréhension des hypothèses et d'absence de perte des saisies sont à corriger avant l'esthétique. Les tests sur appareils réels et avec participants restent explicitement non réalisés.
 
 L'URL publique fournie est https://financial-adviser.streamlit.app/ . Le workflow de [disponibilité HTTP](16_VERIFICATION_APPLICATION_PUBLIQUE.md) est distinct des tests fonctionnels locaux et ne certifie pas à lui seul le bon déploiement d'une version.
+
+## Mise à jour ergonomique du 30 octobre 2026 : candidate v0.5
+
+Les phases passent par une porte qualité unique : recensement des facteurs [17](17_FACTEURS_FINANCIERS_SOCIAUX_ET_RISQUES.md), correction UX [19](19_REVUE_HEURISTIQUE_MULTIPROFILS.md), vérifications techniques, puis revue de participants et d'experts indépendants suivant [18](18_PROTOCOL_EVALUATIONS_HUMAINES.md). **Aucune revue humaine indépendante n'a eu lieu**. Ne pas marquer la phase « finale » terminée sans cette validation.
+
+Les deux workflows GitHub Actions sont désormais déclenchables manuellement seulement, pour éviter les notifications e-mail de runs automatiques. Cela implique que l'absence d'échec CI visible n'est **pas** une preuve de réussite des tests sur le dernier commit.

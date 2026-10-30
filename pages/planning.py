@@ -81,7 +81,8 @@ def init_events(plan: Plan) -> None:
 def draw_events(start_year: int, years: int, currency: str) -> tuple[LifeEvent, ...]:
     """Editable stacked cards, stable widget keys even after deleting a card."""
     init_events(st.session_state.plan)
-    with st.expander("👨‍👩‍👧‍👦 " + T("life_title"), expanded=bool(st.session_state.event_drafts)):
+    with st.container(border=True):
+        st.subheader("👨‍👩‍👧‍👦 " + T("life_title"))
         st.caption(T("life_help"))
         if st.button("＋ " + T("life_add"), key="add_life_event", width="stretch"):
             if len(st.session_state.event_drafts) >= 100:
@@ -144,6 +145,8 @@ def draw_events(start_year: int, years: int, currency: str) -> tuple[LifeEvent, 
                 draft.update(category=category, label=label, first_month=first_month,
                              duration_months=int(duration), monthly_expense=extra,
                              monthly_income_change=income_change, upfront_cost=upfront)
+                net_cost = upfront + int(duration) * (extra - income_change)
+                st.caption(T("life_total", value=money(net_cost, currency)))
         st.caption(T("life_summary"))
     return tuple(LifeEvent(category=e["category"], label=e["label"].strip(),
                     first_month=e["first_month"], duration_months=e["duration_months"],
@@ -164,16 +167,8 @@ with st.sidebar:
         st.session_state.country_choice = st.session_state.plan.country
     if "pending_country" in st.session_state:
         st.session_state.country_choice = st.session_state.pop("pending_country")
-    country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
-        format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
-    if country != st.session_state.plan.country:
-        st.session_state.plan = demo(country)
-        st.session_state.confirmed_inputs = False
-        st.session_state.result = None
-        reset_inputs()
-        st.info(T("country_note"))
-        st.rerun()
-    advanced = st.toggle(T("mode_advanced"), key="advanced_choice", value=False)
+    country = st.session_state.plan.country
+    advanced = True  # Every model input is always visible; no hidden advanced mode.
     st.divider()
     uploaded = st.file_uploader(T("import"), type=["json"], max_upload_size=1)
     if uploaded is not None and st.button(T("load"), width="stretch"):
@@ -193,24 +188,35 @@ with st.sidebar:
         st.session_state.result = None
         reset_inputs()
         st.rerun()
-    st.download_button(T("export"), data=dump_plan(st.session_state.plan),
-                       file_name="financial_adviser_scenario.json", mime="application/json", width="stretch")
+    st.download_button(T("export_saved"), data=dump_plan(st.session_state.plan),
+                       file_name="financial_adviser_scenario.json", mime="application/json",
+                       disabled=not st.session_state.confirmed_inputs, width="stretch")
 
+country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
+    format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
+if country != st.session_state.plan.country:
+    st.session_state.plan = demo(country)
+    st.session_state.confirmed_inputs = False
+    st.session_state.result = None
+    reset_inputs()
+    st.rerun()
 p = st.session_state.plan
 st.title("Financial Adviser")
 st.caption(T("caption"))
+if st.session_state.pop("show_run_success", False):
+    st.success(T("done"))
 with st.expander("ℹ️ " + T("disclaimer_title"), expanded=False):
     st.info(T("disclaimer"))
 
-plan_tab, results_tab, goal_tab, compare_tab = st.tabs([
-    "⚙️ " + T("tab_plan"), "📊 " + T("tab_results"),
-    "🎯 " + T("tab_goal"), "🧭 " + T("tab_compare")])
+# Single, top-to-bottom workflow. No hidden results in tabs and no back-and-forth.
+plan_tab, results_tab, goal_tab, compare_tab = (st.container() for _ in range(4))
 
 with plan_tab:
     st.subheader(T("basic"))
     st.caption(T("plan_intro"))
-    if st.button("📊 " + T("nav_benchmarks"), key="show_statistical_references", width="stretch"):
-        st.switch_page("pages/benchmarks.py")
+    with st.popover("📊 " + T("nav_benchmarks")):
+        st.caption(T("reference_hint"))
+        st.page_link("pages/benchmarks.py", label=T("nav_benchmarks"))
     if not st.session_state.confirmed_inputs:
         st.warning(T("required_warning"))
     a, b = st.columns(2, wrap=True)
@@ -238,13 +244,11 @@ with plan_tab:
         years = st.slider(T("horizon"), 1, 60, value=p.years, key="field_years")
         start_year = st.number_input(T("start_year"), min_value=2020, max_value=2100,
                                      value=p.start_year, step=1, key="field_start_year")
-    if income is not None and expenses is not None:
-        st.metric(T("free_cash"), money(income - expenses - loan_payment(p.loan_balance, p.loan_apr_pct, p.loan_years), p.currency))
-
     events = draw_events(int(start_year), int(years), p.currency)
 
     if advanced:
-        with st.expander("📐 " + T("advanced"), expanded=False):
+        with st.container(border=True):
+            st.subheader("📐 " + T("advanced"))
             a, b = st.columns(2, wrap=True)
             with a:
                 income_growth = st.number_input(T("growth_income"), min_value=-90., max_value=200., value=float(p.income_growth_pct), step=0.5, key="field_income_growth")
@@ -254,7 +258,8 @@ with plan_tab:
                 investment_return = st.number_input(T("investment_return"), min_value=-90., max_value=200., value=float(p.investment_return_pct), step=0.5, key="field_investment_return")
                 inflation = st.number_input(T("inflation"), min_value=-90., max_value=200., value=float(p.inflation_pct), step=0.5, key="field_inflation")
                 volatility = st.number_input(T("volatility"), min_value=0., max_value=100., value=float(p.investment_volatility_pct), step=1., key="field_volatility")
-        with st.expander("🏡 " + T("loan_title"), expanded=False):
+        with st.container(border=True):
+            st.subheader("🏡 " + T("loan_title"))
             a, b, c = st.columns(3, wrap=True)
             with a:
                 loan = st.number_input(T("loan_balance"), min_value=0., value=float(p.loan_balance), step=step * 10, key="field_loan")
@@ -263,7 +268,8 @@ with plan_tab:
             with c:
                 loan_years = st.number_input(T("loan_years"), min_value=1, max_value=60, value=p.loan_years, key="field_loan_years")
             st.caption(T("loan_hint"))
-        with st.expander("📅 " + T("extra_title"), expanded=False):
+        with st.container(border=True):
+            st.subheader("📅 " + T("extra_title"))
             previous = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
             oneoffs_text = st.text_area(T("extra_label"), value=previous,
                 help=T("extra_hint"), key="field_oneoffs")
@@ -275,14 +281,38 @@ with plan_tab:
         oneoffs_text = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
         st.caption(T("auto_assumptions", inflation=f"{inflation:g}", ret=f"{investment_return:g}", growth=f"{income_growth:g}"))
     enable_mc = st.checkbox(T("simulate_mc"), value=False, disabled=not advanced, key="mc_enable")
-    if advanced and enable_mc:
+    if advanced:
         a, b = st.columns(2, wrap=True)
         with a:
-            n_paths = st.select_slider(T("paths"), options=[250, 500, 1000, 2000, 5000], value=1000, key="mc_paths")
+            n_paths = st.select_slider(T("paths"), options=[250, 500, 1000, 2000, 5000],
+                value=1000, key="mc_paths", disabled=not enable_mc)
         with b:
-            seed = st.number_input(T("seed"), min_value=0, max_value=2**31 - 1, value=42, key="mc_seed")
+            seed = st.number_input(T("seed"), min_value=0, max_value=2**31 - 1,
+                value=42, key="mc_seed", disabled=not enable_mc)
     else:
         n_paths, seed = 1000, 42
+    if income is not None and expenses is not None:
+        st.metric(T("free_cash"), money(
+            float(income) - float(expenses) - loan_payment(float(loan), float(loan_rate), int(loan_years)),
+            p.currency,
+        ))
+    # Explicitly warn that result tables and inverse scenarios still use last saved inputs.
+    dirty = st.session_state.result is not None and (
+        income != p.monthly_income or expenses != p.monthly_expenses
+        or goal != p.goal or contribution != p.monthly_investment
+        or cash != p.initial_cash or investments != p.initial_investments
+        or years != p.years or start_year != p.start_year
+        or tuple(events) != p.life_events
+        or income_growth != p.income_growth_pct or spending_growth != p.expense_growth_pct
+        or cash_return != p.cash_return_pct or investment_return != p.investment_return_pct
+        or inflation != p.inflation_pct or volatility != p.investment_volatility_pct
+        or loan != p.loan_balance or loan_rate != p.loan_apr_pct
+        or loan_years != p.loan_years
+        or oneoffs_text.strip() != "\n".join(
+            f"{e.month},{e.amount},{e.description}" for e in p.one_offs).strip()
+    )
+    if dirty:
+        st.warning(T("edited_not_run"))
     if st.button("▶ " + T("run"), type="primary", width="stretch", key="run_projection"):
         try:
             if income is None or expenses is None or goal is None:
@@ -307,11 +337,16 @@ with plan_tab:
                 st.session_state.confirmed_inputs = True
                 st.session_state.result = {"df": result, "mc": mc, "plan": new_plan}
                 st.session_state.pop("goal_alternatives", None)
-                st.success(T("done"))
+                st.session_state.show_run_success = True
+                st.rerun()
         except (ValueError, OverflowError, ZeroDivisionError, TypeError):
             st.error(T("invalid"))
 
 with results_tab:
+    st.divider()
+    st.subheader(T("tab_results"))
+    if dirty:
+        st.warning(T("outdated_result"))
     result = st.session_state.result
     if result is None:
         st.info(T("no_result"))
@@ -366,7 +401,11 @@ with results_tab:
         st.caption(T("result_limit"))
 
 with goal_tab:
-    if not st.session_state.confirmed_inputs:
+    st.divider()
+    if dirty:
+        st.warning(T("outdated_result"))
+        st.info(T("needs_run"))
+    elif not st.session_state.confirmed_inputs:
         st.info(T("no_result"))
     else:
         st.subheader(T("tab_goal"))
@@ -411,7 +450,11 @@ with goal_tab:
             st.caption(T("goal_disclaimer"))
 
 with compare_tab:
-    if not st.session_state.confirmed_inputs:
+    st.divider()
+    if dirty:
+        st.warning(T("outdated_result"))
+        st.info(T("needs_run"))
+    elif not st.session_state.confirmed_inputs:
         st.info(T("no_result"))
     else:
         st.subheader(T("tab_compare"))

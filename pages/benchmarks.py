@@ -93,5 +93,4 @@ if observation is not None and observation.get("country") == country:
                 st.session_state.pop("field_inflation", None)
                 st.success(B("applied"))
 
-if st.button("← " + B("back"), width="stretch"):
-    st.switch_page("pages/planning.py")
+st.page_link("pages/planning.py", label="← " + B("back"))
