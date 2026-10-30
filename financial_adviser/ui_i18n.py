@@ -7,6 +7,8 @@ machine-readable files are intentionally not translated.
 TEXT = {
     "fr": {
     "cashflow_title": "Calendrier de trésorerie mensuel",
+    "purchase_monthly_payment": "Mensualité prévue du nouveau prêt",
+    "chart_event_property_purchase": "Achat immobilier",
     "purchase_title": "Projet d'achat immobilier (facultatif)",
     "purchase_intro": "Simulez l'achat futur d'un seul bien. Le mois 1 correspond à janvier de l'année de départ ; l'achat est effectué dans le mois choisi.",
     "purchase_enable": "Prévoir un achat immobilier",
@@ -112,6 +114,8 @@ TEXT = {
 }
 TEXT["en"].update({
     "cashflow_title": "Monthly cash-flow calendar",
+    "purchase_monthly_payment": "New mortgage monthly instalment",
+    "chart_event_property_purchase": "Property purchase",
     "purchase_title": "Future property purchase (optional)",
     "purchase_intro": "Model one future property closing. Month 1 means January of the starting year; the purchase occurs in the chosen month.",
     "purchase_enable": "Plan a future property purchase",
@@ -213,6 +217,8 @@ TEXT["en"].update({
 
 TEXT["vi"].update({
     "cashflow_title": "Lịch dòng tiền hằng tháng",
+    "purchase_monthly_payment": "Số tiền trả nợ hằng tháng của khoản vay mới",
+    "chart_event_property_purchase": "Mua bất động sản",
     "purchase_title": "Dự định mua bất động sản (không bắt buộc)",
     "purchase_intro": "Mô phỏng việc mua một bất động sản trong tương lai. Tháng 1 là tháng Một của năm bắt đầu; giao dịch diễn ra vào tháng đã chọn.",
     "purchase_enable": "Dự kiến mua bất động sản",
