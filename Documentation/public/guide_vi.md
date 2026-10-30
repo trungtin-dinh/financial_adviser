@@ -64,6 +64,14 @@ Bạn có thể khai **giá trị bất động sản đã sở hữu** và các
 
 Bất động sản tăng giá không đồng nghĩa với thu nhập có thể tiêu ngay. Công cụ không tự mô phỏng mua bán, cho thuê, thuế nhà đất, phí hoặc bán nhà khi thiếu tiền mặt. Khi có tài sản khó thanh khoản, kết quả hiển thị bảng cân đối và cho phép xem đường biểu diễn cũng như so sánh các giả định.
 
+### Mua nhà trong tương lai
+
+Bạn có thể mô phỏng **một giao dịch mua bất động sản trong tương lai**, tách biệt với tài sản đang sở hữu. Hãy khai **tháng mua**, **giá nhà**, **vốn tự có trả trước**, **phí mua một lần**, **lãi suất và thời hạn vay mới**. Ngôi nhà chỉ xuất hiện trong tài sản kể từ tháng mua. Tiền mặt giảm theo vốn tự có và phí; phần chênh lệch giữa giá nhà và vốn tự có trở thành khoản nợ mới. **Chỉ phần phí làm giảm ngay tài sản ròng khi mua** (chưa tính lợi tức tiền mặt).
+
+Nợ hiện có vẫn được thanh toán theo lịch cũ. Khoản vay mới bắt đầu trả **từ tháng sau khi mua**. Ví dụ, mua nhà giá 120.000 € với 20.000 € vốn tự có và 5.000 € phí sẽ làm giảm tiền mặt 25.000 €, tạo khoản vay mới 100.000 € và tăng giá trị bất động sản 120.000 €.
+
+**Tránh tính trùng:** không khai ngôi nhà chưa mua như tài sản hiện có và không đưa kỳ trả nợ mới vào chi tiêu cơ sở. Thuế, bảo hiểm, bảo trì và các khoản phí chưa nhập không được tự ước tính. Đây là mô phỏng giả định, không phải đề nghị tín dụng chính thức hoặc phép tính vay theo quy định.
+
 ### Danh nghĩa, sức mua và mục tiêu
 
 **Tài sản danh nghĩa** biểu thị số tiền tại thời điểm tương ứng. **Tài sản thực** quy về sức mua tại thời điểm bắt đầu. Ví dụ, giả sử lạm phát cố định 2%/năm, thì 100.000 € sau mười năm tương đương khoảng 82.035 € sức mua ban đầu. Đây chỉ là minh họa, không phải dự báo lạm phát.
