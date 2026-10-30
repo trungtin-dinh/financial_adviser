@@ -20,18 +20,18 @@ Chaque enfant est représenté par un âge au début de sa prise en charge, un m
 
 Soit `C(age)` la somme des deux postes à l'âge considéré, dans la devise de la simulation. L'évolution des montants nominaux reprend, **à titre d'hypothèse**, le taux général de croissance des dépenses du scénario, `g`, et non une inflation spécifique vérifiée pour chaque poste.
 
-\[
+$$
 C_t = C(\operatorname{âge}_t)\,(1+g)^{t/12}.
-\]
+$$
 
 Si les coûts de cet enfant **ne figurent pas** déjà dans les dépenses mensuelles principales, on ajoute `C_t` à partir du mois de prise en charge. S'ils y figurent déjà, on applique seulement une **variation** par rapport à la somme `C_initial` déjà contenue dans le budget :
 
-\[
+$$
 \Delta D_t^{enfant}=\begin{cases}
 C_t - C_{initial}(1+g)^{t/12}, &\text{enfant présent et déjà inclus}\cr
 C_t, & \text{enfant non inclus dans le budget initial.}
 \end{cases}
-\]
+$$
 
 Après l'âge de fin de soutien, `C_t=0` ; si l'enfant était inclus dans les dépenses initiales, la part de référence cesse donc d'être comptabilisée. **Le champ 'dépenses principales' reste une estimation de la dépense totale réelle actuelle, et pas un budget fictif indépendant de l'enfant.** Il faut éviter de saisir à nouveau ces frais dans les événements ponctuels.
 

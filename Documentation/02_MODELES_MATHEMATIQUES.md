@@ -14,9 +14,9 @@
 
 Au mois `m`, on définit `C_m` (trésorerie), `A_m` (investissements), `D_m` (principal d'emprunt restant), `N_m` (patrimoine net) :
 
-\[
+$$
 N_m=C_m+A_m-D_m.
-\]
+$$
 
 **Important :** renseigner une dette sans actif correspondant réduit le patrimoine, conformément à l'état explicite. Le modèle ne suppose pas automatiquement que la dette a servi à acheter un bien immobilier.
 
@@ -24,9 +24,9 @@ N_m=C_m+A_m-D_m.
 
 Pour un taux effectif annuel `R` en décimal, le taux mensuel équivalent est :
 
-\[
+$$
 r=(1+R)^{1/12}-1.
-\]
+$$
 
 Cette relation assure `(1+r)^12 = 1+R`. Pour l'emprunt, si `i` désigne le taux nominal annuel, on utilise au contraire `r_{prêt}=i/12`.
 
@@ -34,27 +34,27 @@ Cette relation assure `(1+r)^12 = 1+R`. Pour l'emprunt, si `i` désigne le taux 
 
 Pour chaque mois `m=1,…,M`, les revenus et dépenses évoluent selon une croissance annuelle effective supposée :
 
-\[
+$$
 Y_m=Y_0(1+g_Y)^{(m-1)/12},\qquad
 E_m=E_0(1+g_E)^{(m-1)/12}.
-\]
+$$
 
 Les événements ponctuels `O_m` sont additionnés par mois : `O_m > 0` entrée ; `O_m < 0` sortie.
 
 Après calcul de l'échéance de prêt `L_m`, le flux disponible avant épargne est :
 
-\[
+$$
 F_m=Y_m-E_m-L_m+O_m.
-\]
+$$
 
 Avec `T` = **virement mensuel entre trésorerie et investissements** :
 
-\[
+$$
 \begin{aligned}
 C_m&=(C_{m-1}+F_m-T)(1+r_C),\\
 A_m&=(A_{m-1}+T)(1+r_A).
 \end{aligned}
-\]
+$$
 
 **Convention temporelle** : revenus, dépenses, échéances, événements et transfert d'investissement interviennent **au début** du mois ; intérêts/performance mensuels ensuite. `T` est une opération interne au patrimoine, pas un revenu. Les valeurs sont des montants hypothétiques et il n'existe pas de frais implicites.
 
@@ -64,17 +64,17 @@ A_m&=(A_{m-1}+T)(1+r_A).
 
 Capital dû `D_0`, durée restante `n` mois, taux mensuel nominal `r_L` :
 
-\[
+$$
 L = \begin{cases} D_0/n, & r_L=0,\\
 D_0r_L/[1-(1+r_L)^{-n}], & r_L>0.
 \end{cases}
-\]
+$$
 
 Chaque mois : intérêt `I_m=r_L D_{m-1}`, échéance effective `L_m=min(L,D_{m-1}+I_m)`, et :
 
-\[
+$$
 D_m=\max(0,D_{m-1}+I_m-L_m).
-\]
+$$
 
 Si le prêt est remboursé, les échéances deviennent nulles. Le simulateur modélise un prêt déjà en cours ; les assurances, frais de dossier, renégociations et loyers associés ne sont pas inclus. Si l'utilisateur saisit déjà les échéances dans ses dépenses courantes, il doit les enlever pour éviter un double comptage.
 
@@ -82,9 +82,9 @@ Si le prêt est remboursé, les échéances deviennent nulles. Le simulateur mod
 
 Pour une inflation annuelle effective supposée `π`, le facteur de prix après `m` mois :
 
-\[
+$$
 Q_m=(1+\pi)^{m/12},\qquad N_m^{réel}=\frac{N_m}{Q_m}.
-\]
+$$
 
 `N_m^{réel}` est exprimé en **pouvoir d'achat de la date de départ**. L'inflation future est une hypothèse ; la dernière statistique annuelle publiée n'est pas une prévision.
 
@@ -92,9 +92,9 @@ Q_m=(1+\pi)^{m/12},\qquad N_m^{réel}=\frac{N_m}{Q_m}.
 
 Le modèle probabiliste applique uniquement des rendements aléatoires aux investissements. Pour chaque trajectoire `s` et mois `m` :
 
-\[
+$$
 r_{A,m}^{(s)}=\max\left(-0.99,\ \mu_m+\sigma_m Z_{m,s}\right),\qquad Z_{m,s}\overset{iid}{\sim}\mathcal N(0,1),
-\]
+$$
 
 avec `μ_m=(1+R_A)^(1/12)−1` et `σ_m=σ_annuel/√12` (**approximation** de volatilité annualisée). `C_m` et `D_m` suivent les mêmes règles déterministes que précédemment ; inflation fixe. Le moteur stocke les patrimoines de toutes les trajectoires et calcule les percentiles empiriques P10/P50/P90 par mois et la fraction des trajectoires dont le patrimoine final atteint l'objectif **nominal**.
 
