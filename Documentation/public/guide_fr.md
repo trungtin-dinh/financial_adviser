@@ -66,6 +66,12 @@ Le patrimoine **nominal** est un montant en monnaie courante. Le patrimoine **r�
 
 L'objectif saisi est un **objectif nominal**. Sa comparaison avec le patrimoine final ne signifie pas nécessairement que la trésorerie demeure positive à chaque date. Il faut vérifier ces deux dimensions séparément.
 
+### Calcul inverse : chercher comment atteindre une cible
+
+Dans l'onglet consacré à l'objectif, trois **leviers indépendants** peuvent être estimés : **revenu net mensuel supplémentaire** dès le départ, **réduction des dépenses mensuelles de référence** ou **apport externe de trésorerie initiale**. Le calcul cherche, pour chaque levier pris isolément, un patrimoine final au moins égal à la cible **et une trésorerie non négative à tous les mois**. Il ne combine pas automatiquement les trois solutions.
+
+Une réduction de dépenses ne peut pas supprimer artificiellement les charges familiales que vous avez déjà déclarées comme comprises dans le budget de référence. Un apport initial est un apport **extérieur au patrimoine existant**, non un virement entre vos propres comptes. Un levier déclaré impossible signifie seulement qu'aucune solution admissible n'a été trouvée **dans les hypothèses et contraintes du scénario**, pas que l'objectif serait impossible dans toute situation réelle.
+
 ## 3. Sources et fiabilité des informations
 
 L'application distingue **données historiques observées**, **hypothèses de projection** et **règles juridiques**. Une statistique publique ne devient jamais automatiquement votre revenu, votre budget ou votre rendement futur.
