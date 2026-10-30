@@ -90,7 +90,7 @@ with sync_playwright() as pw:
         assert overflow <= 8, f"Event form overflow: {lang}/{device}, {overflow}px"
         print(f"OK {lang} {device} {width}x{height}: compact cards and no overflow")
         if device in ("desktop", "mobile"):
-            example = {"fr":"Charger un exemple","en":"Load example","vi":"Tải ví dụ"}[lang]
+            example = {"fr":"Charger un exemple","en":"Load example","vi":"Nạp dữ liệu ví dụ"}[lang]
             confirm = {"fr":"Confirmer le remplacement","en":"Confirm replacement","vi":"Xác nhận thay thế"}[lang]
             run_name = {"fr":"Lancer la projection","en":"Run projection","vi":"Chạy dự phóng"}[lang]
             page.get_by_role("button", name=re.compile(re.escape(example))).first.click(timeout=15000)
