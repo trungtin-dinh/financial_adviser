@@ -398,3 +398,46 @@ def assumption_sensitivity_figure(
         yaxis=dict(autorange="reversed", automargin=True),
     )
     return fig
+
+
+
+CUSTOM_COMPARISON_SERIES = (
+    "net_worth", "net_worth_real", "cash",
+)
+
+
+def custom_comparison_figure(
+    comparison: object, field: str, currency: str,
+    translate: Callable[[str], str],
+) -> go.Figure:
+    """Side-by-side aligned monthly trajectories, one dimension per view."""
+    if field not in CUSTOM_COMPARISON_SERIES:
+        raise ValueError("Unknown custom comparison measure")
+    base = comparison.reference
+    alternative = comparison.alternative
+    if (len(base) != len(alternative)
+            or not base["month"].equals(alternative["month"])):
+        raise ValueError("Scenario trajectories are not aligned")
+    dates = _month_labels(base, comparison.reference_plan.start_year, translate)
+    fig = go.Figure()
+    _line(fig, base, base[field], translate("custom_reference"),
+          "#0072B2", dates, currency, width=3.0)
+    _line(fig, alternative, alternative[field], translate("custom_variant"),
+          "#D55E00", dates, currency, dash="dash", width=2.8)
+    _axis(fig, base, comparison.reference_plan.start_year, currency, translate("year"))
+    if field == "net_worth" and comparison.reference_plan.goal > 0:
+        fig.add_hline(
+            y=comparison.reference_plan.goal,
+            line=dict(color="#6B7280", dash="dot", width=1.1),
+        )
+    if field == "cash":
+        fig.add_hline(
+            y=0, line=dict(color="#6B7280", dash="dot", width=1.2),
+        )
+        minimum = min(float(base.cash.min()), float(alternative.cash.min()))
+        if minimum < 0:
+            fig.add_hrect(
+                y0=minimum * 1.04, y1=0, line_width=0,
+                fillcolor="#D55E00", opacity=0.06,
+            )
+    return fig

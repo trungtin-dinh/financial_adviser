@@ -192,6 +192,30 @@ with sync_playwright() as pw:
             page.get_by_role("button", name=sens_run, exact=True).first.click(timeout=30000)
             page.get_by_text(sens_outcome, exact=True).first.wait_for(timeout=30000)
             page.screenshot(path=str(OUT / f"{lang}_{device}_sensitivity.png"), full_page=True)
+            # Compare a complete alternative against the saved projection.
+            custom_title = {
+                "fr": "Comparer deux scénarios personnalisés",
+                "vi": "So sánh hai kịch bản tùy chỉnh",
+            }[lang]
+            custom_income = {
+                "fr": "Revenu net mensuel de base",
+                "vi": "Thu nhập ròng tháng cơ sở",
+            }[lang]
+            custom_submit = {
+                "fr": "Comparer les deux scénarios",
+                "vi": "So sánh hai kịch bản",
+            }[lang]
+            custom_graph_label = {
+                "fr": "Courbes à comparer",
+                "vi": "Chỉ tiêu cần so sánh",
+            }[lang]
+            page.get_by_text(custom_title, exact=True).first.click(timeout=15000)
+            variant_income = page.get_by_role(
+                "spinbutton", name=custom_income, exact=True).first
+            variant_income.fill("3200" if lang == "fr" else "52000000")
+            page.get_by_role("button", name=custom_submit, exact=True).first.click(timeout=30000)
+            page.get_by_text(custom_graph_label, exact=True).first.wait_for(timeout=30000)
+            page.screenshot(path=str(OUT / f"{lang}_{device}_custom_comparison.png"), full_page=True)
             bb, rb = basic_heading.bounding_box(), results_heading.bounding_box()
             assert bb and rb
             if width >= 1024:

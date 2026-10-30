@@ -26,6 +26,7 @@ if pkg.__version__ != disk_version:
         "financial_adviser.insights",
         "financial_adviser.resilience",
         "financial_adviser.comparisons",
+        "financial_adviser.custom_comparison",
         "financial_adviser.sensitivity",
         "financial_adviser.charts",
         "financial_adviser.scenarios",

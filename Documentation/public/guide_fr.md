@@ -98,6 +98,12 @@ Une rubrique **« À retenir »** résume quatre constats vérifiables du dernie
 
 Les données d'un scénario peuvent être importées ou exportées volontairement au format JSON. La comparaison porte sur les résultats financiers, et non sur des transactions bancaires récupérées à votre insu.
 
+### Comparer deux scénarios personnalisés
+
+Dans la rubrique **« Comparer deux scénarios personnalisés »**, le scénario **A** est le dernier scénario calculé. Vous pouvez construire le scénario **B** en modifiant simultanément plusieurs montants ou taux d'une copie de A, ou en important un autre fichier JSON exporté depuis cette application. Cette deuxième méthode permet de comparer aussi des événements de vie ou des compositions de foyer distincts. Le pays, la devise, l'année de départ et **l'objectif nominal** doivent être identiques. L'horizon choisi est commun et ne peut exclure un événement daté d'un des deux scénarios. Les deux scénarios sont projetés indépendamment et ne remplacent pas le scénario enregistré.
+
+Trois courbes alternatives comparent le patrimoine **nominal**, le patrimoine **réel** ou la **trésorerie**, sans superposer des unités différentes. Le tableau distingue patrimoine final, minimum de trésorerie, mois déficitaires et financement manquant. Si les hypothèses d'inflation divergent, chaque résultat réel utilise le déflateur de son propre scénario : l'écart est donc conditionnel à ces hypothèses. Comme plusieurs variables peuvent changer simultanément, la différence obtenue ne peut pas être attribuée à une cause unique. Vous pouvez exporter B en JSON pour le reprendre ensuite.
+
 ### Parcours conseillé
 
 1. **Définissez votre situation actuelle** : revenu mensuel net après prélèvements, dépenses usuelles, réserves, placements, éventuel prêt et horizon de projection.

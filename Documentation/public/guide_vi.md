@@ -96,6 +96,12 @@ Phần **Những điểm chính** giải thích bốn nhận xét kiểm chứng
 
 Người dùng có thể chủ động nhập hoặc xuất kế hoạch dưới dạng JSON. Ứng dụng không tự lấy giao dịch từ ngân hàng.
 
+### So sánh hai kịch bản tùy chỉnh
+
+Trong phần **So sánh hai kịch bản tùy chỉnh**, kế hoạch **A** là lần dự phóng gần nhất. Bạn có thể tạo kế hoạch **B** bằng cách thay đổi đồng thời nhiều khoản tiền hoặc lãi suất trong bản sao A, hoặc nhập tệp JSON đầy đủ đã xuất từ ứng dụng. Cách nhập tệp cho phép thay đổi cả sự kiện đời sống và thành viên hộ gia đình. Hai kế hoạch phải có cùng **quốc gia, đồng tiền, năm bắt đầu và mục tiêu danh nghĩa**. Thời hạn so sánh phải giống nhau và không được bỏ sót sự kiện theo lịch của một trong hai kế hoạch. Không kế hoạch nào ghi đè lên kịch bản gốc.
+
+Biểu đồ cho phép chọn riêng **tài sản danh nghĩa**, **tài sản thực** hoặc **tiền mặt**. Bảng chi tiết phân biệt tài sản cuối kỳ, tiền mặt thấp nhất, số tháng thiếu hụt và nhu cầu vốn chưa có nguồn bù đắp. Nếu giả định lạm phát khác nhau, mỗi giá trị thực được điều chỉnh theo giả định riêng; chênh lệch phải được hiểu trong điều kiện này. Nhiều biến thay đổi đồng thời không thể quy kết kết quả cho một nguyên nhân duy nhất. Có thể xuất kế hoạch B ra JSON để dùng lại.
+
 ### Quy trình sử dụng đề xuất
 
 1. **Mô tả tình hình hiện tại:** thu nhập ròng của hộ, chi tiêu định kỳ, tiền mặt, vốn đầu tư, dư nợ và thời gian dự phóng.

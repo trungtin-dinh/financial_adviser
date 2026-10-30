@@ -96,6 +96,12 @@ A **Key takeaways** section explains four verifiable observations from the lates
 
 Plans may be imported or exported as JSON at the user's request. No bank transactions are fetched automatically.
 
+### Compare two custom scenarios
+
+In **Compare two custom scenarios**, plan **A** is the most recently calculated plan. Create **B** by changing several amounts or rates on a copy of A, or import another complete JSON plan previously exported by the app. Import also allows different household compositions and life events. Both plans must share their **country, currency, starting year and nominal goal**. The chosen horizon is common and may not exclude dated events from either plan. Both are projected independently without overwriting the saved reference.
+
+Select one chart at a time: **nominal wealth**, **real wealth** or **cash**. The table separately shows final wealth, minimum cash, deficit months and unmet funding needs. If the two plans assume different inflation rates, each real result is deflated under its own assumption: the comparison is conditional on those scenarios. Several simultaneous changes cannot be assigned to a single cause. Export B as JSON if you want to reuse it later.
+
 ### Recommended workflow
 
 1. **Describe your current position:** household net income, recurring expenses, accessible cash, investments, any outstanding loan and the projection horizon.
