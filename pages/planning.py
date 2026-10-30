@@ -22,6 +22,7 @@ from financial_adviser.resilience import analyze_liquidity
 from financial_adviser.planning_analysis_ui import render_comparison_tab
 from financial_adviser.planning_cashflow_ui import render_cashflow_calendar
 from financial_adviser.planning_recurring_ui import render_recurring_editor
+from financial_adviser.planning_property_ui import render_property_purchase
 from financial_adviser.planning_results_ui import (
     render_financial_overview, render_resilience_panel, render_result_charts,
 )
@@ -114,6 +115,13 @@ def hydrate_inputs(plan: Plan) -> None:
         "field_property_value": float(plan.initial_property_value),
         "field_other_assets": float(plan.initial_other_assets),
         "field_property_growth": float(plan.property_growth_pct),
+        "field_purchase_enabled": plan.property_purchase is not None,
+        "field_purchase_month": plan.property_purchase.month if plan.property_purchase else min(plan.years * 12, 13),
+        "field_purchase_price": float(plan.property_purchase.price) if plan.property_purchase else 0.0,
+        "field_purchase_down": float(plan.property_purchase.down_payment) if plan.property_purchase else 0.0,
+        "field_purchase_fees": float(plan.property_purchase.fees) if plan.property_purchase else 0.0,
+        "field_purchase_apr": float(plan.property_purchase.loan_apr_pct) if plan.property_purchase else 3.5,
+        "field_purchase_years": plan.property_purchase.loan_years if plan.property_purchase else 20,
         "field_years": int(plan.years),
         "field_start_year": int(plan.start_year),
         "field_income_growth": float(plan.income_growth_pct),
@@ -472,6 +480,7 @@ with plan_tab:
                 value=42, key="mc_seed", disabled=not enable_mc)
 
 with plan_tab:
+    property_purchase = render_property_purchase(p, int(years), T, step, money)
     recurring_flows = render_recurring_editor(replace(p, years=int(years)), T)
 
 # Keep family and life-event editors in the scenario panel after a projection.
@@ -503,6 +512,7 @@ with plan_tab:
         or property_value != p.initial_property_value
         or other_assets != p.initial_other_assets
         or property_growth != p.property_growth_pct
+        or property_purchase != p.property_purchase
         or years != p.years or start_year != p.start_year
         or tuple(events) != p.life_events
         or recurring_flows is None or recurring_flows != p.recurring_flows
@@ -533,6 +543,7 @@ with plan_tab:
                     initial_property_value=float(property_value),
                     initial_other_assets=float(other_assets),
                     property_growth_pct=float(property_growth),
+                    property_purchase=property_purchase,
                     monthly_income=float(income), monthly_expenses=float(expenses), monthly_investment=float(contribution),
                     income_growth_pct=income_growth, expense_growth_pct=spending_growth,
                     cash_return_pct=cash_return, investment_return_pct=investment_return,
@@ -599,7 +610,7 @@ if st.session_state.result is not None:
                           if q.monthly_income > 0 else T("not_applicable"),
                           help=T("debt_service_help"))
                 render_financial_overview(q, df, T, money)
-                if q.initial_property_value > 0 or q.initial_other_assets > 0:
+                if q.initial_property_value > 0 or q.initial_other_assets > 0 or q.property_purchase is not None:
                     with st.expander(T("patrimony_breakdown"), expanded=False):
                         last_asset = df.iloc[-1]
                         st.metric(T("patrimony_gross_assets"),
@@ -614,15 +625,24 @@ if st.session_state.result is not None:
                         ):
                             st.markdown(f"**{T(label)}** : {money(float(last_asset[field]), q.currency)}")
                         st.caption(T("patrimony_result_note"))
+                if q.property_purchase is not None:
+                    purchase = q.property_purchase
+                    with st.expander(T("purchase_result_title"), expanded=False):
+                        st.caption(T("purchase_result_explain"))
+                        st.metric(T("purchase_paid"), money(purchase.down_payment + purchase.fees, q.currency))
+                        st.metric(T("purchase_financing"), money(purchase.price - purchase.down_payment, q.currency))
+                        st.metric(T("purchase_remaining"), money(float(df.new_mortgage_balance.iloc[-1]), q.currency))
+                        st.caption(T("purchase_first_repayment"))
                 # Stock, monthly-flow and uncertainty plots share one chart area.
                 # Controls are isolated so selecting a curve does not rerun the engine.
                 render_result_charts(q, df, result["mc"], T, money)
                 render_cashflow_calendar(q, df, T, money)
                 render_resilience_panel(q, df, T, money)
                 with st.expander(T("yearly"), expanded=False):
-                    yearly = df.iloc[::12][["year", "cash", "investments", "loan_balance", "net_worth", "net_worth_real"]]
+                    yearly = df.iloc[::12][["year", "cash", "investments", "property_value", "other_assets", "loan_balance", "net_worth", "net_worth_real"]]
                     st.dataframe(yearly.rename(columns={"year": T("year"), "cash": T("cash_name"),
-                        "investments": T("investments_name"), "loan_balance": T("loan_name"),
+                        "investments": T("investments_name"), "property_value": T("patrimony_property"),
+                        "other_assets": T("patrimony_other"), "loan_balance": T("loan_name"),
                         "net_worth": T("net_worth"), "net_worth_real": T("net_worth_real")}).round(2),
                         hide_index=True, width="stretch")
                 st.download_button(T("export_csv"), df.to_csv(index=False).encode("utf-8"),
