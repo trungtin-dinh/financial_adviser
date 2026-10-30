@@ -227,8 +227,10 @@ with st.sidebar:
     advanced = True  # Every model input is always visible; no hidden advanced mode.
     st.divider()
 
-country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
-    format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
+header_col, country_col = st.columns([2.1, 1], gap="large", vertical_alignment="center")
+with country_col:
+    country = st.selectbox(T("country"), ["FR", "VN"], key="country_choice",
+        format_func=lambda code: "France (EUR)" if code == "FR" else "Việt Nam (VND)")
 if country != st.session_state.plan.country:
     st.warning(T("country_confirm_text"))
     a, b = st.columns(2, wrap=True)
@@ -243,10 +245,27 @@ if country != st.session_state.plan.country:
         st.session_state.country_choice = st.session_state.plan.country
         st.rerun()
 p = st.session_state.plan
-st.title("Financial Adviser")
-st.caption(T("caption") + f" · v{__version__}")
+with header_col:
+    st.title("Financial Adviser")
+    st.caption(T("caption") + f" · v{__version__}")
 if st.session_state.pop("session_migration_notice", False):
     st.info(T("session_migration_ok"))
+if st.button("📋 " + T("example"), width="stretch"):
+    st.session_state.example_pending = True
+if st.session_state.get("example_pending"):
+    st.warning(T("example_confirm_text"))
+    a, b = st.columns(2, wrap=True)
+    if a.button(T("confirm_replace"), key="confirm_example", width="stretch"):
+        st.session_state.example_pending = False
+        st.session_state.plan = demo(st.session_state.plan.country)
+        st.session_state.confirmed_inputs = True
+        st.session_state.result = None
+        reset_inputs()
+        st.rerun()
+    if b.button(T("cancel_replace"), key="cancel_example", width="stretch"):
+        st.session_state.example_pending = False
+        st.rerun()
+
 with st.expander("🗂️ " + T("scenario_files"), expanded=False):
     uploaded = st.file_uploader(T("import"), type=["json"], max_upload_size=1)
     if uploaded is not None and st.button(T("load"), width="stretch"):
@@ -260,21 +279,6 @@ with st.expander("🗂️ " + T("scenario_files"), expanded=False):
             st.rerun()
         except (ValueError, KeyError, TypeError, UnicodeError, json.JSONDecodeError):
             st.error(T("invalid_import"))
-    if st.button("📋 " + T("example"), width="stretch"):
-        st.session_state.example_pending = True
-    if st.session_state.get("example_pending"):
-        st.warning(T("example_confirm_text"))
-        a, b = st.columns(2, wrap=True)
-        if a.button(T("confirm_replace"), key="confirm_example", width="stretch"):
-            st.session_state.example_pending = False
-            st.session_state.plan = demo(st.session_state.plan.country)
-            st.session_state.confirmed_inputs = True
-            st.session_state.result = None
-            reset_inputs()
-            st.rerun()
-        if b.button(T("cancel_replace"), key="cancel_example", width="stretch"):
-            st.session_state.example_pending = False
-            st.rerun()
     st.download_button(T("export_saved"), data=dump_plan(st.session_state.plan),
                        file_name="financial_adviser_scenario.json", mime="application/json",
                        disabled=not st.session_state.confirmed_inputs, width="stretch")
@@ -298,7 +302,8 @@ with plan_tab:
     st.caption(T("plan_intro"))
     with st.popover("📊 " + T("nav_benchmarks")):
         st.caption(T("reference_hint"))
-        st.page_link("pages/benchmarks.py", label=T("nav_benchmarks"))
+        if st.button(T("nav_benchmarks"), key="open_statistical_references"):
+            st.switch_page("pages/benchmarks.py")
     if not st.session_state.confirmed_inputs:
         st.warning(T("required_warning"))
     a, b = st.columns(2, wrap=True)

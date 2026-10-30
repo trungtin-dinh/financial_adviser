@@ -1,5 +1,14 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-30 — v0.8.1 : correction tests de navigation + ergonomie
+
+- Les tests Python isolés de pages ne disposent pas de la navigation Streamlit multipage : les liens directs y déclenchaient six exceptions. Utilisation de boutons navigationnels explicites déclenchant un changement de page uniquement sur clic.
+- Exemple synthétique accessible sans expander, avec confirmation avant remplacement.
+- Pays et titre regroupés sur une ligne desktop. Messages d'état mis à jour après suppression des onglets.
+- Tests browser PC/mobile de v0.8.0 déjà réussis; nouveaux workflows lancés automatiquement sur chaque push.
+
+
+
 ## 2026-10-30 — v0.8 : dashboard desktop et contrôle automatisé après push
 
 - Deux colonnes desktop réactives : éditeur à gauche, résultats/objectifs/comparaison à droite ; ordre vertical mobile conservé.
