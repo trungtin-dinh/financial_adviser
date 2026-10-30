@@ -71,6 +71,11 @@ def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
     return tuple(parsed)
 
 
+def remember_custom_mode() -> None:
+    """Retain custom-edit vs JSON-import mode across lazy tab switches."""
+    st.session_state["_last_custom_input_mode"] = st.session_state["custom_input_mode"]
+
+
 def remember_analysis_view() -> None:
     """Preserve the selected analysis when lazy tabs are unmounted."""
     label = st.session_state.get("comparison_analysis_navigation")
@@ -100,7 +105,8 @@ def reset_inputs() -> None:
     for key in (
         "comparison_horizon", "_comparison_source", "chart_show_events",
         "_sensitivity_cache", "sensitivity_metric", "sensitivity_show_table",
-        "_last_analysis_view", "_custom_comparison", "_custom_form_source", "custom_input_mode",
+        "_last_analysis_view", "_last_custom_input_mode",
+        "_custom_comparison", "_custom_form_source", "custom_input_mode",
         "custom_metric", "custom_import",
     ):
         st.session_state.pop(key, None)
@@ -523,6 +529,7 @@ def render_custom_comparison(base: Plan, years: int) -> None:
                           *CUSTOM_INTEGER_FIELDS):
                 st.session_state.pop("custom_field_" + field, None)
             st.session_state.pop("custom_input_mode", None)
+            st.session_state.pop("_last_custom_input_mode", None)
             st.session_state.pop("custom_import", None)
             st.session_state.pop("custom_metric", None)
             st.session_state.pop("_custom_comparison", None)
@@ -531,7 +538,9 @@ def render_custom_comparison(base: Plan, years: int) -> None:
         mode = st.radio(
             T("custom_mode"), ("edit", "import"),
             format_func=lambda x: T("custom_mode_" + x),
+            index=1 if st.session_state.get("_last_custom_input_mode") == "import" else 0,
             horizontal=True, key="custom_input_mode",
+            on_change=remember_custom_mode,
         )
         previous = st.session_state.get("_custom_comparison")
         if previous is not None and (
@@ -546,13 +555,18 @@ def render_custom_comparison(base: Plan, years: int) -> None:
             imported_file = None
             if mode == "edit":
                 st.caption(T("custom_copy_help"))
+                # A stored comparison must reopen with the inputs that actually
+                # produced its visible chart, even after lazy tab unmounting.
+                edit_source = (previous["result"].alternative_plan
+                               if previous is not None and previous["mode"] == "edit"
+                               else base)
                 a, b = st.columns(2, wrap=True)
                 for idx, field in enumerate(CUSTOM_AMOUNT_FIELDS):
                     with (a if idx % 2 == 0 else b):
                         variant_values[field] = st.number_input(
                             T("custom_field_" + field),
                             min_value=0.0,
-                            value=float(getattr(base, field)),
+                            value=float(getattr(edit_source, field)),
                             step=(1_000_000.0 if base.currency == "VND" else 100.0),
                             key="custom_field_" + field,
                         )
@@ -565,13 +579,13 @@ def render_custom_comparison(base: Plan, years: int) -> None:
                             variant_values[field] = st.number_input(
                                 T("custom_field_" + field),
                                 min_value=lo, max_value=hi,
-                                value=float(getattr(base, field)),
+                                value=float(getattr(edit_source, field)),
                                 step=0.5, key="custom_field_" + field,
                             )
                     variant_values["loan_years"] = int(st.number_input(
                         T("custom_field_loan_years"),
                         min_value=1, max_value=60,
-                        value=int(base.loan_years),
+                        value=int(edit_source.loan_years),
                         step=1, key="custom_field_loan_years",
                     ))
             else:

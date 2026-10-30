@@ -248,6 +248,20 @@ with sync_playwright() as pw:
             page.get_by_role("button", name=custom_submit, exact=True).first.click(timeout=30000)
             page.get_by_text(custom_graph_label, exact=True).first.wait_for(timeout=30000)
             page.screenshot(path=str(OUT / f"{lang}_{device}_custom_comparison.png"), full_page=True)
+            # Reopening a computed custom scenario must restore the values
+            # shown alongside its existing result, even after lazy unmount.
+            page.get_by_role(
+                "tab", name=stress_tab_label, exact=True
+            ).click(timeout=15000)
+            page.get_by_role(
+                "tab", name=custom_tab, exact=True
+            ).click(timeout=15000)
+            reopened_income = page.get_by_role(
+                "spinbutton", name=custom_income, exact=True).first
+            reopened_income.wait_for(state="visible", timeout=15000)
+            expected_income = "3200" if lang == "fr" else "52000000"
+            assert float(reopened_income.input_value().replace(",", ".")) == float(expected_income), (
+                f"Computed custom scenario inputs lost on navigation: {lang}/{device}")
             assert page.evaluate(
                 "document.documentElement.scrollWidth - window.innerWidth"
             ) <= 8, f"Nested analysis tabs overflow on {lang}/{device}"

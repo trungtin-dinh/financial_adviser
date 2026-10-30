@@ -211,6 +211,21 @@ def test_custom_form_and_result_selectors_keep_reference_unchanged(language):
     assert app.segmented_control(key="custom_metric").value == "net_worth_real"
     app.segmented_control(key="custom_metric").set_value("cash").run()
     assert not app.exception, app.exception
+    # Lazy tabs remove hidden input widgets. Reopening a completed alternative
+    # must restore the inputs that generated the cached result, not base values.
+    app.session_state["comparison_analysis_navigation"] = t(language, "analysis_stress")
+    app.session_state["_last_analysis_view"] = "stress"
+    app.run()
+    assert not app.exception, app.exception
+    assert not any(x.key == "custom_field_monthly_income"
+                   for x in app.get("number_input"))
+    app.session_state["comparison_analysis_navigation"] = t(language, "analysis_custom")
+    app.session_state["_last_analysis_view"] = "custom"
+    app.run()
+    assert not app.exception, app.exception
+    assert app.number_input(key="custom_field_monthly_income").value == pytest.approx(3500)
+    assert app.number_input(key="custom_field_monthly_expenses").value == pytest.approx(1800)
+    assert app.session_state["_custom_comparison"]["result"] == result["result"]
     assert app.session_state["plan"] == base
     pd.testing.assert_frame_equal(app.session_state["result"]["df"], saved_df)
     # Changing the common horizon invalidates old comparison results.
