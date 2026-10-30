@@ -21,10 +21,12 @@ from .models import Plan
 CUSTOM_AMOUNT_FIELDS = (
     "initial_cash", "initial_investments", "monthly_income",
     "monthly_expenses", "monthly_investment", "loan_balance",
+    "initial_property_value", "initial_other_assets",
 )
 CUSTOM_RATE_FIELDS = (
     "income_growth_pct", "expense_growth_pct", "cash_return_pct",
     "investment_return_pct", "inflation_pct", "loan_apr_pct",
+    "property_growth_pct",
 )
 CUSTOM_INTEGER_FIELDS = ("loan_years",)
 CUSTOM_FIELDS = CUSTOM_AMOUNT_FIELDS + CUSTOM_RATE_FIELDS + CUSTOM_INTEGER_FIELDS
