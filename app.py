@@ -60,9 +60,9 @@ with st.sidebar:
             country=current_plan.country, currency=current_plan.currency,
             years=current_plan.years))
         st.caption(t(lang, "sidebar_people_count",
-            children=len(getattr(current_plan, "children", ())),
-            dependents=len(getattr(current_plan, "dependents", ())),
-            adults=len(getattr(current_plan, "adults", ()))))
+            children=len(st.session_state.get("household_children", getattr(current_plan, "children", ()))),
+            dependents=len(st.session_state.get("household_dependents", getattr(current_plan, "dependents", ()))),
+            adults=len(st.session_state.get("household_adults", getattr(current_plan, "adults", ())))))
         event_drafts = st.session_state.get("event_drafts")
         event_count = (len(event_drafts) if event_drafts is not None
                        else len(getattr(current_plan, "life_events", ())))

@@ -200,43 +200,43 @@ def draw_events(start_year: int, years: int, currency: str, income: float, expen
                             del st.session_state[old_key]
                     st.rerun()
                 if is_open:
-                a, b = st.columns(2, wrap=True)
-                with a:
-                    category = st.selectbox(T("life_type"), CATEGORIES,
-                        index=CATEGORIES.index(draft["category"]), key=prefix + "category",
-                        format_func=lambda value: category_label(LANG, value))
-                with b:
-                    label = st.text_input(T("life_label"), value=draft["label"],
-                                          key=prefix + "label", placeholder=T("life_label_hint"))
-                y, m, d = st.columns(3, wrap=True)
-                with y:
-                    first_year = st.number_input(T("life_year"), min_value=start_year,
-                        max_value=start_year + years - 1, value=initial_year, step=1, key=prefix + "year")
-                with m:
-                    cal_month = st.selectbox(T("life_month"), list(range(1, 13)),
-                        index=initial_cal_month - 1, key=prefix + "month")
-                first_month = (int(first_year) - start_year) * 12 + int(cal_month)
-                with d:
-                    duration = st.number_input(T("life_duration"), min_value=1, max_value=720,
-                        value=max(1, int(draft["duration_months"])), step=1, key=prefix + "duration")
-                a, b = st.columns(2, wrap=True)
-                amount_step = 100_000.0 if currency == "VND" else 100.0
-                with a:
-                    extra = st.number_input(T("life_extra"), min_value=0.0,
-                        value=float(draft["monthly_expense"]), step=amount_step,
-                        help=T("life_extra_help"), key=prefix + "expense")
-                with b:
-                    income_change = st.number_input(T("life_income_change"),
-                        value=float(draft["monthly_income_change"]), step=amount_step,
-                        help=T("life_income_change_help"), key=prefix + "income")
-                upfront = st.number_input(T("life_upfront"), min_value=0.0,
-                    value=float(draft["upfront_cost"]), step=amount_step,
-                    help=T("life_upfront_help"), key=prefix + "upfront")
-                draft.update(category=category, label=label, first_month=first_month,
-                             duration_months=int(duration), monthly_expense=extra,
-                             monthly_income_change=income_change, upfront_cost=upfront)
-                net_cost = upfront + int(duration) * (extra - income_change)
-                st.caption(T("life_total", value=money(net_cost, currency)))
+                    a, b = st.columns(2, wrap=True)
+                    with a:
+                        category = st.selectbox(T("life_type"), CATEGORIES,
+                            index=CATEGORIES.index(draft["category"]), key=prefix + "category",
+                            format_func=lambda value: category_label(LANG, value))
+                    with b:
+                        label = st.text_input(T("life_label"), value=draft["label"],
+                                              key=prefix + "label", placeholder=T("life_label_hint"))
+                    y, m, d = st.columns(3, wrap=True)
+                    with y:
+                        first_year = st.number_input(T("life_year"), min_value=start_year,
+                            max_value=start_year + years - 1, value=initial_year, step=1, key=prefix + "year")
+                    with m:
+                        cal_month = st.selectbox(T("life_month"), list(range(1, 13)),
+                            index=initial_cal_month - 1, key=prefix + "month")
+                    first_month = (int(first_year) - start_year) * 12 + int(cal_month)
+                    with d:
+                        duration = st.number_input(T("life_duration"), min_value=1, max_value=720,
+                            value=max(1, int(draft["duration_months"])), step=1, key=prefix + "duration")
+                    a, b = st.columns(2, wrap=True)
+                    amount_step = 100_000.0 if currency == "VND" else 100.0
+                    with a:
+                        extra = st.number_input(T("life_extra"), min_value=0.0,
+                            value=float(draft["monthly_expense"]), step=amount_step,
+                            help=T("life_extra_help"), key=prefix + "expense")
+                    with b:
+                        income_change = st.number_input(T("life_income_change"),
+                            value=float(draft["monthly_income_change"]), step=amount_step,
+                            help=T("life_income_change_help"), key=prefix + "income")
+                    upfront = st.number_input(T("life_upfront"), min_value=0.0,
+                        value=float(draft["upfront_cost"]), step=amount_step,
+                        help=T("life_upfront_help"), key=prefix + "upfront")
+                    draft.update(category=category, label=label, first_month=first_month,
+                                 duration_months=int(duration), monthly_expense=extra,
+                                 monthly_income_change=income_change, upfront_cost=upfront)
+                    net_cost = upfront + int(duration) * (extra - income_change)
+                    st.caption(T("life_total", value=money(net_cost, currency)))
         st.caption(T("life_summary"))
     return tuple(LifeEvent(category=e["category"], label=e["label"].strip(),
                     first_month=e["first_month"], duration_months=e["duration_months"],

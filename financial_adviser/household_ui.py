@@ -14,7 +14,7 @@ from .households import (AdultBudget, ChildBudget, DependentBudget,
 _COPY = {
 "fr": {
 "title": "Composition du foyer et dépenses selon l'âge", "intro": "Planifiez les changements de coût des enfants et les revenus/dépenses des adultes. Ces profils sont facultatifs, entièrement modifiables et distincts des événements ponctuels.",
-"child_title": "Enfants", "dependent_title": "Autres personnes à charge", "add_dependent": "Ajouter une personne à charge", "dependent_empty": "Aucun autre proche à charge.", "dependent_label": "Proche {n}", "dependent_relation": "Lien", "dependent_parent": "Parent âgé", "dependent_adult_relative": "Adulte dépendant / autre membre de la famille", "dependent_partner": "Conjoint ou partenaire à charge", "dependent_other": "Autre proche", "dependent_start": "Année de début", "dependent_month": "Mois", "dependent_duration": "Durée (mois)", "dependent_support": "Soutien mensuel", "dependent_care": "Soins / accompagnement mensuels", "dependent_included": "Déjà inclus dans les dépenses actuelles", "dependent_hint": "Hypothèses de dépenses déclarées : aucune dépendance médicale ni prestation publique n’est prédite.", "dependent_cost": "Dépense mensuelle : {value}", "dependent_summary": "{relation} · dès {year}-{month:02d} · {duration} mois", "card_remove_help": "Supprimer cette fiche",, "child_details": "Enfant {n} · Modifier / réduire les détails", "adult_details": "Adulte {n} · Modifier / réduire les détails", "adult_title": "Adultes, âge et retraite", "add_child": "Ajouter un enfant", "add_adult": "Ajouter un adulte", "remove": "Supprimer", "empty_children": "Aucun enfant suivi par âge.", "empty_adults": "Aucun adulte suivi par âge.",
+"child_title": "Enfants", "dependent_title": "Autres personnes à charge", "add_dependent": "Ajouter une personne à charge", "dependent_empty": "Aucun autre proche à charge.", "dependent_label": "Proche {n}", "dependent_relation": "Lien", "dependent_parent": "Parent âgé", "dependent_adult_relative": "Adulte dépendant / autre membre de la famille", "dependent_partner": "Conjoint ou partenaire à charge", "dependent_other": "Autre proche", "dependent_start": "Année de début", "dependent_month": "Mois", "dependent_duration": "Durée (mois)", "dependent_support": "Soutien mensuel", "dependent_care": "Soins / accompagnement mensuels", "dependent_included": "Déjà inclus dans les dépenses actuelles", "dependent_hint": "Hypothèses de dépenses déclarées : aucune dépendance médicale ni prestation publique n’est prédite.", "dependent_cost": "Dépense mensuelle : {value}", "dependent_summary": "{relation} · dès {year}-{month:02d} · {duration} mois", "card_remove_help": "Supprimer cette fiche", "child_details": "Enfant {n} · Modifier / réduire les détails", "adult_details": "Adulte {n} · Modifier / réduire les détails", "adult_title": "Adultes, âge et retraite", "add_child": "Ajouter un enfant", "add_adult": "Ajouter un adulte", "remove": "Supprimer", "empty_children": "Aucun enfant suivi par âge.", "empty_adults": "Aucun adulte suivi par âge.",
 "example_warning": "Les montants initiaux proposés sont de simples EXEMPLES proportionnels à votre budget, non des médianes officielles ni une estimation des besoins de l'enfant.",
 "child_name": "Nom ou repère", "adult_name": "Nom ou repère", "child_label": "Enfant {n}", "adult_label": "Adulte {n}",
 "child_age": "Âge au début", "child_age_help": "Âge de l’enfant au premier mois de prise en charge.", "arrival_year": "Année de début", "arrival_month": "Mois de début", "end_age": "Âge de fin", "end_age_help": "Âge auquel le soutien financier prend fin (exclusif).", "child_summary": "Début : {age} ans · {year}-{month:02d} · Soutien jusqu’à {end} ans", "adult_summary": "{age} ans · Revenu du foyer : {share:g} % · Retraite : {retire} ans",
@@ -27,7 +27,7 @@ _COPY = {
 },
 "en": {
 "title": "Household members and age-related expenses", "intro": "Model how children's costs and adults' income and expenses change over time. Profiles are optional, fully editable, and separate from one-off events.",
-"child_title": "Children", "dependent_title": "Other dependents", "add_dependent": "Add another dependent", "dependent_empty": "No other dependents.", "dependent_label": "Dependent {n}", "dependent_relation": "Relationship", "dependent_parent": "Older parent", "dependent_adult_relative": "Dependent adult / another family member", "dependent_partner": "Dependent partner", "dependent_other": "Other relative", "dependent_start": "Start year", "dependent_month": "Month", "dependent_duration": "Duration (months)", "dependent_support": "Monthly support", "dependent_care": "Monthly care costs", "dependent_included": "Already included in current monthly expenses", "dependent_hint": "User-entered cost assumptions; no medical outcome or public benefits are predicted.", "dependent_cost": "Monthly cost: {value}", "dependent_summary": "{relation} · from {year}-{month:02d} · {duration} months", "card_remove_help": "Remove this card",, "child_details": "Child {n} · Edit / collapse details", "adult_details": "Adult {n} · Edit / collapse details", "adult_title": "Adults, age and retirement", "add_child": "Add a child", "add_adult": "Add an adult", "remove": "Remove", "empty_children": "No age-based child profiles.", "empty_adults": "No age-based adult profiles.",
+"child_title": "Children", "dependent_title": "Other dependents", "add_dependent": "Add another dependent", "dependent_empty": "No other dependents.", "dependent_label": "Dependent {n}", "dependent_relation": "Relationship", "dependent_parent": "Older parent", "dependent_adult_relative": "Dependent adult / another family member", "dependent_partner": "Dependent partner", "dependent_other": "Other relative", "dependent_start": "Start year", "dependent_month": "Month", "dependent_duration": "Duration (months)", "dependent_support": "Monthly support", "dependent_care": "Monthly care costs", "dependent_included": "Already included in current monthly expenses", "dependent_hint": "User-entered cost assumptions; no medical outcome or public benefits are predicted.", "dependent_cost": "Monthly cost: {value}", "dependent_summary": "{relation} · from {year}-{month:02d} · {duration} months", "card_remove_help": "Remove this card", "child_details": "Child {n} · Edit / collapse details", "adult_details": "Adult {n} · Edit / collapse details", "adult_title": "Adults, age and retirement", "add_child": "Add a child", "add_adult": "Add an adult", "remove": "Remove", "empty_children": "No age-based child profiles.", "empty_adults": "No age-based adult profiles.",
 "example_warning": "Suggested initial amounts are ILLUSTRATIVE fractions of your budget, NOT official medians or estimates of actual child needs.",
 "child_name": "Name or label", "adult_name": "Name or label", "child_label": "Child {n}", "adult_label": "Adult {n}",
 "child_age": "Age at start", "child_age_help": "Age at the first month of support.", "arrival_year": "Start year", "arrival_month": "Start month", "end_age": "Support ends at age", "end_age_help": "Exclusive end age of support.", "child_summary": "Starts age {age} · {year}-{month:02d} · Support to age {end}", "adult_summary": "Age {age} · Household income: {share:g}% · Retirement age {retire}",
@@ -40,7 +40,7 @@ _COPY = {
 },
 "vi": {
 "title": "Thành viên gia đình và chi tiêu theo độ tuổi", "intro": "Mô phỏng chi phí nuôi con và thu nhập, chi tiêu của người lớn theo thời gian. Các hồ sơ là tùy chọn, có thể chỉnh sửa, khác với sự kiện phát sinh một lần.",
-"child_title": "Con cái", "dependent_title": "Người phụ thuộc khác", "add_dependent": "Thêm người phụ thuộc", "dependent_empty": "Chưa có người phụ thuộc khác.", "dependent_label": "Người phụ thuộc {n}", "dependent_relation": "Quan hệ", "dependent_parent": "Cha mẹ lớn tuổi", "dependent_adult_relative": "Người lớn phụ thuộc / thân nhân khác", "dependent_partner": "Vợ/chồng hoặc bạn đời phụ thuộc", "dependent_other": "Người thân khác", "dependent_start": "Năm bắt đầu", "dependent_month": "Tháng", "dependent_duration": "Thời gian (tháng)", "dependent_support": "Trợ cấp hàng tháng", "dependent_care": "Chi phí chăm sóc hàng tháng", "dependent_included": "Đã có trong chi tiêu hiện tại", "dependent_hint": "Chi phí do người dùng nhập; không dự báo tình trạng y tế hay trợ cấp nhà nước.", "dependent_cost": "Chi phí mỗi tháng: {value}", "dependent_summary": "{relation} · từ {year}-{month:02d} · {duration} tháng", "card_remove_help": "Xóa thẻ này",, "child_details": "Con {n} · Sửa / thu gọn chi tiết", "adult_details": "Người lớn {n} · Sửa / thu gọn chi tiết", "adult_title": "Người lớn, tuổi và hưu trí", "add_child": "Thêm một người con", "add_adult": "Thêm người lớn", "remove": "Xóa", "empty_children": "Chưa có hồ sơ chi phí theo tuổi của con.", "empty_adults": "Chưa có hồ sơ người lớn theo tuổi.",
+"child_title": "Con cái", "dependent_title": "Người phụ thuộc khác", "add_dependent": "Thêm người phụ thuộc", "dependent_empty": "Chưa có người phụ thuộc khác.", "dependent_label": "Người phụ thuộc {n}", "dependent_relation": "Quan hệ", "dependent_parent": "Cha mẹ lớn tuổi", "dependent_adult_relative": "Người lớn phụ thuộc / thân nhân khác", "dependent_partner": "Vợ/chồng hoặc bạn đời phụ thuộc", "dependent_other": "Người thân khác", "dependent_start": "Năm bắt đầu", "dependent_month": "Tháng", "dependent_duration": "Thời gian (tháng)", "dependent_support": "Trợ cấp hàng tháng", "dependent_care": "Chi phí chăm sóc hàng tháng", "dependent_included": "Đã có trong chi tiêu hiện tại", "dependent_hint": "Chi phí do người dùng nhập; không dự báo tình trạng y tế hay trợ cấp nhà nước.", "dependent_cost": "Chi phí mỗi tháng: {value}", "dependent_summary": "{relation} · từ {year}-{month:02d} · {duration} tháng", "card_remove_help": "Xóa thẻ này", "child_details": "Con {n} · Sửa / thu gọn chi tiết", "adult_details": "Người lớn {n} · Sửa / thu gọn chi tiết", "adult_title": "Người lớn, tuổi và hưu trí", "add_child": "Thêm một người con", "add_adult": "Thêm người lớn", "remove": "Xóa", "empty_children": "Chưa có hồ sơ chi phí theo tuổi của con.", "empty_adults": "Chưa có hồ sơ người lớn theo tuổi.",
 "example_warning": "Các khoản đề xuất chỉ là VÍ DỤ giả định theo tỷ lệ ngân sách của bạn, KHÔNG phải số trung vị chính thức hay dự báo chi phí nuôi con.",
 "child_name": "Tên hoặc nhãn", "adult_name": "Tên hoặc nhãn", "child_label": "Con {n}", "adult_label": "Người lớn {n}",
 "child_age": "Tuổi lúc bắt đầu", "child_age_help": "Tuổi tại tháng đầu tiên bắt đầu chu cấp.", "arrival_year": "Năm bắt đầu", "arrival_month": "Tháng bắt đầu", "end_age": "Tuổi ngừng chu cấp", "end_age_help": "Không bao gồm tuổi kết thúc chu cấp.", "child_summary": "Bắt đầu {age} tuổi · {year}-{month:02d} · Chu cấp đến {end} tuổi", "adult_summary": "{age} tuổi · Thu nhập hộ: {share:g}% · Nghỉ hưu {retire} tuổi",
@@ -115,52 +115,52 @@ def render_household(plan, years: int, start_year: int, monthly_expenses: float,
                             del st.session_state[old_key]
                     st.rerun()
                 if is_open:
-                label = st.text_input(_h(language, "child_name"), value=draft["label"], key=key + "label")
-                # Align fields by semantic row, not by uneven vertical stacks.
-                a, b = st.columns(2, wrap=True)
-                with a:
-                    age = int(st.number_input(_h(language, "child_age"), 0, 29,
-                        int(draft["age_years"]), help=_h(language, "child_age_help"),
-                        key=key + "age"))
-                with b:
-                    support = int(st.number_input(_h(language, "end_age"), min_value=age + 1,
-                        max_value=30, value=max(age + 1, int(draft["support_until_age"])),
-                        help=_h(language, "end_age_help"), key=key + "support"))
-                a, b = st.columns(2, wrap=True)
-                original_month = int(draft["arrival_month"])
-                with a:
-                    arrival_year = int(st.number_input(_h(language, "arrival_year"), start_year,
-                        start_year + years - 1, min(start_year + (original_month - 1)//12, start_year + years - 1),
-                        key=key + "year"))
-                with b:
-                    month = st.selectbox(_h(language, "arrival_month"), list(range(1, 13)),
-                        index=(original_month - 1)%12, key=key + "month")
-                arrival_month = (arrival_year - start_year) * 12 + int(month)
-                if arrival_month + (support - age) * 12 - 1 > years * 12:
-                    st.info(_h(language, "horizon_short"))
-                if arrival_month == 1:
-                    included = st.checkbox(_h(language, "existing"), value=bool(draft["included_in_baseline"]),
-                        help=_h(language, "existing_hint"), key=key + "included")
-                else:
-                    included = False
-                    st.caption(_h(language, "existing_future"))
-                st.caption(_h(language, "monthly"))
-                living, care = [], []
-                for j, (start, end) in enumerate(CHILD_AGE_BANDS):
-                    st.markdown("*" + _h(language, "age_band", start=start, end=end - 1) + "*")
+                    label = st.text_input(_h(language, "child_name"), value=draft["label"], key=key + "label")
+                    # Align fields by semantic row, not by uneven vertical stacks.
                     a, b = st.columns(2, wrap=True)
                     with a:
-                        living.append(float(st.number_input(_h(language, "living"), min_value=0.,
-                            value=float(draft["living"][j]), step=step,
-                            help=_h(language, "living_help"), key=key+f"living_{j}")))
+                        age = int(st.number_input(_h(language, "child_age"), 0, 29,
+                            int(draft["age_years"]), help=_h(language, "child_age_help"),
+                            key=key + "age"))
                     with b:
-                        care.append(float(st.number_input(_h(language, "care"), min_value=0.,
-                            value=float(draft["care_education"][j]), step=step,
-                            help=_h(language, "care_help"), key=key+f"care_{j}")))
-                draft.update(label=label, age_years=age, arrival_month=arrival_month,
-                    support_until_age=support, included_in_baseline=included,
-                    living=tuple(living), care_education=tuple(care))
-                st.caption(_h(language, "end_note"))
+                        support = int(st.number_input(_h(language, "end_age"), min_value=age + 1,
+                            max_value=30, value=max(age + 1, int(draft["support_until_age"])),
+                            help=_h(language, "end_age_help"), key=key + "support"))
+                    a, b = st.columns(2, wrap=True)
+                    original_month = int(draft["arrival_month"])
+                    with a:
+                        arrival_year = int(st.number_input(_h(language, "arrival_year"), start_year,
+                            start_year + years - 1, min(start_year + (original_month - 1)//12, start_year + years - 1),
+                            key=key + "year"))
+                    with b:
+                        month = st.selectbox(_h(language, "arrival_month"), list(range(1, 13)),
+                            index=(original_month - 1)%12, key=key + "month")
+                    arrival_month = (arrival_year - start_year) * 12 + int(month)
+                    if arrival_month + (support - age) * 12 - 1 > years * 12:
+                        st.info(_h(language, "horizon_short"))
+                    if arrival_month == 1:
+                        included = st.checkbox(_h(language, "existing"), value=bool(draft["included_in_baseline"]),
+                            help=_h(language, "existing_hint"), key=key + "included")
+                    else:
+                        included = False
+                        st.caption(_h(language, "existing_future"))
+                    st.caption(_h(language, "monthly"))
+                    living, care = [], []
+                    for j, (start, end) in enumerate(CHILD_AGE_BANDS):
+                        st.markdown("*" + _h(language, "age_band", start=start, end=end - 1) + "*")
+                        a, b = st.columns(2, wrap=True)
+                        with a:
+                            living.append(float(st.number_input(_h(language, "living"), min_value=0.,
+                                value=float(draft["living"][j]), step=step,
+                                help=_h(language, "living_help"), key=key+f"living_{j}")))
+                        with b:
+                            care.append(float(st.number_input(_h(language, "care"), min_value=0.,
+                                value=float(draft["care_education"][j]), step=step,
+                                help=_h(language, "care_help"), key=key+f"care_{j}")))
+                    draft.update(label=label, age_years=age, arrival_month=arrival_month,
+                        support_until_age=support, included_in_baseline=included,
+                        living=tuple(living), care_education=tuple(care))
+                    st.caption(_h(language, "end_note"))
         st.divider()
         st.markdown("**" + _h(language, "dependent_title") + "**")
         st.caption(_h(language, "dependent_hint"))
@@ -274,39 +274,39 @@ def render_household(plan, years: int, start_year: int, monthly_expenses: float,
                             del st.session_state[old_key]
                     st.rerun()
                 if is_open:
-                label = st.text_input(_h(language, "adult_name"), value=draft["label"], key=key+"label")
-                a, b = st.columns(2, wrap=True)
-                with a:
-                    age = int(st.number_input(_h(language, "adult_age"), min_value=18, max_value=120,
-                        value=int(draft["age_years"]), key=key + "age"))
-                with b:
-                    income_share = float(st.number_input(_h(language, "income_share"), min_value=0.,
-                        max_value=100., value=float(draft["income_share_pct"]), step=5., help=_h(language, "income_share_help"), key=key+"share"))
-                a, b = st.columns(2, wrap=True)
-                with a:
-                    retirement_age = int(st.number_input(_h(language, "retirement_age"), min_value=18,
-                        max_value=100, value=int(draft["retirement_age"]), help=_h(language, "retirement_age_help"), key=key+"retirement"))
-                with b:
-                    replace_pct = float(st.number_input(_h(language, "replacement"), min_value=0.,
-                        max_value=200., value=float(draft["retirement_replacement_pct"]), step=5.,
-                        help=_h(language, "replacement_help"), key=key+"replace"))
-                if age >= retirement_age:
-                    st.info(_h(language, "retired_note"))
-                change = float(st.number_input(_h(language, "retirement_spending"),
-                    value=float(draft["retirement_expense_change"]), step=step,
-                    key=key+"retirement_spending"))
-                already_included = st.checkbox(_h(language, "adult_baseline"),
-                    value=bool(draft["included_in_baseline"]), key=key + "included")
-                st.caption(_h(language, "monthly"))
-                cost = []
-                for j, (start, end) in enumerate(ADULT_AGE_BANDS):
-                    cost.append(float(st.number_input(_h(language,"adult_stage",start=start,end=end-1),
-                        min_value=0., value=float(draft["expenses_by_age"][j]), step=step,
-                        key=key+f"stage_{j}")))
-                draft.update(label=label, age_years=age, retirement_age=retirement_age,
-                    income_share_pct=income_share, retirement_replacement_pct=replace_pct,
-                    retirement_expense_change=change, expenses_by_age=tuple(cost),
-                    included_in_baseline=already_included)
+                    label = st.text_input(_h(language, "adult_name"), value=draft["label"], key=key+"label")
+                    a, b = st.columns(2, wrap=True)
+                    with a:
+                        age = int(st.number_input(_h(language, "adult_age"), min_value=18, max_value=120,
+                            value=int(draft["age_years"]), key=key + "age"))
+                    with b:
+                        income_share = float(st.number_input(_h(language, "income_share"), min_value=0.,
+                            max_value=100., value=float(draft["income_share_pct"]), step=5., help=_h(language, "income_share_help"), key=key+"share"))
+                    a, b = st.columns(2, wrap=True)
+                    with a:
+                        retirement_age = int(st.number_input(_h(language, "retirement_age"), min_value=18,
+                            max_value=100, value=int(draft["retirement_age"]), help=_h(language, "retirement_age_help"), key=key+"retirement"))
+                    with b:
+                        replace_pct = float(st.number_input(_h(language, "replacement"), min_value=0.,
+                            max_value=200., value=float(draft["retirement_replacement_pct"]), step=5.,
+                            help=_h(language, "replacement_help"), key=key+"replace"))
+                    if age >= retirement_age:
+                        st.info(_h(language, "retired_note"))
+                    change = float(st.number_input(_h(language, "retirement_spending"),
+                        value=float(draft["retirement_expense_change"]), step=step,
+                        key=key+"retirement_spending"))
+                    already_included = st.checkbox(_h(language, "adult_baseline"),
+                        value=bool(draft["included_in_baseline"]), key=key + "included")
+                    st.caption(_h(language, "monthly"))
+                    cost = []
+                    for j, (start, end) in enumerate(ADULT_AGE_BANDS):
+                        cost.append(float(st.number_input(_h(language,"adult_stage",start=start,end=end-1),
+                            min_value=0., value=float(draft["expenses_by_age"][j]), step=step,
+                            key=key+f"stage_{j}")))
+                    draft.update(label=label, age_years=age, retirement_age=retirement_age,
+                        income_share_pct=income_share, retirement_replacement_pct=replace_pct,
+                        retirement_expense_change=change, expenses_by_age=tuple(cost),
+                        included_in_baseline=already_included)
         if sum(d["income_share_pct"] for d in st.session_state.household_adults) > 100.:
             st.error(_h(language, "share_warning"))
         already_included = 0.0
