@@ -91,12 +91,21 @@ def project(plan: Plan) -> pd.DataFrame:
         invested[m] = (invested[m - 1] + plan.monthly_investment) * (1 + ri)
     periods = np.arange(n + 1)
     factor = (1 + inflation) ** periods
-    nominal = cash + invested - loan
+    # Assets entered explicitly remain distinct from cash and invested capital.
+    # A loan never creates property automatically; appreciation is non-cash.
+    property_value = plan.initial_property_value * (1 + monthly_rate(plan.property_growth_pct)) ** periods
+    other_assets = np.full(n + 1, plan.initial_other_assets, dtype=float)
+    illiquid_assets = property_value + other_assets
+    nominal = cash + invested + illiquid_assets - loan
     return pd.DataFrame({
         "month": periods,
         "year": plan.start_year + periods / 12.0,
         "cash": cash,
         "investments": invested,
+        "property_value": property_value,
+        "other_assets": other_assets,
+        "illiquid_assets": illiquid_assets,
+        "gross_assets": cash + invested + illiquid_assets,
         "loan_balance": loan,
         "net_worth": nominal,
         "net_worth_real": nominal / factor,
@@ -143,7 +152,8 @@ def monte_carlo(plan: Plan, n_paths: int = 1000, seed: int = 42) -> MonteCarloRe
     invested = np.full(n_paths, plan.initial_investments, dtype=float)
     outcomes = np.empty((n + 1, n_paths))
     income, expenses, events, recurring, loan, payments = _drivers(plan)
-    outcomes[0] = cash + invested - loan[0]
+    outcomes[0] = (cash + invested + plan.initial_property_value
+                   + plan.initial_other_assets - loan[0])
     rc = monthly_rate(plan.cash_return_pct)
     mean_return = monthly_rate(plan.investment_return_pct)
     std_return = plan.investment_volatility_pct / 100.0 / sqrt(12.0)
@@ -154,7 +164,9 @@ def monte_carlo(plan: Plan, n_paths: int = 1000, seed: int = 42) -> MonteCarloRe
         returns = np.maximum(rng.normal(mean_return, std_return, size=n_paths), -0.99)
         invested = (invested + plan.monthly_investment) * (1 + returns)
         negative_cash |= cash < 0
-        outcomes[m] = cash + invested - loan[m]
+        property_value = plan.initial_property_value * (
+            (1 + monthly_rate(plan.property_growth_pct)) ** m)
+        outcomes[m] = cash + invested + property_value + plan.initial_other_assets - loan[m]
     q10, q50, q90 = np.quantile(outcomes, [0.1, 0.5, 0.9], axis=1)
     return MonteCarloResult(
         months=np.arange(n + 1), p10=q10, p50=q50, p90=q90,
