@@ -205,7 +205,7 @@ Các tương quan kinh tế và tình huống cá nhân mới được phản á
 
 ### Ba cách phân tích sự bất định
 
-**Phân tích độ nhạy:** so sánh lợi suất đầu tư giả định ở mức cơ sở với một mức thấp và một mức cao. Chênh lệch hai **điểm phần trăm** có thể là so sánh 5% với 3% và 7% mỗi năm. Không có xác suất riêng cho từng trường hợp.
+**Phân tích độ nhạy:** so sánh lợi suất đầu tư giả định ở mức cơ sở với một mức thấp và một mức cao. Chênh lệch hai **điểm phần trăm** có thể là so sánh 5% với 3% và 7% mỗi năm. Không có xác suất riêng cho từng trường hợp. Phần **Hiểu tác động của các giả định** cho phép thay đổi **một biến mỗi lần** trong cùng thời hạn: +10% với số tiền tháng khác 0 và +1 điểm phần trăm với tỷ lệ năm (hoặc −1 điểm nếu đã đạt giới hạn trên). Công cụ thể hiện chênh lệch tài sản ròng danh nghĩa, tài sản thực cuối kỳ và tiền mặt thấp nhất. Mức thay đổi của số tiền và tỷ lệ **không được chuẩn hóa tương đương**; thanh dài hơn không chứng minh biến đó quan trọng hơn về bản chất hay có xác suất cao hơn. Các giả định còn lại giữ nguyên.
 
 **Kiểm tra sức chịu đựng:** áp dụng **một biến cố bất lợi mỗi lần** (mất thu nhập tạm thời, chi phí lớn, hỗ trợ người thân...) lên kịch bản cơ sở. Xem cả thay đổi tài sản cuối kỳ **lẫn** tiền mặt thấp nhất. Những biến cố này không được cộng dồn với nhau hay tự thêm vào kịch bản hiện tại. Người dùng có thể chọn tháng bắt đầu và so sánh dòng tiền mặt của kịch bản cơ sở với cú sốc, tháng đầu tiên tiền mặt âm, số tháng thiếu hụt và mức thiếu hụt lớn nhất. Chi phí cú sốc chỉ là ví dụ suy ra từ ngân sách đã nhập. Nếu kịch bản cơ sở đã thiếu hụt thì điều này được thông báo riêng. **Thiếu hụt trong mô phỏng không có nghĩa là có sẵn thấu chi hay tín dụng.**
 

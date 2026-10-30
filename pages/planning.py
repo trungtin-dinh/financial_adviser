@@ -13,8 +13,8 @@ from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
 from financial_adviser.charts import (
     DEFAULT_WEALTH_SERIES, WEALTH_SERIES, comparison_figure, event_markers,
-    household_figure, overlay_event_markers, resilience_figure,
-    stress_liquidity_figure, uncertainty_figure, wealth_figure,
+    assumption_sensitivity_figure, household_figure, overlay_event_markers,
+    resilience_figure, stress_liquidity_figure, uncertainty_figure, wealth_figure,
 )
 from financial_adviser.comparisons import build_comparisons, minimum_comparison_years
 from financial_adviser.io import dump_plan, load_plan
@@ -24,6 +24,7 @@ from financial_adviser.insights import summarize_projection
 from financial_adviser.resilience import analyze_liquidity
 from financial_adviser.session_compat import normalize_plan
 from financial_adviser.scenarios import PRESET_IDS, evaluate_stresses, proposed_event
+from financial_adviser.sensitivity import analyze_assumptions
 from financial_adviser.ui_i18n import category_label, canonical_category, t
 
 LANG = st.session_state.get("language_choice", "fr")
@@ -81,7 +82,10 @@ def reset_inputs() -> None:
     st.session_state.pop("goal_query", None)
     st.session_state.pop("goal_target_input", None)
     st.session_state.pop("goal_horizon_input", None)
-    for key in ("comparison_horizon", "_comparison_source", "chart_show_events"):
+    for key in (
+        "comparison_horizon", "_comparison_source", "chart_show_events",
+        "_sensitivity_cache", "sensitivity_metric", "sensitivity_show_table",
+    ):
         st.session_state.pop(key, None)
     # Clearing a widget after it has been instantiated may leave its old
     # browser-side value until the next client update. Rehydrate on the next
@@ -531,6 +535,78 @@ def render_comparison_tab(base: Plan) -> None:
         } for case in comparisons]
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
     st.caption(T("compare_horizon_disclaimer"))
+
+    with st.expander(T("sens_title"), expanded=False):
+        st.caption(T("sens_intro"))
+        comparison_plan = replace(base, years=int(horizon))
+        cache = st.session_state.get("_sensitivity_cache")
+        if cache is not None and cache["plan"] != comparison_plan:
+            st.session_state.pop("_sensitivity_cache", None)
+            cache = None
+        if st.button(
+            T("sens_run"), key="sensitivity_run", width="stretch",
+        ):
+            with st.spinner(T("sens_calculating")):
+                report = analyze_assumptions(base, int(horizon))
+            st.session_state["_sensitivity_cache"] = {
+                "plan": comparison_plan, "report": report,
+            }
+            cache = st.session_state["_sensitivity_cache"]
+        if cache is None:
+            st.info(T("sens_prompt"))
+        else:
+            report = cache["report"]
+            if not report.impacts:
+                st.info(T("sens_no_inputs"))
+            else:
+                outcome = st.segmented_control(
+                    T("sens_outcome"), [
+                        "final_real_change", "final_nominal_change",
+                        "minimum_cash_change",
+                    ],
+                    format_func=lambda key: T("sens_metric_" + key),
+                    key="sensitivity_metric",
+                    default="final_real_change", required=True,
+                    width="stretch",
+                )
+                st.plotly_chart(
+                    assumption_sensitivity_figure(
+                        report, outcome, base.currency, T),
+                    width="stretch", key="assumption_sensitivity_chart",
+                    config={"displaylogo": False, "scrollZoom": False},
+                )
+                st.caption(T("sens_chart_help"))
+                st.caption(T("sens_scope", years=horizon))
+                if st.checkbox(
+                    T("sens_details_toggle"), key="sensitivity_show_table",
+                    value=False,
+                ):
+                    rows = []
+                    for item in report.impacts:
+                        if item.kind == "amount":
+                            before = money(item.baseline_value, base.currency)
+                            after = money(item.tested_value, base.currency)
+                            variation = f"{item.change_size:+g}" + T("sens_pct")
+                        else:
+                            before = f"{item.baseline_value:g}" + T("sens_pct")
+                            after = f"{item.tested_value:g}" + T("sens_pct")
+                            variation = f"{item.change_size:+g}" + T("sens_pp")
+                        rows.append({
+                            T("sens_col_input"): T("sens_field_" + item.field),
+                            T("sens_col_change"): variation,
+                            T("sens_col_base"): before,
+                            T("sens_col_tested"): after,
+                            T("sens_metric_final_nominal_change"):
+                                money(item.final_nominal_change, base.currency),
+                            T("sens_metric_final_real_change"):
+                                money(item.final_real_change, base.currency),
+                            T("sens_metric_minimum_cash_change"):
+                                money(item.minimum_cash_change, base.currency),
+                        })
+                    st.dataframe(
+                        pd.DataFrame(rows), hide_index=True, width="stretch",
+                    )
+                st.caption(T("sens_limitations"))
 
     st.divider()
     st.subheader(T("stress_title"))

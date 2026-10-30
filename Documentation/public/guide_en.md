@@ -205,7 +205,7 @@ Economic dependencies and personal circumstances are only partially represented.
 
 ### Three different ways to explore uncertainty
 
-**Sensitivity:** compare the central investment-return assumption with a lower and a higher one. A two-percentage-point change could mean testing 5% against 3% and 7% annually. These cases have no assigned likelihood.
+**Sensitivity:** compare the central investment-return assumption with a lower and a higher one. A two-percentage-point change could mean testing 5% against 3% and 7% annually. These cases have no assigned likelihood. The **Understand the impact of assumptions** panel also changes **one input at a time**, keeping a common horizon: +10% for a nonzero monthly amount and +1 percentage point for an annual rate (or −1 point at its maximum). Compare the differences in final nominal net worth, final purchasing-power-adjusted net worth and minimum cash. Amount and rate changes are **not standardized against one another**: a longer bar is not evidence of greater intrinsic importance or probability. All other scenario inputs remain fixed.
 
 **Stress tests:** apply **one selected shock at a time** (temporary lost income, unexpected expense, help for a relative…) to the baseline. Examine both the change in final net worth **and** the lowest cash balance. These tests are not combined with each other or silently added to the current scenario. Set a start month and compare the baseline and stress cash trajectories, the first deficit month, the duration of negative cash and the scenario's greatest funding gap. Shock costs are illustrative amounts derived from the entered budget. An already-negative baseline is identified separately. **A simulated shortfall does not imply access to overdraft or credit.**
 

@@ -174,6 +174,24 @@ with sync_playwright() as pw:
             assert stress_start.input_value() == "4", (
                 f"Stress start month did not update: {lang}/{device}")
             page.screenshot(path=str(OUT / f"{lang}_{device}_stress_controls.png"), full_page=True)
+            # The explanations are opt-in and the result selector appears after
+            # a genuine sensitivity calculation.
+            sens_title = {
+                "fr": "Comprendre l'effet des hypothèses",
+                "vi": "Hiểu tác động của các giả định",
+            }[lang]
+            sens_run = {
+                "fr": "Calculer les effets des hypothèses",
+                "vi": "Tính tác động của các giả định",
+            }[lang]
+            sens_outcome = {
+                "fr": "Conséquence mesurée",
+                "vi": "Kết quả cần so sánh",
+            }[lang]
+            page.get_by_text(sens_title, exact=True).first.click(timeout=15000)
+            page.get_by_role("button", name=sens_run, exact=True).first.click(timeout=30000)
+            page.get_by_text(sens_outcome, exact=True).first.wait_for(timeout=30000)
+            page.screenshot(path=str(OUT / f"{lang}_{device}_sensitivity.png"), full_page=True)
             bb, rb = basic_heading.bounding_box(), results_heading.bounding_box()
             assert bb and rb
             if width >= 1024:

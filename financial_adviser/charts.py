@@ -348,3 +348,53 @@ def resilience_figure(
             line=dict(color="#D55E00", dash="dot", width=1.2),
         )
     return fig
+
+
+
+SENSITIVITY_METRICS = (
+    "final_real_change", "final_nominal_change", "minimum_cash_change",
+)
+
+
+def assumption_sensitivity_figure(
+    report: object, metric: str, currency: str,
+    translate: Callable[[str], str],
+) -> go.Figure:
+    """A signed impact bar chart, not an input-importance ranking.
+
+    Bars represent actual simulated changes versus the same-horizon baseline.
+    Different inputs are perturbed on distinct scales (+10% vs +1pp);
+    therefore bar lengths must not be interpreted as standardized importance.
+    """
+    if metric not in SENSITIVITY_METRICS:
+        raise ValueError("Unsupported sensitivity output")
+    impacts = report.impacts
+    if not impacts:
+        raise ValueError("No meaningful sensitivity perturbations")
+    labels = [
+        translate("sens_field_" + item.field)
+        + (" (" + f"{item.change_size:+g}" +
+           (translate("sens_pct") if item.kind == "amount" else translate("sens_pp")) + ")")
+        for item in impacts
+    ]
+    values = [float(getattr(item, metric)) for item in impacts]
+    fig = go.Figure(go.Bar(
+        x=values, y=labels, orientation="h",
+        marker_color=[
+            "#0072B2" if value > 0 else
+            "#D55E00" if value < 0 else "#7A7A7A"
+            for value in values
+        ],
+        hovertemplate="%{y}<br>%{x:+,.2f} " + currency + "<extra></extra>",
+    ))
+    fig.update_layout(
+        showlegend=False,
+        height=max(370, len(impacts) * 47 + 95),
+        margin=dict(l=8, r=18, t=25, b=50),
+        xaxis=dict(
+            title=translate("sens_axis", currency=currency),
+            zeroline=True, zerolinecolor="#6B7280", zerolinewidth=1.2,
+        ),
+        yaxis=dict(autorange="reversed", automargin=True),
+    )
+    return fig
