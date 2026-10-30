@@ -57,6 +57,9 @@ class Plan:
     years: int = 20
     initial_cash: float = 12000.0
     initial_investments: float = 8000.0
+    initial_property_value: float = 0.0  # existing real estate explicitly entered; not bought by the simulation
+    initial_other_assets: float = 0.0  # existing non-liquid assets; fixed nominal value
+    property_growth_pct: float = 0.0  # assumed annual change in property value, not income
     monthly_income: float = 3000.0  # already net of salary tax and contributions
     monthly_expenses: float = 2000.0  # excludes loan repayment and transfers to investments
     monthly_investment: float = 400.0  # transfer from cash; not additional income
@@ -88,13 +91,14 @@ class Plan:
         for name, value in values.items():
             if isinstance(value, (int, float)) and not math.isfinite(value):
                 raise ValueError(f"{name} must be finite.")
-        for key in ("initial_cash", "initial_investments", "monthly_income", "monthly_expenses",
+        for key in ("initial_cash", "initial_investments", "initial_property_value",
+                    "initial_other_assets", "monthly_income", "monthly_expenses",
                     "monthly_investment", "loan_balance", "goal"):
             if getattr(self, key) < 0:
                 raise ValueError(f"{key} must be non-negative.")
         if not 0 <= self.investment_volatility_pct <= 100:
             raise ValueError("Investment volatility must be in [0, 100]%.")
-        for key in ("cash_return_pct", "investment_return_pct", "inflation_pct",
+        for key in ("cash_return_pct", "investment_return_pct", "property_growth_pct", "inflation_pct",
                     "income_growth_pct", "expense_growth_pct"):
             if not -99 < getattr(self, key) <= 200:
                 raise ValueError(f"{key} must be in (-99, 200]%.")
