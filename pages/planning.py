@@ -10,6 +10,7 @@ import streamlit as st
 
 from financial_adviser import __version__
 from financial_adviser.engine import loan_payment, monte_carlo, project, solve_goal
+from financial_adviser.comparisons import minimum_comparison_years
 from financial_adviser.custom_comparison import (
     CUSTOM_AMOUNT_FIELDS, CUSTOM_RATE_FIELDS, CUSTOM_INTEGER_FIELDS,
 )
@@ -590,10 +591,8 @@ if st.session_state.result is not None:
                     target = st.number_input(T("goal_target"), min_value=0.0, value=float(reference.goal),
                                               step=1000.0, key="goal_target_input")
                 with b:
-                    last_event = max([0] + [e.first_month + e.duration_months - 1 for e in reference.life_events]
-                                     + [e.month for e in reference.one_offs]
-                                     + [c.arrival_month for c in reference.children])
-                    min_years = max(1, (last_event + 11) // 12)
+                    # Preserve all dated obligations, including non-child dependent support.
+                    min_years = minimum_comparison_years(reference)
                     horizon = st.number_input(T("goal_years"), min_value=min_years, max_value=60, value=max(min_years, reference.years), step=1,
                                         key="goal_horizon_input")
                 if st.button(T("goal_calculate"), type="primary", width="stretch"):
