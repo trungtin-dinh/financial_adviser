@@ -17,7 +17,7 @@ Elle est conçue pour être accessible sans connaissances avancées en finance :
 
 ## Fonctionnalités
 
-- **Projection du patrimoine** : évolution mensuelle de la trésorerie, des placements, de la dette et du patrimoine net nominal ou corrigé de l'inflation.
+- **Projection du patrimoine** : évolution mensuelle de la trésorerie, des placements, des biens immobiliers et autres actifs non liquides déclarés, des dettes et du patrimoine net nominal ou corrigé de l'inflation. La variation de valeur des biens ne constitue pas une rentrée de trésorerie.
 - **Calendrier et échéances récurrentes** : saisie de flux signés mensuels, trimestriels ou annuels, consultation des paiements réellement prévus et des mois de tension, sans supposer de financement automatique des soldes négatifs.
 - **Budget du foyer** : revenus et dépenses du ménage, enfants avec coûts selon l'âge, profils d'adultes et changements hypothétiques à la retraite, ainsi que soutien à d'autres personnes à charge.
 - **Événements de vie** : changements de revenus, dépenses mensuelles supplémentaires et coûts ponctuels avec calendrier et durée.
