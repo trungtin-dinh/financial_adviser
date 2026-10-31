@@ -13,6 +13,7 @@ from financial_adviser.charts import (
     DEFAULT_WEALTH_SERIES, WEALTH_SERIES, event_markers, household_figure,
     overlay_event_markers, resilience_figure, uncertainty_figure, wealth_figure,
 )
+from financial_adviser.formatting import NBSP, format_decimal
 from financial_adviser.insights import summarize_projection
 from financial_adviser.models import Plan
 from financial_adviser.resilience import analyze_liquidity
@@ -127,7 +128,7 @@ def render_result_charts(q: Plan, df: pd.DataFrame, mc: object | None, T, money)
         )
         a, b = st.columns(2, wrap=True)
         a.metric(T("goal_probability"),
-                 f"{mc.probability_goal:.1%}" if q.goal > 0 else T("not_applicable"))
+                 format_decimal(100 * mc.probability_goal, 1, st.session_state.get("language_choice", "fr")) + NBSP + "%" if q.goal > 0 else T("not_applicable"))
         b.metric(T("chart_min_cash"), money(float(df.cash.min()), q.currency))
         st.caption(T("chart_mc_cash_note"))
 

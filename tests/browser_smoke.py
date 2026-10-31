@@ -133,6 +133,9 @@ with sync_playwright() as pw:
                       page.locator("body").inner_text()[-4500:])
                 print("CLIENT ERRORS:", errors)
                 raise
+            # The Run button is far below the results: a recap links back to them.
+            go_to = {"fr": "Voir les résultats", "en": "Go to results", "vi": "Xem kết quả"}[lang]
+            page.get_by_role("link", name=re.compile(re.escape(go_to))).first.wait_for(timeout=15000)
             overview_title = {
                 "fr": "À retenir sur votre projection",
                 "vi": "Những điểm chính từ kết quả dự phóng",

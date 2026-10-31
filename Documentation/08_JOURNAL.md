@@ -1,5 +1,14 @@
 # Journal de décisions et mises à jour
 
+## 2026-10-31 — v0.22.1 : fiabilité des saisies et accès aux résultats
+
+- Validation stricte des types et des montants (≤ 10¹⁵) de tous les champs du scénario ; un horizon décimal, un texte remplacé par un nombre ou un montant géant sont refusés à l'import au lieu de faire planter le calcul ou produire des `NaN`.
+- Flux ponctuels dont la description contient une virgule : export/import corrigé (format CSV).
+- Rechargement complet du paquet au changement de version, sans liste de modules à maintenir.
+- Amortissement des deux prêts factorisé ; résultats identiques au bit près sur 400 scénarios aléatoires.
+- Montants et décimales formatés selon la langue ; récapitulatif et lien « Voir les résultats » sous le bouton de projection.
+- Détails et limites : `31_FIABILITE_ERGONOMIE_V0221.md`.
+
 ## 2026-10-30 — v0.10 : foyer et navigation latérale
 
 - Langue, statut et contexte synthétique du scénario dans la barre latérale ; les saisies financières restent au centre.

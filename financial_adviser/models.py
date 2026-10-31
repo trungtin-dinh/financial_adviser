@@ -2,10 +2,57 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields, is_dataclass
 import math
 
 from .households import AdultBudget, ChildBudget, DependentBudget, validate_household
+
+
+# Largest absolute amount accepted in any monetary field. It is far above any
+# household budget in EUR or VND, and keeps 60-year compounding finite.
+MAX_ABS_AMOUNT = 1e15
+
+
+def _check_field_types(obj: object, path: str = "") -> None:
+    """Reject wrong JSON types before any business rule reads them.
+
+    Annotations are strings (``from __future__ import annotations``). Booleans
+    are refused where numbers are expected, integers where whole months/years
+    are expected, and every number must be finite and below MAX_ABS_AMOUNT.
+    """
+    for spec in fields(obj):
+        value = getattr(obj, spec.name)
+        name = f"{path}{spec.name}"
+        kind = spec.type
+        if kind == "str":
+            if not isinstance(value, str):
+                raise ValueError(f"{name} must be text")
+        elif kind == "bool":
+            if not isinstance(value, bool):
+                raise ValueError(f"{name} must be true or false")
+        elif kind == "int":
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError(f"{name} must be a whole number")
+        elif kind == "float":
+            _check_number(value, name)
+        elif kind == "tuple[float, ...]":
+            if not isinstance(value, (tuple, list)):
+                raise ValueError(f"{name} must be a list of numbers")
+            for item in value:
+                _check_number(item, name)
+        elif isinstance(value, (tuple, list)):
+            for item in value:
+                if is_dataclass(item):
+                    _check_field_types(item, f"{name}.")
+        elif is_dataclass(value):
+            _check_field_types(value, f"{name}.")
+
+
+def _check_number(value: object, name: str) -> None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a number")
+    if not math.isfinite(value) or abs(value) > MAX_ABS_AMOUNT:
+        raise ValueError(f"{name} must be finite and at most {MAX_ABS_AMOUNT:.0e} in absolute value")
 
 
 @dataclass(frozen=True)
@@ -97,6 +144,7 @@ class Plan:
     dependents: tuple[DependentBudget, ...] = field(default_factory=tuple)
 
     def validate(self) -> None:
+        _check_field_types(self)
         if self.country not in {"FR", "VN"}:
             raise ValueError("Unsupported country (FR / VN).")
         if self.currency not in {"EUR", "VND"}:
@@ -154,7 +202,13 @@ class Plan:
                     or not 0 <= purchase.loan_apr_pct <= 100):
                 raise ValueError("Invalid future property purchase financing")
         validate_household(self)
+        if not isinstance(self.one_offs, (list, tuple)) or len(self.one_offs) > 100:
+            raise ValueError("At most 100 one-off cash flows are allowed")
         for event in self.one_offs:
+            if not isinstance(event, OneOff):
+                raise ValueError("Invalid one-off cash flow")
+            if len(event.description) > 120:
+                raise ValueError("One-off description is too long")
             if not isinstance(event.month, int) or not 1 <= event.month <= self.years * 12:
                 raise ValueError("One-off month must be in projection horizon.")
             if not math.isfinite(event.amount):
@@ -190,7 +244,8 @@ class Plan:
                 raise ValueError("Property purchase must be an object")
             data["property_purchase"] = PropertyPurchase(**data["property_purchase"])
         if "life_events" in data:
-            if not isinstance(data["life_events"], (list, tuple)) or len(data["life_events"]) > 100:
+            if (not isinstance(data["life_events"], (list, tuple)) or len(data["life_events"]) > 100
+                    or any(not isinstance(x, dict) for x in data["life_events"])):
                 raise ValueError("life_events must be a list of at most 100 items")
             data["life_events"] = tuple(LifeEvent(**x) for x in data["life_events"])
         if "children" in data:
@@ -221,8 +276,9 @@ class Plan:
                 raise ValueError("Invalid recurring flows list")
             data["recurring_flows"] = tuple(RecurringFlow(**x) for x in data["recurring_flows"])
         if "one_offs" in data:
-            if not isinstance(data["one_offs"], (list, tuple)):
-                raise ValueError("one_offs must be a list.")
+            if (not isinstance(data["one_offs"], (list, tuple)) or len(data["one_offs"]) > 100
+                    or any(not isinstance(x, dict) for x in data["one_offs"])):
+                raise ValueError("one_offs must be a list of at most 100 objects.")
             data["one_offs"] = tuple(OneOff(**x) for x in data["one_offs"])
         plan = cls(**data)
         plan.validate()

@@ -9,7 +9,7 @@ import financial_adviser as pkg
 
 # Streamlit's long-lived worker can keep old imported Python modules during
 # Community Cloud hot deployments. Compare source version on disk to the
-# already imported package, then reload dependent modules in dependency order.
+# already imported package, then drop all of its modules so that the next imports load the new code.
 # The planning page also migrates existing session-state Plan objects.
 disk_version_line = next(
     line for line in (Path(__file__).parent / "financial_adviser" / "__init__.py")
@@ -18,33 +18,12 @@ disk_version_line = next(
 )
 disk_version = ast.literal_eval(disk_version_line.split("=", 1)[1].strip())
 if pkg.__version__ != disk_version:
-    importlib.reload(pkg)
-    for module in (
-        "financial_adviser.households",
-        "financial_adviser.models",
-        "financial_adviser.engine",
-        "financial_adviser.cashflow",
-        "financial_adviser.insights",
-        "financial_adviser.resilience",
-        "financial_adviser.comparisons",
-        "financial_adviser.custom_comparison",
-        "financial_adviser.sensitivity",
-        "financial_adviser.charts",
-        "financial_adviser.scenarios",
-        "financial_adviser.io",
-        "financial_adviser.session_compat",
-        "financial_adviser.household_ui",
-        "financial_adviser.planning_recurring_ui",
-        "financial_adviser.planning_property_ui",
-        "financial_adviser.planning_results_ui",
-        "financial_adviser.planning_cashflow_ui",
-        "financial_adviser.planning_custom_ui",
-        "financial_adviser.planning_analysis_ui",
-        "financial_adviser.statistical_references",
-        "financial_adviser.benchmark_i18n",
-    ):
-        if module in sys.modules:
-            importlib.reload(sys.modules[module])
+    # Forget every package module (no hand-maintained list to forget a new
+    # one in). Pages run again on each script run and re-import fresh code.
+    for module in [name for name in sys.modules
+                   if name == "financial_adviser" or name.startswith("financial_adviser.")]:
+        del sys.modules[module]
+    pkg = importlib.import_module("financial_adviser")
 import financial_adviser.ui_i18n as ui_i18n
 importlib.reload(ui_i18n)
 t = ui_i18n.t

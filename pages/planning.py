@@ -1,9 +1,7 @@
 """Responsive, fully localized financial planner with simple life-event cards."""
 from __future__ import annotations
 
-import csv
 from dataclasses import replace
-from io import StringIO
 import json
 
 import pandas as pd
@@ -15,7 +13,8 @@ from financial_adviser.comparisons import minimum_comparison_years
 from financial_adviser.custom_comparison import (
     CUSTOM_AMOUNT_FIELDS, CUSTOM_RATE_FIELDS, CUSTOM_INTEGER_FIELDS,
 )
-from financial_adviser.io import dump_plan, load_plan
+from financial_adviser.io import dump_plan, format_oneoffs, load_plan, parse_oneoffs
+from financial_adviser.formatting import NBSP, format_decimal, format_money
 from financial_adviser.household_ui import render_household
 from financial_adviser.models import LifeEvent, OneOff, Plan
 from financial_adviser.resilience import analyze_liquidity
@@ -45,27 +44,7 @@ def demo(country: str) -> Plan:
 
 
 def money(amount: float, currency: str) -> str:
-    digits = 0 if currency == "VND" else 2
-    return f"{amount:,.{digits}f}".replace(",", " ") + (" ₫" if currency == "VND" else " €")
-
-
-def parse_oneoffs(raw: str, years: int) -> tuple[OneOff, ...]:
-    if not raw.strip():
-        return ()
-    lines = list(csv.reader(StringIO(raw), skipinitialspace=True))
-    if len(lines) > 100:
-        raise ValueError("too many events")
-    parsed = []
-    for row in lines:
-        if not row or not any(s.strip() for s in row):
-            continue
-        if len(row) not in (2, 3):
-            raise ValueError("invalid event row")
-        parsed.append(OneOff(int(row[0].strip()), float(row[1].strip()),
-                             row[2].strip() if len(row) == 3 else ""))
-    if any(not 1 <= item.month <= years * 12 for item in parsed):
-        raise ValueError("invalid event month")
-    return tuple(parsed)
+    return format_money(amount, currency, LANG)
 
 
 def reset_inputs() -> None:
@@ -127,8 +106,7 @@ def hydrate_inputs(plan: Plan) -> None:
         "field_loan": float(plan.loan_balance),
         "field_loan_rate": float(plan.loan_apr_pct),
         "field_loan_years": int(plan.loan_years),
-        "field_oneoffs": "\n".join(
-            f"{item.month},{item.amount},{item.description}" for item in plan.one_offs),
+        "field_oneoffs": format_oneoffs(plan.one_offs),
     }
     if plan.property_purchase is not None:
         purchase = plan.property_purchase
@@ -471,7 +449,7 @@ with plan_tab:
             st.caption(T("patrimony_no_cash"))
         with st.container(border=True):
             st.subheader("📅 " + T("extra_title"))
-            previous = "\n".join(f"{e.month},{e.amount},{e.description}" for e in p.one_offs)
+            previous = format_oneoffs(p.one_offs)
             oneoffs_text = st.text_area(T("extra_label"), value=previous,
                 help=T("extra_hint"), key="field_oneoffs")
         enable_mc = st.checkbox(T("simulate_mc"), value=False, key="mc_enable")
@@ -527,8 +505,7 @@ with plan_tab:
         or inflation != p.inflation_pct or volatility != p.investment_volatility_pct
         or loan != p.loan_balance or loan_rate != p.loan_apr_pct
         or loan_years != p.loan_years
-        or oneoffs_text.strip() != "\n".join(
-            f"{e.month},{e.amount},{e.description}" for e in p.one_offs).strip()
+        or oneoffs_text.strip() != format_oneoffs(p.one_offs)
     )
     if dirty:
         st.warning(T("edited_not_run"))
@@ -567,25 +544,32 @@ with plan_tab:
                 st.session_state.result = {"df": result, "mc": mc, "plan": new_plan}
                 st.session_state.pop("goal_alternatives", None)
                 dirty = False
+                st.session_state["run_recap"] = True
                 if is_first_projection:
                     # Create the dashboard columns on the next script run.
                     st.session_state["first_projection_notice"] = True
                     st.rerun()
-                st.success(T("done"))
-                # The Run button is at the end of a long editable scenario.
-                # Show the outcome here as well so the user needn't scroll
-                # back to the dashboard header to learn whether it worked.
-                st.metric(T("net_worth"), money(float(result.net_worth.iloc[-1]), new_plan.currency))
-                if (result.cash < 0).any():
-                    st.warning(T("negative_cash"))
-        except (ValueError, OverflowError, ZeroDivisionError, TypeError):
+        except (ValueError, OverflowError, ZeroDivisionError, TypeError) as exc:
             st.error(T("invalid"))
+            # The model's message names the faulty field; it is kept in English
+            # because it is a technical identifier, not a sentence of the UI.
+            st.caption(T("invalid_detail", detail=str(exc)))
+    # The Run button sits at the end of a long form while the results start at
+    # the top of the page: recall the outcome here and link to the results.
+    if (st.session_state.get("run_recap") and not dirty
+            and st.session_state.result is not None):
+        recap_plan, recap_df = st.session_state.result["plan"], st.session_state.result["df"]
+        st.success(T("done"))
+        st.metric(T("net_worth"), money(float(recap_df.net_worth.iloc[-1]), recap_plan.currency))
+        if (recap_df.cash < 0).any():
+            st.warning(T("negative_cash"))
+        st.markdown(f"[⬆ {T('go_to_results')}](#results)")
 
 if st.session_state.result is not None:
     if results_tab.open:
         with results_tab:
             st.divider()
-            st.subheader(T("tab_results"))
+            st.subheader(T("tab_results"), anchor="results")
             if st.session_state.pop("first_projection_notice", False):
                 st.success(T("done"))
             if dirty:
@@ -607,10 +591,10 @@ if st.session_state.result is not None:
                 liquidity = analyze_liquidity(q, df)
                 runway = liquidity.static_reserve_months
                 a2, b2 = st.columns(2, wrap=True)
-                a2.metric(T("cash_buffer"), (f"{runway:.1f} " + T("months"))
+                a2.metric(T("cash_buffer"), (f"{format_decimal(runway, 1, LANG)} " + T("months"))
                           if runway is not None else T("not_applicable"),
                           help=T("cash_buffer_help"))
-                b2.metric(T("debt_service"), (f"{100 * initial_loan_payment / q.monthly_income:.1f}%")
+                b2.metric(T("debt_service"), (f"{format_decimal(100 * initial_loan_payment / q.monthly_income, 1, LANG)}" + NBSP + "%")
                           if q.monthly_income > 0 else T("not_applicable"),
                           help=T("debt_service_help"))
                 render_financial_overview(q, df, T, money)

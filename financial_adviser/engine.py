@@ -30,40 +30,44 @@ def loan_payment(balance: float, apr_pct: float, years: int) -> float:
     return balance / n if r == 0 else balance * r / (1.0 - (1.0 + r) ** (-n))
 
 
-def _loan_schedule(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Return outstanding balance and monthly payment, including initial month."""
-    n = 12 * plan.years
-    balances = np.zeros(n + 1)
-    payments = np.zeros(n + 1)
-    balances[0] = plan.loan_balance
-    fixed = loan_payment(plan.loan_balance, plan.loan_apr_pct, plan.loan_years)
-    monthly_interest = plan.loan_apr_pct / 1200.0
-    for m in range(1, n + 1):
+def _amortize(principal: float, apr_pct: float, years: int, first_month: int,
+              months: int) -> tuple[np.ndarray, np.ndarray]:
+    """Balance and instalment arrays (index 0 = initial state) for one loan.
+
+    The balance is ``principal`` at ``first_month``; the first instalment is due
+    the month after. The last instalment is capped at balance plus interest.
+    """
+    balances = np.zeros(months + 1)
+    payments = np.zeros(months + 1)
+    balances[first_month] = principal
+    fixed = loan_payment(principal, apr_pct, years)
+    rate = apr_pct / 1200.0
+    for m in range(first_month + 1, months + 1):
         before = balances[m - 1]
         if before <= 1e-7:
             continue
-        interest = before * monthly_interest
+        interest = before * rate
         payment = min(fixed, before + interest)
         payments[m] = payment
         balances[m] = max(0.0, before + interest - payment)
-    # Mortgage issued at closing (month P), with its first instalment in P+1.
-    # The original outstanding loan remains independent throughout.
-    new_balances = np.zeros(n + 1)
-    new_payments = np.zeros(n + 1)
+    return balances, payments
+
+
+def _loan_schedule(plan: Plan) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Total outstanding debt and instalments, plus the new mortgage alone.
+
+    The existing loan starts at month 0. A future mortgage is issued at closing
+    (month P) with its first instalment in P+1; both schedules stay independent.
+    """
+    n = 12 * plan.years
+    balances, payments = _amortize(plan.loan_balance, plan.loan_apr_pct, plan.loan_years, 0, n)
     purchase = plan.property_purchase
-    if purchase is not None:
-        principal = purchase.price - purchase.down_payment
-        fixed_new = loan_payment(principal, purchase.loan_apr_pct, purchase.loan_years)
-        new_interest = purchase.loan_apr_pct / 1200.0
-        new_balances[purchase.month] = principal
-        for m in range(purchase.month + 1, n + 1):
-            before = new_balances[m - 1]
-            if before <= 1e-7:
-                continue
-            due = before * new_interest
-            installment = min(fixed_new, before + due)
-            new_payments[m] = installment
-            new_balances[m] = max(0.0, before + due - installment)
+    if purchase is None:
+        new_balances, new_payments = np.zeros(n + 1), np.zeros(n + 1)
+    else:
+        new_balances, new_payments = _amortize(
+            purchase.price - purchase.down_payment, purchase.loan_apr_pct,
+            purchase.loan_years, purchase.month, n)
     return balances + new_balances, payments + new_payments, new_balances, new_payments
 
 
@@ -78,7 +82,8 @@ def _property_values(plan: Plan, periods: np.ndarray) -> np.ndarray:
     return values
 
 
-def _drivers(plan: Plan) -> tuple[np.ndarray, ...]:
+def _drivers(plan: Plan, household: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
+             dependents: np.ndarray | None = None) -> tuple[np.ndarray, ...]:
     n = plan.years * 12
     t = np.arange(n, dtype=float) / 12.0
     income = plan.monthly_income * np.power(1 + plan.income_growth_pct / 100, t)
@@ -89,8 +94,10 @@ def _drivers(plan: Plan) -> tuple[np.ndarray, ...]:
     recurring = np.zeros(n)
     for flow in plan.recurring_flows:
         recurring[flow.start_month - 1:flow.end_month:flow.interval_months] += flow.amount
-    child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
-    spending += child_costs + adult_costs + dependent_adjustments(plan)
+    child_costs, adult_costs, retirement_income_change = (
+        household if household is not None else household_adjustments(plan))
+    spending += child_costs + adult_costs + (
+        dependents if dependents is not None else dependent_adjustments(plan))
     income += retirement_income_change
     for item in plan.life_events:
         start = item.first_month - 1
@@ -112,13 +119,14 @@ def project(plan: Plan) -> pd.DataFrame:
     """Simulate each month; contributions/events occur before monthly interest."""
     plan.validate()
     n = plan.years * 12
+    child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
+    dependent_costs = dependent_adjustments(plan)
     (income, expenses, events, recurring, purchase_outflow,
-     loan, payment, new_loan, new_payment) = _drivers(plan)
+     loan, payment, new_loan, new_payment) = _drivers(
+        plan, (child_costs, adult_costs, retirement_income_change), dependent_costs)
     cash = np.empty(n + 1)
     invested = np.empty(n + 1)
     cash[0], invested[0] = plan.initial_cash, plan.initial_investments
-    child_costs, adult_costs, retirement_income_change = household_adjustments(plan)
-    dependent_costs = dependent_adjustments(plan)
     rc, ri, inflation = (monthly_rate(v) for v in (
         plan.cash_return_pct, plan.investment_return_pct, plan.inflation_pct))
     for m in range(1, n + 1):

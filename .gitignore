@@ -6,3 +6,6 @@ __pycache__/
 .streamlit/secrets.toml
 *.sqlite
 .DS_Store
+
+artifacts/
+*.egg-info/
